@@ -1,0 +1,44 @@
+# ---- secrets: NEVER commit keys, tokens, TOTP secrets or broker credentials ----
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+credentials*.json
+*totp*
+!**/totp*.md
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Data / runtime
+*.db
+*.sqlite
+*.sqlite3
+backend/data/
+backend/.cache/
+.cache/
+logs/
+*.log
+
+# Node / mobile (phase 3)
+node_modules/
+.expo/
+dist/
+build/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
