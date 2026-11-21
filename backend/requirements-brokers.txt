@@ -1,0 +1,7 @@
+# Optional broker SDKs. Install only the ones you use.
+smartapi-python>=1.4   # Angel One SmartAPI
+logzero                # smartapi dependency not always pulled in
+websocket-client
+kiteconnect>=5.0       # Zerodha Kite Connect
+dhanhq>=2.1            # Dhan
+fyers-apiv3>=3.1       # Fyers
