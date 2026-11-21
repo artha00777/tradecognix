@@ -1,0 +1,6 @@
+# Automatic HTTPS reverse proxy in front of the API (free Let's Encrypt certificates).
+# Replace api.example.com with your domain (an A record pointing at the VM's reserved IP).
+api.example.com {
+	encode gzip
+	reverse_proxy 127.0.0.1:8000
+}

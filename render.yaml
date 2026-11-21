@@ -1,0 +1,24 @@
+# Render free tier: PAPER TRADING / DEMO ONLY.
+# Render's free web services sleep when idle and have no static outbound IP, so they cannot
+# satisfy broker static-IP whitelisting for live orders. Use the Oracle Cloud VM path for live.
+services:
+  - type: web
+    name: tradecognix-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: LIVE_TRADING_ENABLED
+        value: "false"
+      - key: DATABASE_URL
+        sync: false   # Supabase Postgres connection string
+      - key: FERNET_KEY
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGINS
+        sync: false
+      - key: ADMIN_EMAILS
+        value: contact@devcognix.com

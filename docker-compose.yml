@@ -1,0 +1,41 @@
+# Local / VM deployment: FastAPI backend + Postgres.
+#   cp .env.example .env   # fill in FERNET_KEY, JWT_SECRET, ...
+#   docker compose up -d --build
+# API: http://localhost:8000/docs
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-tradecognix}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tradecognix}
+      POSTGRES_DB: ${POSTGRES_DB:-tradecognix}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-tradecognix}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      args:
+        INSTALL_BROKER_SDKS: "true"
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-tradecognix}:${POSTGRES_PASSWORD:-tradecognix}@db:5432/${POSTGRES_DB:-tradecognix}
+      TZ: Asia/Kolkata
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - cache:/app/.cache
+
+volumes:
+  pgdata:
+  cache:
