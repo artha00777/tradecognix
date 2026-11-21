@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>TradeCognix · Admin console</title>
+    <link rel="icon" type="image/svg+xml" href="mark.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" />
+    <style>
+      :root {
+        --ink: #0B1020; --navy: #121A30; --line: #232C46; --ivory: #F6F3EC; --gold: #C9A86A; --gold-b: #E9D3A3;
+        --green: #2FBF8A; --red: #E5645A; --muted: #8A93AB; --text: #E9EBF2;
+        --serif: "Fraunces", Georgia, serif; --ui: "Manrope", system-ui, sans-serif; --mono: "JetBrains Mono", ui-monospace, monospace;
+        --grad: linear-gradient(100deg, #B8925A, #E9D3A3); --ease: cubic-bezier(.2, .7, .1, 1);
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; background: var(--ink); color: var(--text); font: 500 15px/1.5 var(--ui); -webkit-font-smoothing: antialiased; }
+      [hidden] { display: none !important; }
+      a { color: var(--gold-b); }
+      button { font: inherit; cursor: pointer; }
+      .wrap { max-width: 1240px; margin: 0 auto; padding: 0 24px; }
+      header.top { position: sticky; top: 0; z-index: 10; background: rgba(11,16,32,.86); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+      .top .wrap { display: flex; align-items: center; gap: 18px; min-height: 64px; }
+      .brand { display: flex; align-items: center; gap: 10px; font: 600 19px var(--serif); color: var(--ivory); letter-spacing: -.01em; }
+      .brand img { width: 26px; height: 26px; }
+      .brand small { font: 600 11px var(--mono); color: var(--gold); letter-spacing: .14em; text-transform: uppercase; margin-left: 6px; }
+      nav.tabs { display: flex; gap: 4px; margin-left: 12px; flex-wrap: wrap; }
+      .tab { background: none; border: 0; color: var(--muted); padding: 8px 12px; border-radius: 8px; font-weight: 700; font-size: 14px; }
+      .tab[aria-current="page"] { color: var(--ink); background: var(--grad); }
+      .tab:hover:not([aria-current]) { color: var(--ivory); }
+      .spacer { flex: 1; }
+      .who { font: 500 12px var(--mono); color: var(--muted); }
+      .btn { border: 1px solid var(--line); background: var(--navy); color: var(--ivory); border-radius: 10px; padding: 9px 14px; font-weight: 700; font-size: 14px; transition: border-color .2s var(--ease), transform .2s var(--ease); }
+      .btn:hover { border-color: var(--gold); }
+      .btn--gold { background: var(--grad); color: var(--ink); border-color: transparent; }
+      .btn--danger { background: transparent; color: var(--red); border-color: rgba(229,100,90,.5); }
+      .btn--danger:hover { background: var(--red); color: var(--ink); border-color: var(--red); }
+      .btn--sm { padding: 5px 10px; font-size: 12px; border-radius: 8px; }
+      main { padding: 32px 0 80px; }
+      h1 { font: 500 clamp(28px, 4vw, 40px)/1.1 var(--serif); color: var(--ivory); margin: 0 0 6px; letter-spacing: -.02em; }
+      h1 em { font-style: italic; padding-right: .08em; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+      .sub { color: var(--muted); margin: 0 0 26px; }
+      .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
+      .stat { background: var(--navy); border: 1px solid var(--line); border-radius: 14px; padding: 18px; }
+      .stat span { display: block; font: 600 11px var(--mono); color: var(--muted); letter-spacing: .1em; text-transform: uppercase; }
+      .stat strong { display: block; margin-top: 8px; font: 500 30px var(--serif); color: var(--ivory); }
+      .stat strong.up { color: var(--green); } .stat strong.down { color: var(--red); }
+      .panel { background: var(--navy); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; margin-top: 18px; }
+      .panel__head { display: flex; align-items: center; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--line); }
+      .panel__head h2 { margin: 0; font: 600 16px var(--ui); color: var(--ivory); }
+      .scroll { overflow-x: auto; }
+      table { width: 100%; border-collapse: collapse; font-size: 14px; }
+      th, td { text-align: left; padding: 11px 20px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+      th { font: 600 11px var(--mono); color: var(--muted); letter-spacing: .08em; text-transform: uppercase; }
+      td.mono { font-family: var(--mono); font-size: 13px; }
+      tr:last-child td { border-bottom: 0; }
+      .pill { display: inline-block; padding: 2px 9px; border-radius: 99px; font: 600 11px var(--mono); border: 1px solid var(--line); color: var(--muted); }
+      .pill.gold { color: var(--gold-b); border-color: rgba(201,168,106,.45); }
+      .pill.green { color: var(--green); border-color: rgba(47,191,138,.45); }
+      .pill.red { color: var(--red); border-color: rgba(229,100,90,.45); }
+      .empty { padding: 28px 20px; color: var(--muted); }
+      .kill { margin-top: 18px; display: grid; grid-template-columns: 1fr auto; gap: 18px; align-items: center; background: linear-gradient(120deg, rgba(229,100,90,.12), rgba(18,26,48,.9)); border: 1px solid rgba(229,100,90,.35); border-radius: 16px; padding: 22px; }
+      .kill h2 { margin: 0 0 4px; font: 500 22px var(--serif); color: var(--ivory); }
+      .kill p { margin: 0; color: var(--muted); }
+      .login { max-width: 420px; margin: 9vh auto 0; background: var(--navy); border: 1px solid var(--line); border-radius: 18px; padding: 30px; }
+      .login h1 { font-size: 30px; }
+      .field { display: grid; gap: 6px; margin-top: 14px; }
+      .field span { font-size: 12px; font-weight: 700; color: #B4BBCD; }
+      .field input { background: var(--ink); border: 1px solid var(--line); border-radius: 10px; min-height: 44px; padding: 0 14px; color: var(--ivory); font: 500 14px var(--mono); }
+      .field input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,168,106,.15); }
+      .err { color: var(--red); min-height: 20px; font-size: 13px; margin: 10px 0 0; }
+      .row { display: flex; gap: 10px; margin-top: 18px; }
+      .toast { position: fixed; bottom: 22px; left: 50%; transform: translate(-50%, 20px); opacity: 0; background: var(--ivory); color: var(--ink); padding: 10px 16px; border-radius: 10px; font-weight: 700; transition: all .3s var(--ease); pointer-events: none; z-index: 50; }
+      .toast.on { opacity: 1; transform: translate(-50%, 0); }
+      .live-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--green); margin-right: 6px; box-shadow: 0 0 0 0 rgba(47,191,138,.6); animation: pulse 1.6s infinite; }
+      @keyframes pulse { 70% { box-shadow: 0 0 0 8px rgba(47,191,138,0); } 100% { box-shadow: 0 0 0 0 rgba(47,191,138,0); } }
+      footer { color: var(--muted); font-size: 12px; padding: 24px 0 40px; border-top: 1px solid var(--line); }
+      @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+      @media (max-width: 720px) { .kill { grid-template-columns: 1fr; } nav.tabs { order: 3; width: 100%; margin: 0 0 10px; } .top .wrap { flex-wrap: wrap; } }
+    </style>
+  </head>
+  <body>
+    <section id="login" class="wrap" hidden>
+      <form class="login" id="login-form">
+        <div class="brand"><img src="mark.svg" alt="" />TradeCognix<small>Admin</small></div>
+        <h1 style="margin-top:22px">Admin <em>console</em></h1>
+        <p class="sub" style="margin:0">Sign in with an admin account.</p>
+        <label class="field"><span>API base URL</span><input name="api" placeholder="http://localhost:8000" autocomplete="off" required /></label>
+        <label class="field"><span>Email</span><input name="email" type="email" autocomplete="username" required /></label>
+        <label class="field"><span>Password</span><input name="password" type="password" autocomplete="current-password" required /></label>
+        <p class="err" id="login-err" aria-live="polite"></p>
+        <div class="row"><button class="btn btn--gold" type="submit">Sign in</button></div>
+      </form>
+    </section>
+
+    <div id="app" hidden>
+      <header class="top">
+        <div class="wrap">
+          <div class="brand"><img src="mark.svg" alt="" />TradeCognix<small>Admin</small></div>
+          <nav class="tabs" aria-label="Sections">
+            <button class="tab" data-tab="stats" aria-current="page">Overview</button>
+            <button class="tab" data-tab="users">Users</button>
+            <button class="tab" data-tab="strategies">Strategies</button>
+            <button class="tab" data-tab="sessions">Live sessions</button>
+          </nav>
+          <div class="spacer"></div>
+          <span class="who" id="who"></span>
+          <button class="btn btn--sm" id="logout" type="button">Sign out</button>
+        </div>
+      </header>
+
+      <main class="wrap">
+        <section data-view="stats">
+          <h1>Platform <em>overview</em></h1>
+          <p class="sub" id="stats-sub">Live numbers from the TradeCognix API.</p>
+          <div class="grid" id="stats"></div>
+          <div class="kill">
+            <div>
+              <h2>Platform kill switch</h2>
+              <p>Squares off every open position and halts every running paper and live session, for every user.</p>
+            </div>
+            <button class="btn btn--danger" id="kill-all" type="button">Kill all sessions</button>
+          </div>
+        </section>
+
+        <section data-view="users" hidden>
+          <h1>Users</h1>
+          <p class="sub">Promote admins, disable accounts. Disabling a user also kills their sessions.</p>
+          <div class="panel"><div class="scroll"><table>
+            <thead><tr><th>Email</th><th>Name</th><th>Role</th><th>Status</th><th>Strategies</th><th>Brokers</th><th>Joined</th><th></th></tr></thead>
+            <tbody id="users"></tbody>
+          </table></div></div>
+        </section>
+
+        <section data-view="strategies" hidden>
+          <h1>Strategies</h1>
+          <p class="sub">Every saved strategy, with its order tag and live confirmation.</p>
+          <div class="panel"><div class="scroll"><table>
+            <thead><tr><th>ID</th><th>Name</th><th>Owner</th><th>Underlying</th><th>TF</th><th>Order tag</th><th>Live</th><th>Updated</th></tr></thead>
+            <tbody id="strategies"></tbody>
+          </table></div></div>
+        </section>
+
+        <section data-view="sessions" hidden>
+          <h1>Live <em>sessions</em></h1>
+          <p class="sub">Running sessions refresh every 5 seconds.</p>
+          <div class="panel">
+            <div class="panel__head"><h2>Running now</h2></div>
+            <div class="scroll"><table>
+              <thead><tr><th>Session</th><th>Strategy</th><th>Mode</th><th>Broker</th><th>Position</th><th>Trades today</th><th>P&amp;L today</th><th>State</th><th></th></tr></thead>
+              <tbody id="running"></tbody>
+            </table></div>
+          </div>
+          <div class="panel">
+            <div class="panel__head"><h2>History</h2></div>
+            <div class="scroll"><table>
+              <thead><tr><th>Session</th><th>Owner</th><th>Strategy</th><th>Mode</th><th>Status</th><th>Reason</th><th>Started</th><th>Stopped</th></tr></thead>
+              <tbody id="history"></tbody>
+            </table></div>
+          </div>
+        </section>
+      </main>
+      <div class="wrap"><footer>© 2026 DevCognix · TradeCognix admin · contact@devcognix.com · +91 901 908 8160</footer></div>
+    </div>
+
+    <div class="toast" id="toast" role="status"></div>
+
+    <script>
+      (function () {
+        var $ = function (s) { return document.querySelector(s); };
+        var $$ = function (s) { return [].slice.call(document.querySelectorAll(s)); };
+        var esc = function (v) { return String(v == null ? "" : v).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); };
+        var inr = function (v) { return (v < 0 ? "−₹" : "₹") + Math.abs(Math.round(v || 0)).toLocaleString("en-IN"); };
+        var date = function (v) { return v ? new Date(v).toLocaleString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "—"; };
+        var BASE = localStorage.getItem("tc_admin_api") || window.TC_API_BASE || "";
+        var TOKEN = localStorage.getItem("tc_admin_token") || "";
+        var current = "stats", timer = null;
+
+        function toast(m) { var t = $("#toast"); t.textContent = m; t.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(function () { t.classList.remove("on"); }, 3000); }
+        function api(path, opts) {
+          opts = opts || {};
+          return fetch(BASE + path, { method: opts.method || "GET", headers: { "Content-Type": "application/json", Authorization: "Bearer " + TOKEN }, body: opts.body ? JSON.stringify(opts.body) : undefined })
+            .then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) {
+              if (r.status === 401 || r.status === 403) { signOut(r.status === 403 ? "That account is not an admin." : "Session expired."); throw new Error("auth"); }
+              if (!r.ok) throw new Error(d.detail || "HTTP " + r.status);
+              return d; }); });
+        }
+        function signOut(msg) { TOKEN = ""; localStorage.removeItem("tc_admin_token"); clearInterval(timer); $("#app").hidden = true; $("#login").hidden = false; if (msg) $("#login-err").textContent = msg; }
+
+        $("#login-form").api.value = BASE || "http://localhost:8000";
+        $("#login-form").addEventListener("submit", function (e) {
+          e.preventDefault();
+          var f = e.target; BASE = f.api.value.replace(/\/+$/, ""); $("#login-err").textContent = "";
+          fetch(BASE + "/api/auth/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: f.email.value, password: f.password.value }) })
+            .then(function (r) { return r.json().then(function (d) { if (!r.ok) throw new Error(d.detail || "Login failed"); return d; }); })
+            .then(function (d) {
+              if (d.user.role !== "admin") throw new Error("That account is not an admin.");
+              TOKEN = d.access_token; localStorage.setItem("tc_admin_token", TOKEN); localStorage.setItem("tc_admin_api", BASE); start(d.user.email);
+            })
+            .catch(function (x) { $("#login-err").textContent = x.message === "Failed to fetch" ? "Can't reach the API at " + BASE : x.message; });
+        });
+        $("#logout").addEventListener("click", function () { signOut(); });
+
+        function go(tab) {
+          current = tab;
+          $$(".tab").forEach(function (t) { if (t.dataset.tab === tab) t.setAttribute("aria-current", "page"); else t.removeAttribute("aria-current"); });
+          $$("[data-view]").forEach(function (v) { v.hidden = v.dataset.view !== tab; });
+          load();
+        }
+        $$(".tab").forEach(function (t) { t.addEventListener("click", function () { go(t.dataset.tab); }); });
+
+        function load() {
+          if (current === "stats") return api("/api/admin/stats").then(renderStats).catch(function () {});
+          if (current === "users") return api("/api/admin/users").then(renderUsers).catch(function () {});
+          if (current === "strategies") return api("/api/admin/strategies").then(renderStrategies).catch(function () {});
+          if (current === "sessions") return api("/api/admin/sessions").then(renderSessions).catch(function () {});
+        }
+
+        function renderStats(s) {
+          var cells = [["Users", s.users], ["Admins", s.admins], ["Strategies", s.strategies], ["Live-confirmed", s.live_confirmed_strategies],
+            ["Broker accounts", s.broker_accounts], ["Connected brokers", s.connected_brokers], ["Backtests", s.backtests], ["Orders", s.orders],
+            ["Journal trades", s.journal_trades], ["Journal net P&L", inr(s.journal_net_pnl), s.journal_net_pnl >= 0 ? "up" : "down"],
+            ["Running sessions", s.running_sessions], ["Running live", s.running_live]];
+          $("#stats").innerHTML = cells.map(function (c) { return '<div class="stat"><span>' + c[0] + "</span><strong" + (c[2] ? ' class="' + c[2] + '"' : "") + ">" + esc(c[1]) + "</strong></div>"; }).join("");
+          $("#stats-sub").innerHTML = "Live trading on this server: " + (s.live_trading_enabled ? '<span class="pill red">ENABLED</span>' : '<span class="pill green">disabled (paper only)</span>');
+        }
+
+        function renderUsers(d) {
+          $("#users").innerHTML = d.users.map(function (u) {
+            return "<tr><td>" + esc(u.email) + "</td><td>" + esc(u.name || "—") + '</td><td><span class="pill ' + (u.role === "admin" ? "gold" : "") + '">' + u.role + '</span></td><td><span class="pill ' + (u.is_active ? "green" : "red") + '">' + (u.is_active ? "active" : "disabled") + "</span></td><td>" + u.strategies + "</td><td>" +
+              (u.brokers.map(function (b) { return '<span class="pill ' + (b.status === "connected" ? "green" : "") + '">' + esc(b.broker) + "</span>"; }).join(" ") || "—") + '</td><td class="mono">' + date(u.created_at) + "</td><td>" +
+              '<button class="btn btn--sm" data-role="' + u.id + '" data-to="' + (u.role === "admin" ? "client" : "admin") + '">' + (u.role === "admin" ? "Make client" : "Make admin") + "</button> " +
+              '<button class="btn btn--sm ' + (u.is_active ? "btn--danger" : "") + '" data-active="' + u.id + '" data-to="' + (!u.is_active) + '">' + (u.is_active ? "Disable" : "Enable") + "</button></td></tr>";
+          }).join("") || '<tr><td colspan="8" class="empty">No users yet.</td></tr>';
+        }
+        $("#users").addEventListener("click", function (e) {
+          var b = e.target.closest("button"); if (!b) return;
+          var id = b.dataset.role || b.dataset.active;
+          var body = b.dataset.role ? { role: b.dataset.to } : { is_active: b.dataset.to === "true" };
+          api("/api/admin/users/" + id, { method: "PATCH", body: body }).then(function () { toast("Updated"); load(); }).catch(function (x) { if (x.message !== "auth") toast(x.message); });
+        });
+
+        function renderStrategies(d) {
+          $("#strategies").innerHTML = d.strategies.map(function (s) {
+            return '<tr><td class="mono">' + s.id + "</td><td>" + esc(s.name) + "</td><td>" + esc(s.owner) + "</td><td>" + esc(s.underlying) + '</td><td class="mono">' + esc(s.timeframe) + '</td><td class="mono">' + esc(s.tag) + '</td><td><span class="pill ' + (s.live_confirmed ? "gold" : "") + '">' + (s.live_confirmed ? "confirmed" : "paper") + '</span></td><td class="mono">' + date(s.updated_at) + "</td></tr>";
+          }).join("") || '<tr><td colspan="8" class="empty">No strategies yet.</td></tr>';
+        }
+
+        function renderSessions(d) {
+          $("#running").innerHTML = d.running.map(function (s) {
+            var pos = s.position ? s.position.direction + " · " + s.position.legs.map(function (l) { return l.side + " " + l.symbol; }).join(", ") : "flat";
+            return '<tr><td class="mono"><span class="live-dot"></span>' + s.session_id + "</td><td>" + esc(s.name) + '</td><td><span class="pill ' + (s.mode === "live" ? "red" : "green") + '">' + s.mode + "</span></td><td>" + esc(s.broker) + "</td><td>" + esc(pos) + "</td><td>" + s.trades_today + '</td><td class="mono">' + inr(s.pnl_today) + "</td><td>" +
+              (s.kill_switch ? '<span class="pill red">killed</span>' : s.halted ? '<span class="pill red">halted</span>' : '<span class="pill green">running</span>') + '</td><td><button class="btn btn--sm btn--danger" data-kill="' + s.session_id + '">Kill</button></td></tr>';
+          }).join("") || '<tr><td colspan="9" class="empty">Nothing running.</td></tr>';
+          $("#history").innerHTML = d.history.map(function (h) {
+            return '<tr><td class="mono">' + h.id + "</td><td>" + esc(h.owner) + '</td><td class="mono">' + h.strategy_id + '</td><td><span class="pill ' + (h.mode === "live" ? "red" : "") + '">' + h.mode + '</span></td><td><span class="pill">' + esc(h.status) + "</span></td><td>" + esc(h.halt_reason || "—") + '</td><td class="mono">' + date(h.started_at) + '</td><td class="mono">' + date(h.stopped_at) + "</td></tr>";
+          }).join("") || '<tr><td colspan="8" class="empty">No sessions yet.</td></tr>';
+        }
+        $("#running").addEventListener("click", function (e) {
+          var b = e.target.closest("[data-kill]"); if (!b) return;
+          if (!confirm("Kill session " + b.dataset.kill + "? Open positions will be squared off.")) return;
+          api("/api/admin/sessions/" + b.dataset.kill + "/kill", { method: "POST" }).then(function () { toast("Session killed"); load(); });
+        });
+        $("#kill-all").addEventListener("click", function () {
+          if (prompt("Type KILL to square off and halt every running session on the platform") !== "KILL") return;
+          api("/api/admin/kill-all", { method: "POST" }).then(function (r) { toast(r.sessions_killed + " session(s) killed"); load(); });
+        });
+
+        function start(email) {
+          $("#login").hidden = true; $("#app").hidden = false; $("#who").textContent = email || "";
+          go("stats"); clearInterval(timer);
+          timer = setInterval(function () { if (current === "sessions" || current === "stats") load(); }, 5000);
+        }
+        if (TOKEN && BASE) {
+          fetch(BASE + "/api/auth/me", { headers: { Authorization: "Bearer " + TOKEN } }).then(function (r) { return r.json().then(function (d) { if (!r.ok || d.role !== "admin") throw 0; start(d.email); }); }).catch(function () { signOut(); });
+        } else { $("#login").hidden = false; }
+      })();
+    </script>
+  </body>
+</html>
