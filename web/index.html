@@ -30,6 +30,8 @@
     <script>
       /* Theme before first paint: saved choice, else dark. */
       (function () { try { var t = localStorage.getItem("tc-theme"); document.documentElement.setAttribute("data-theme", t === "light" ? "light" : "dark"); } catch (e) {} })();
+      /* Motion only when the visitor hasn't asked for reduced motion; motion.js drives it. */
+      (function () { try { if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) document.documentElement.classList.add("motion"); } catch (e) {} })();
     </script>
     <link rel="preload" href="fonts/geist-latin.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="styles.css" />
@@ -80,6 +82,18 @@
         <symbol id="f-bell" viewBox="0 0 20 20"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"><path d="M5 13.5V9a5 5 0 0 1 10 0v4.5l1.5 1.5h-13z" /><path d="M8.5 17.5h3" /></g></symbol>
         <symbol id="f-book" viewBox="0 0 20 20"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"><path d="M5 3h8l3 3v11H5z" /><path d="M8 9h5M8 12h5" /></g></symbol>
         <symbol id="f-plug" viewBox="0 0 20 20"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 12l4-4" /><path d="M9 6l1.5-1.5a3 3 0 0 1 4.2 4.2L13 10M11 14l-1.5 1.5a3 3 0 0 1-4.2-4.2L7 10" /></g></symbol>
+        <!-- TradeCognix marketing icons: hand-drawn set, 24px grid, 1.5px stroke, round joins -->
+        <symbol id="m-tick" viewBox="0 0 16 16"><path d="M3.2 8.7c1 .8 1.9 1.8 2.7 3C7.8 8.4 10 5.8 12.9 3.9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></symbol>
+        <symbol id="m-arrow" viewBox="0 0 16 16"><path d="M2.75 8h9.5M8.9 4.4 12.5 8l-3.6 3.6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></symbol>
+        <symbol id="ic-rule" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3.25" width="16" height="17.5" rx="2.75" /><path d="M7.75 7.75h3.5M13.5 7.75h2.75M7.75 11.75h8.5" /><rect x="7.75" y="14.75" width="5" height="2.75" rx="1.375" /><path d="M15.25 16.1h1" /></g></symbol>
+        <symbol id="ic-rupee" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5a8 8 0 1 0 8 8h-8z" /><path d="M13.5 2.75a7.75 7.75 0 0 1 7.75 7.75H13.5z" fill="currentColor" fill-opacity=".3" /><path d="M6.1 10.6h4.4M6.1 12.6h4.4M6.1 10.6h1.3a2 2 0 0 1 0 4H6.1l3.7 3.3" /></g></symbol>
+        <symbol id="ic-sweep" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><rect x="3.5" y="3.5" width="4.5" height="4.5" rx="1.25" /><rect x="9.75" y="3.5" width="4.5" height="4.5" rx="1.25" /><rect x="16" y="3.5" width="4.5" height="4.5" rx="1.25" /><rect x="3.5" y="9.75" width="4.5" height="4.5" rx="1.25" /><rect x="9.75" y="9.75" width="4.5" height="4.5" rx="1.25" fill="currentColor" fill-opacity=".35" /><rect x="16" y="9.75" width="4.5" height="4.5" rx="1.25" /><rect x="3.5" y="16" width="4.5" height="4.5" rx="1.25" /><rect x="9.75" y="16" width="4.5" height="4.5" rx="1.25" /><rect x="16" y="16" width="4.5" height="4.5" rx="1.25" /></g></symbol>
+        <symbol id="ic-cross" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5C9 9.5 12 15 21 15" stroke-dasharray="0.01 3" /><path d="M3 18C8 18 10 7 21 7" /><circle cx="10.27" cy="11.94" r="2.1" fill="var(--surface, #111317)" /><path d="M18.5 4.75 21 7l-2.5 2.25" /></g></symbol>
+        <symbol id="ic-candle" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 3v3.5M7.5 15.5V21" /><rect x="5.25" y="6.5" width="4.5" height="9" rx="1.1" /><path d="M16.5 4.5V9M16.5 14.5v4" /><rect x="14.25" y="9" width="4.5" height="5.5" rx="1.1" fill="currentColor" fill-opacity=".3" /></g></symbol>
+        <symbol id="ic-shield" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.1 19 5.8v5.3c0 4.6-3 7.8-7 9.4-4-1.6-7-4.8-7-9.4V5.8z" /><path d="M12 8.4v3.7" /><path d="M9.55 9.9a3.45 3.45 0 1 0 4.9 0" /></g></symbol>
+        <symbol id="ic-plug" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v4M15 3v4" /><path d="M6.5 7h11v3.25a5.5 5.5 0 0 1-11 0z" /><path d="M12 15.75v2.5c0 1.5 1 2.5 2.5 2.5H17" /></g></symbol>
+        <symbol id="ic-plane" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.75 3.75 3.5 10.6l5.8 2.3 2.3 6.35 3.1-4.05 4 2.9z" /><path d="M9.3 12.9 20.75 3.75" /></g></symbol>
+        <symbol id="ic-tag" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.75 12.4V5.25c0-.83.67-1.5 1.5-1.5h7.15l8 8-8.75 8.75z" /><circle cx="8.25" cy="8.25" r="1.4" /><path d="M10.5 13.5l3-3M12.75 15.75l3-3" /></g></symbol>
         <!-- app nav icons -->
         <symbol id="n-home" viewBox="0 0 20 20"><rect x="3" y="3" width="6" height="6" rx="1.5" /><rect x="11" y="3" width="6" height="6" rx="1.5" /><rect x="3" y="11" width="6" height="6" rx="1.5" /><rect x="11" y="11" width="6" height="6" rx="1.5" /></symbol>
         <symbol id="n-studio" viewBox="0 0 20 20"><path d="M4 15.5l.7-3L13 4.2a1.5 1.5 0 0 1 2.1 2.1L6.8 14.6z" /><path d="M11.5 5.7l2.1 2.1" /><path d="M10 16h6" /></symbol>
@@ -107,29 +121,33 @@
           </div>
         </div>
       </header>
+      <div class="tk" role="region" aria-label="Index ticker, illustrative values only">
+        <span class="tk__tag">Illustrative · not live</span>
+        <div class="tk__vp"><div class="tk__run"><div class="tk__set"><span class="tk__i"><b>NIFTY 50</b><span class="num">24,612.35</span><span class="num up">+0.42%</span></span><span class="tk__i"><b>BANKNIFTY</b><span class="num">52,184.10</span><span class="num down">−0.31%</span></span><span class="tk__i"><b>FINNIFTY</b><span class="num">23,940.55</span><span class="num up">+0.18%</span></span><span class="tk__i"><b>SENSEX</b><span class="num">80,945.20</span><span class="num up">+0.37%</span></span><span class="tk__i"><b>INDIA VIX</b><span class="num">13.42</span><span class="num down">−2.10%</span></span><span class="tk__i"><b>MIDCPNIFTY</b><span class="num">12,486.70</span><span class="num up">+0.64%</span></span></div><div class="tk__set" aria-hidden="true"><span class="tk__i"><b>NIFTY 50</b><span class="num">24,612.35</span><span class="num up">+0.42%</span></span><span class="tk__i"><b>BANKNIFTY</b><span class="num">52,184.10</span><span class="num down">−0.31%</span></span><span class="tk__i"><b>FINNIFTY</b><span class="num">23,940.55</span><span class="num up">+0.18%</span></span><span class="tk__i"><b>SENSEX</b><span class="num">80,945.20</span><span class="num up">+0.37%</span></span><span class="tk__i"><b>INDIA VIX</b><span class="num">13.42</span><span class="num down">−2.10%</span></span><span class="tk__i"><b>MIDCPNIFTY</b><span class="num">12,486.70</span><span class="num up">+0.64%</span></span></div></div></div>
+      </div>
 
       <main id="main">
         <!-- Hero -->
         <section class="hero" aria-labelledby="hero-title">
+          <canvas class="hero__bg" aria-hidden="true"></canvas>
           <div class="wrap hero__grid">
             <div class="hero__copy">
-              <p class="hero__eyebrow"><b>NSE · BSE</b>Algo trading for Indian retail traders</p>
-              <h1 class="h1" id="hero-title">Describe a strategy in plain English. <span class="accent">Backtest it with real Indian costs.</span></h1>
-              <p class="hero__sub">TradeCognix turns your words into precise, editable rules, tests them on NSE data after brokerage, STT, GST, stamp duty and slippage, then paper-trades and runs them live through your own broker.</p>
-              <button class="btn btn--primary btn--lg" type="button" data-open-app="studio">Try a strategy, no sign-up <svg aria-hidden="true"><use href="#i-arrow" /></svg></button>
+              <p class="hero__eyebrow"><b>Beta</b>Angel One is live.<span class="hide-sm"> Eleven more brokers are on the way.</span></p>
+              <h1 class="h1" id="hero-title">Write the strategy the way you&rsquo;d say it. Then see what it <span class="shine">nets after STT.</span></h1>
+              <p class="hero__sub">The 9:20 straddle you&rsquo;ve been placing by hand, or the EMA cross a friend swears by. Type it out, check the rules we pull from it, and backtest on NSE data with brokerage, STT, GST, stamp duty and slippage taken out of every fill. Still making money? Paper trade it, then take it live through your own broker.</p>
+              <button class="btn btn--primary btn--lg" type="button" data-open-app="studio" data-magnetic>Backtest an idea now <svg aria-hidden="true"><use href="#m-arrow" /></svg></button>
               <div class="hero__meta">
-                <span><svg aria-hidden="true"><use href="#i-check" /></svg>Free backtests</span>
-                <span><svg aria-hidden="true"><use href="#i-check" /></svg>Zero code</span>
-                <span><svg aria-hidden="true"><use href="#i-check" /></svg>Funds stay with your broker</span>
+                <span><svg aria-hidden="true"><use href="#m-tick" /></svg>Backtests need no account</span>
+                <span><svg aria-hidden="true"><use href="#m-tick" /></svg>Your money never leaves your broker</span>
               </div>
             </div>
 
             <figure class="mock" aria-label="Product preview: a plain-English strategy parsed into rules with its backtest equity curve. Illustrative data.">
               <div class="mock__win">
-                <div class="mock__bar"><strong>9/21 EMA crossover</strong><span class="num">NIFTY · 15m</span><span class="badge badge--live">Backtested</span></div>
+                <div class="mock__bar"><strong>9/21 EMA crossover</strong><span class="num">NIFTY · 15m</span><span class="badge badge--live" data-hero-status>Backtested</span></div>
                 <div class="mock__body">
                   <div class="mock__left">
-                    <p class="mock__prompt"><small>Your words</small>Buy Nifty ATM call when 9 EMA crosses above 21 EMA on 15-min candles after 9:30. Exit on opposite cross or 3:15 PM. Max 2 trades a day.</p>
+                    <p class="mock__prompt" data-type><small>Your words</small>Buy Nifty ATM call when 9 EMA crosses above 21 EMA on 15-min candles after 9:30. Exit on opposite cross or 3:15 PM. Max 2 trades a day.</p>
                     <dl class="spec">
                       <div><dt>Instrument</dt><dd>NIFTY · Buy ATM CE</dd></div>
                       <div><dt>Entry</dt><dd>EMA 9 ▲ EMA 21</dd></div>
@@ -140,10 +158,10 @@
                   </div>
                   <div class="mock__right">
                     <div class="mock__kpis">
-                      <div><span>Net P&amp;L</span><strong class="up">₹53,000</strong></div>
-                      <div><span>Win rate</span><strong>50.8%</strong></div>
-                      <div><span>Profit factor</span><strong>1.14</strong></div>
-                      <div><span>Costs</span><strong class="down">₹77,000</strong></div>
+                      <div><span>Net P&amp;L</span><strong class="up" data-count="53000" data-pre="₹">₹53,000</strong></div>
+                      <div><span>Win rate</span><strong data-count="50.8" data-dec="1" data-suf="%">50.8%</strong></div>
+                      <div><span>Profit factor</span><strong data-count="1.14" data-dec="2">1.14</strong></div>
+                      <div><span>Costs</span><strong class="down" data-count="77000" data-pre="₹">₹77,000</strong></div>
                     </div>
                     <div class="mock__chart">
                       <svg viewBox="0 0 440 172" aria-hidden="true">
@@ -178,7 +196,7 @@
         <section class="brokers" id="brokers" aria-labelledby="brokers-title">
           <div class="wrap">
             <div class="brokers__top">
-              <p id="brokers-title">Trade through the broker you already use. Your funds never leave it.</p>
+              <p id="brokers-title">Orders go out through the broker you already use. We never touch the money.</p>
               <span class="note">Angel One SmartAPI is live · others rolling out</span>
             </div>
             <div class="brokers__row">
@@ -202,23 +220,22 @@
         <section class="sec" id="how" aria-labelledby="how-title">
           <div class="wrap">
             <div class="sec__head">
-              <p class="kicker">How it works</p>
-              <h2 class="h2" id="how-title">From a sentence to a live strategy in three steps.</h2>
-              <p class="lede">No code, no spreadsheets. Each step is reversible until you deliberately switch on live trading.</p>
+              <h2 class="h2" id="how-title">How an idea gets from your head to the order book.</h2>
+              <p class="lede">Nothing goes live by accident. Until you pick a broker and type LIVE yourself, every rupee on screen is pretend.</p>
             </div>
-            <div class="steps">
+            <div class="steps"><span class="steps__line" aria-hidden="true"><i></i></span>
               <article class="card step">
                 <span class="step__n">1</span>
-                <h3>Describe it in plain English</h3>
-                <p>Write the rules the way you'd explain them to a friend. We extract instrument, timeframe, entry, exit, time window and risk, and you can edit every one.</p>
+                <h3>Write it down, rough is fine</h3>
+                <p>&ldquo;Sell the Bank Nifty ATM straddle at 9:20, stop loss 25%, out by 3:10.&rdquo; That&rsquo;s enough to start. We pull out the instrument, timing, entry, exit and stop, and show each one so you can fix whatever we misread.</p>
                 <div class="step__ui">
-                  <div class="chips-static"><span>NIFTY</span><span>15m</span><span>EMA 9 ▲ 21</span><span>after 09:30</span><span>15:15 exit</span></div>
+                  <div class="chips-static"><span>BANKNIFTY</span><span>Sell ATM straddle</span><span>09:20</span><span>SL 25%</span><span>exit 15:10</span></div>
                 </div>
               </article>
               <article class="card step">
                 <span class="step__n">2</span>
-                <h3>Backtest with real Indian costs</h3>
-                <p>Every simulated trade pays brokerage, STT, exchange and SEBI fees, GST, stamp duty and slippage. You see gross and net side by side.</p>
+                <h3>Backtest it with the charges left in</h3>
+                <p>Each simulated fill pays brokerage, STT, exchange and SEBI fees, GST, stamp duty and slippage. Gross and net sit side by side. The gap between them is usually the most useful number on the screen.</p>
                 <div class="step__ui" aria-hidden="true">
                   <div class="row"><span>Gross P&amp;L</span><span>₹1,30,000</span></div>
                   <div class="bar"><i style="width:59%;background:var(--down);opacity:.7"></i><i style="width:41%;background:var(--brand)"></i></div>
@@ -227,8 +244,8 @@
               </article>
               <article class="card step">
                 <span class="step__n">3</span>
-                <h3>Paper trade, then go live</h3>
-                <p>Run it on live prices with no money at risk. Going live is a deliberate two-step switch through your broker, with a kill switch that stops everything at once.</p>
+                <h3>Paper trade it, then decide</h3>
+                <p>Run it on live prices for as long as you like with nothing at stake. Going live means choosing your broker and typing LIVE to confirm, and the kill switch that squares off everything is always one click away.</p>
                 <div class="step__ui" aria-hidden="true">
                   <div class="row"><span>Paper · 9/21 EMA</span><span class="up">running</span></div>
                   <div class="row"><span>Live · needs “LIVE” confirm</span><span>off</span></div>
@@ -242,18 +259,18 @@
         <section class="sec sec--tint" id="features" aria-labelledby="feat-title">
           <div class="wrap">
             <div class="sec__head">
-              <p class="kicker">Product</p>
-              <h2 class="h2" id="feat-title">Everything a systematic trader needs. Nothing they don't.</h2>
+              <h2 class="h2" id="feat-title">The parts we got tired of doing by hand.</h2>
+              <p class="lede">Most of this started as a spreadsheet, a Python script and a lot of screenshots of contract notes.</p>
             </div>
             <div class="feats">
-              <article class="feat"><span class="feat__icon"><svg aria-hidden="true"><use href="#f-text" /></svg></span><h3>Plain-English Strategy Studio</h3><p>Type the idea, get structured rules you can read, edit and save.</p></article>
-              <article class="feat"><span class="feat__icon"><svg aria-hidden="true"><use href="#f-rupee" /></svg></span><h3>Real Indian cost model</h3><p>Brokerage, STT, exchange, SEBI, stamp duty, GST and slippage on every fill.</p></article>
-              <article class="feat"><span class="feat__icon"><svg aria-hidden="true"><use href="#f-sweep" /></svg></span><h3>Parameter sweeps</h3><p>Test a range of EMAs, stops or times in one run and compare net results.</p></article>
-              <article class="feat"><span class="feat__icon"><svg aria-hidden="true"><use href="#f-engine" /></svg></span><h3>One engine, paper to live</h3><p>The engine that paper-trades is the one that goes live, so what you tested is what trades.</p></article>
-              <article class="feat"><span class="feat__icon"><svg aria-hidden="true"><use href="#f-shield" /></svg></span><h3>Guardrails &amp; kill switch</h3><p>Daily loss cap, max trades, hard exit time, and one button that squares off everything.</p></article>
-              <article class="feat"><span class="feat__icon"><svg aria-hidden="true"><use href="#f-plug" /></svg></span><h3>Your broker, your funds</h3><p>Orders go through your own broker API. We never hold your money.</p></article>
-              <article class="feat"><span class="feat__icon"><svg aria-hidden="true"><use href="#f-bell" /></svg></span><h3>Telegram alerts</h3><p>Entries, exits and halts pushed to your phone on Pro and Elite.</p></article>
-              <article class="feat"><span class="feat__icon"><svg aria-hidden="true"><use href="#f-book" /></svg></span><h3>Built for SEBI's algo rules</h3><p>Order tagging, kill switches and explicit live confirmation, with live orders routed the way NSE's retail-algo rules require.</p></article>
+              <article class="feat"><span class="feat__icon"><svg aria-hidden="true"><use href="#ic-rule" /></svg></span><h3>Strategy Studio</h3><p>Type the idea the way you&rsquo;d text it to someone. You get back rules you can read, change and save, and if we misread &ldquo;after 9:30&rdquo; you&rsquo;ll see it before a single backtest runs.</p></article>
+              <article class="feat"><span class="feat__icon"><svg aria-hidden="true"><use href="#ic-rupee" /></svg></span><h3>Charges, all of them</h3><p>Brokerage, STT, exchange and SEBI fees, stamp duty, GST and slippage on every fill. On option-selling setups, STT is often the line that turns a green month red.</p></article>
+              <article class="feat"><span class="feat__icon"><svg aria-hidden="true"><use href="#ic-sweep" /></svg></span><h3>Parameter sweeps</h3><p>Can&rsquo;t decide between 9/21 and 12/26? Run the whole grid in one go and compare them on net, not gross.</p></article>
+              <article class="feat"><span class="feat__icon"><svg aria-hidden="true"><use href="#ic-cross" /></svg></span><h3>One engine from paper to live</h3><p>The code that paper trades your strategy is the code that sends live orders. There&rsquo;s no second version quietly drifting out of sync.</p></article>
+              <article class="feat"><span class="feat__icon"><svg aria-hidden="true"><use href="#ic-shield" /></svg></span><h3>A kill switch you can reach</h3><p>Daily loss cap, max trades per day and a hard exit time. Plus one button that squares off everything when Bank Nifty decides to chop you up.</p></article>
+              <article class="feat"><span class="feat__icon"><svg aria-hidden="true"><use href="#ic-plug" /></svg></span><h3>Your broker, your money</h3><p>Orders go through your broker&rsquo;s API and your funds stay exactly where they are today. We never hold a rupee of it.</p></article>
+              <article class="feat"><span class="feat__icon"><svg aria-hidden="true"><use href="#ic-plane" /></svg></span><h3>Telegram alerts</h3><p>Entries, exits and halts land on your phone, so you aren&rsquo;t staring at a terminal at 3:14 on expiry Tuesday. Included in Pro and Elite.</p></article>
+              <article class="feat"><span class="feat__icon"><svg aria-hidden="true"><use href="#ic-tag" /></svg></span><h3>Order tagging for SEBI&rsquo;s algo rules</h3><p>Every order carries its strategy tag. Live trading needs an explicit confirmation, and orders are routed the way NSE&rsquo;s retail-algo rules require.</p></article>
             </div>
           </div>
         </section>
@@ -262,13 +279,17 @@
         <section class="sec" aria-labelledby="cost-title">
           <div class="wrap costs">
             <div>
-              <p class="kicker">Costs left in</p>
-              <h2 class="h2" id="cost-title">Half the trades won. Costs ate most of the gross.</h2>
-              <p class="lede">A 9/21 EMA crossover on Nifty, run through the same engine you'll use. Most backtesters hide this. We put it first, because it decides whether a strategy is worth trading.</p>
+              <h2 class="h2" id="cost-title">Half the trades won. Charges ate 59% of the gross.</h2>
+              <p class="lede">This is a plain 9/21 EMA cross on Nifty, run through the same engine you&rsquo;d use. &#8377;1.3 lakh gross became &#8377;53,000 net. Plenty of backtesters stop at the first number. We open with the second one, since that&rsquo;s what shows up in your ledger.</p>
             </div>
             <div class="card">
               <div class="panel__head"><h3>Sample backtest</h3><span class="note num">NIFTY 9/21 EMA · 15m · Sep 2024 – Nov 2026</span></div>
               <div class="panel__body waterfall" role="table" aria-label="Gross to net breakdown">
+                <div class="eat" aria-hidden="true">
+                  <div class="eat__labels"><span>Gross <b class="num">₹1,30,000</b></span><span class="eat__net">Net <b class="num up" data-eat-net>₹53,000</b></span></div>
+                  <div class="eat__track"><i class="eat__gross"></i><i class="eat__cost"><span>charges</span></i></div>
+                  <div class="eat__legend"><span>brokerage</span><span>STT</span><span>exchange + SEBI</span><span>stamp</span><span>GST</span><span>slippage</span></div>
+                </div>
                 <div class="wf-row" role="row"><span role="cell">Gross P&amp;L</span><span class="track" aria-hidden="true"><i style="left:0;width:100%;background:var(--text-3);opacity:.5"></i></span><span class="num" role="cell">₹1,30,000</span></div>
                 <div class="wf-row" role="row"><span role="cell">Charges &amp; slippage</span><span class="track" aria-hidden="true"><i style="left:41%;width:59%;background:var(--down);opacity:.75"></i></span><span class="num down" role="cell">−₹77,000</span></div>
                 <div class="wf-row wf-row--total" role="row"><span role="cell">Net P&amp;L</span><span class="track" aria-hidden="true"><i style="left:0;width:41%;background:var(--brand)"></i></span><span class="num up" role="cell">₹53,000</span></div>
@@ -280,31 +301,15 @@
           </div>
         </section>
 
-        <!-- Social proof: placeholder until real, verified material exists -->
-        <section class="sec sec--tint" aria-labelledby="proof-title">
-          <div class="wrap">
-            <div class="sec__head">
-              <p class="kicker">What traders say <span class="badge badge--ph">Placeholder</span></p>
-              <h2 class="h2" id="proof-title">Room for real stories.</h2>
-              <p class="lede">These slots stay empty until we have verified, attributed feedback. No invented quotes, no made-up user counts.</p>
-            </div>
-            <div class="proof">
-              <div class="proof__ph"><strong>Testimonial slot</strong>Replace with a real quote, name and city from a verified user, with their written consent.</div>
-              <div class="proof__ph"><strong>Testimonial slot</strong>Replace with a real quote, name and city from a verified user, with their written consent.</div>
-              <div class="proof__ph"><strong>Metric slot</strong>Replace with a real, auditable platform metric (for example backtests run), with its date and source.</div>
-            </div>
-            <div class="proof__logos" aria-label="Press and partner logo placeholders"><span>Press / partner logo</span><span>Press / partner logo</span><span>Press / partner logo</span><span>Press / partner logo</span></div>
-          </div>
-        </section>
+        <!-- Social proof goes here once it exists: real, attributed quotes (name, city, written consent) and auditable metrics with date and source. Never invented. -->
 
         <!-- Pricing -->
         <section class="sec" id="pricing" aria-labelledby="pricing-title">
           <div class="wrap">
             <div class="pricing__head">
               <div class="sec__head">
-                <p class="kicker">Pricing</p>
-                <h2 class="h2" id="pricing-title">Start free. Pay when it trades.</h2>
-                <p class="lede">Backtest and paper trade for free. Upgrade when you're ready to run live through your broker.</p>
+                <h2 class="h2" id="pricing-title">Backtesting costs nothing. You pay once real money is on the line.</h2>
+                <p class="lede">Paper trade for as long as you want on the free plan. Pro is what switches on live orders through your broker.</p>
               </div>
               <div class="seg" role="group" aria-label="Billing period">
                 <button type="button" aria-pressed="true" data-bill="m">Monthly</button>
@@ -314,43 +319,43 @@
             <div class="plans">
               <article class="card plan">
                 <div class="plan__name">Free</div>
-                <p class="plan__desc">Learn the workflow and validate ideas.</p>
+                <p class="plan__desc">For finding out whether an idea survives the charges.</p>
                 <div class="price"><strong class="num">₹0</strong><span>forever</span></div>
                 <p class="price__note">No card needed</p>
                 <button class="btn btn--secondary btn--block" type="button" data-open-app="studio">Start free</button>
                 <ul>
-                  <li><svg aria-hidden="true"><use href="#i-check" /></svg><span><strong>Paper trading</strong> on live prices</span></li>
-                  <li><svg aria-hidden="true"><use href="#i-check" /></svg><span><strong>5 backtests</strong> per day</span></li>
-                  <li><svg aria-hidden="true"><use href="#i-check" /></svg><span><strong>1 strategy</strong></span></li>
-                  <li><svg aria-hidden="true"><use href="#i-check" /></svg><span>Plain-English Strategy Studio</span></li>
-                  <li><svg aria-hidden="true"><use href="#i-check" /></svg><span>Real Indian cost model</span></li>
+                  <li><svg aria-hidden="true"><use href="#m-tick" /></svg><span><strong>Paper trading</strong> on live prices</span></li>
+                  <li><svg aria-hidden="true"><use href="#m-tick" /></svg><span><strong>5 backtests</strong> per day</span></li>
+                  <li><svg aria-hidden="true"><use href="#m-tick" /></svg><span><strong>1 strategy</strong></span></li>
+                  <li><svg aria-hidden="true"><use href="#m-tick" /></svg><span>Plain-English Strategy Studio</span></li>
+                  <li><svg aria-hidden="true"><use href="#m-tick" /></svg><span>Real Indian cost model</span></li>
                 </ul>
               </article>
               <article class="card plan plan--rec">
                 <div class="plan__name">Pro <span class="badge badge--live badge--plain">Recommended</span></div>
-                <p class="plan__desc">Go live through your own broker.</p>
+                <p class="plan__desc">When you&rsquo;re ready to run it with real money.</p>
                 <div class="price"><strong class="num" id="x-pro-price">₹999</strong><span id="x-pro-per">/month</span></div>
                 <p class="price__note" id="x-pro-note">or ₹9,990/year</p>
                 <button class="btn btn--primary btn--block" type="button" data-open-app="studio" data-plan="pro">Get Pro</button>
                 <ul>
-                  <li><svg aria-hidden="true"><use href="#i-check" /></svg><span>Everything in Free</span></li>
-                  <li><svg aria-hidden="true"><use href="#i-check" /></svg><span><strong>Live trading</strong> via your broker</span></li>
-                  <li><svg aria-hidden="true"><use href="#i-check" /></svg><span><strong>Parameter sweeps</strong></span></li>
-                  <li><svg aria-hidden="true"><use href="#i-check" /></svg><span><strong>Telegram alerts</strong></span></li>
-                  <li><svg aria-hidden="true"><use href="#i-check" /></svg><span><strong>5 strategies</strong></span></li>
+                  <li><svg aria-hidden="true"><use href="#m-tick" /></svg><span>Everything in Free</span></li>
+                  <li><svg aria-hidden="true"><use href="#m-tick" /></svg><span><strong>Live trading</strong> via your broker</span></li>
+                  <li><svg aria-hidden="true"><use href="#m-tick" /></svg><span><strong>Parameter sweeps</strong></span></li>
+                  <li><svg aria-hidden="true"><use href="#m-tick" /></svg><span><strong>Telegram alerts</strong></span></li>
+                  <li><svg aria-hidden="true"><use href="#m-tick" /></svg><span><strong>5 strategies</strong></span></li>
                 </ul>
               </article>
               <article class="card plan">
                 <div class="plan__name">Elite</div>
-                <p class="plan__desc">For active traders running several systems.</p>
+                <p class="plan__desc">If you run a few systems at once and want them watched together.</p>
                 <div class="price"><strong class="num">₹2,499</strong><span>/month</span></div>
                 <p class="price__note" id="x-elite-note">Billed monthly</p>
                 <button class="btn btn--secondary btn--block" type="button" data-open-app="studio" data-plan="elite">Get Elite</button>
                 <ul>
-                  <li><svg aria-hidden="true"><use href="#i-check" /></svg><span>Everything in Pro</span></li>
-                  <li><svg aria-hidden="true"><use href="#i-check" /></svg><span><strong>Unlimited strategies</strong></span></li>
-                  <li><svg aria-hidden="true"><use href="#i-check" /></svg><span><strong>Priority support</strong></span></li>
-                  <li><svg aria-hidden="true"><use href="#i-check" /></svg><span><strong>Multi-strategy portfolio risk</strong> and daily P&amp;L digests</span></li>
+                  <li><svg aria-hidden="true"><use href="#m-tick" /></svg><span>Everything in Pro</span></li>
+                  <li><svg aria-hidden="true"><use href="#m-tick" /></svg><span><strong>Unlimited strategies</strong></span></li>
+                  <li><svg aria-hidden="true"><use href="#m-tick" /></svg><span><strong>Priority support</strong></span></li>
+                  <li><svg aria-hidden="true"><use href="#m-tick" /></svg><span><strong>Multi-strategy portfolio risk</strong> and daily P&amp;L digests</span></li>
                 </ul>
               </article>
             </div>
@@ -362,16 +367,15 @@
         <section class="sec sec--tint" id="partners" aria-labelledby="partners-title">
           <div class="wrap biz">
             <div>
-              <p class="kicker">For brokers &amp; advisors</p>
-              <h2 class="h2" id="partners-title">Run TradeCognix under your own brand.</h2>
-              <p class="lede">For brokers, advisors, educators and sub-brokers who want to give clients systematic trading without building the stack.</p>
+              <h2 class="h2" id="partners-title">Run a broking desk or an advisory? Put your name on it.</h2>
+              <p class="lede">Sub-brokers, advisors and the people who teach trading on weekends keep asking for the same thing: a studio, a backtester and a kill switch their clients can use, without hiring a dev team. That&rsquo;s this, with your logo on the door.</p>
               <ul class="checks">
-                <li><svg aria-hidden="true"><use href="#i-check" /></svg><span><strong>White-label</strong> the platform with your name, domain and colours.</span></li>
-                <li><svg aria-hidden="true"><use href="#i-check" /></svg><span><strong>Onboard clients</strong> with their own broker connections.</span></li>
-                <li><svg aria-hidden="true"><use href="#i-check" /></svg><span><strong>Oversee everyone</strong> from one admin console, with a platform-wide kill switch.</span></li>
+                <li><svg aria-hidden="true"><use href="#m-tick" /></svg><span><strong>Your domain and colours.</strong> Clients never see our name unless you want them to.</span></li>
+                <li><svg aria-hidden="true"><use href="#m-tick" /></svg><span><strong>Clients bring their own broker accounts,</strong> and you see who&rsquo;s live, who&rsquo;s on paper and who&rsquo;s stuck onboarding.</span></li>
+                <li><svg aria-hidden="true"><use href="#m-tick" /></svg><span><strong>A platform-wide kill switch</strong> in the admin console.</span></li>
               </ul>
               <div class="btns">
-                <a class="btn btn--primary" href="mailto:contact@devcognix.com?subject=TradeCognix%20white-label%20enquiry">Contact us <svg aria-hidden="true"><use href="#i-arrow" /></svg></a>
+                <a class="btn btn--primary" href="mailto:contact@devcognix.com?subject=TradeCognix%20white-label%20enquiry">Talk to us about white-label <svg aria-hidden="true"><use href="#m-arrow" /></svg></a>
                 <a class="btn btn--ghost" href="mailto:contact@devcognix.com">contact@devcognix.com</a>
               </div>
             </div>
@@ -396,27 +400,26 @@
         <section class="sec" id="faq" aria-labelledby="faq-title">
           <div class="wrap faq">
             <div class="sec__head">
-              <p class="kicker">FAQ</p>
-              <h2 class="h2" id="faq-title">Straight answers.</h2>
-              <p class="lede">Something else? <a href="mailto:contact@devcognix.com">contact@devcognix.com</a></p>
+              <h2 class="h2" id="faq-title">What people ask before connecting a broker.</h2>
+              <p class="lede">Didn&rsquo;t see yours? Write to <a href="mailto:contact@devcognix.com">contact@devcognix.com</a> and a person will reply.</p>
             </div>
             <div>
-              <details open><summary>Do I need to know how to code?<svg aria-hidden="true"><use href="#i-plus" /></svg></summary><p>No. You describe the strategy in plain English and review the rules we extract. Every rule is editable before you backtest.</p></details>
-              <details><summary>Can I try it without signing up?<svg aria-hidden="true"><use href="#i-plus" /></svg></summary><p>Yes. Describe a strategy and run a backtest straight away. You only create a free account when you want to paper trade, so your sessions and journal are saved.</p></details>
-              <details><summary>Which brokers are supported?<svg aria-hidden="true"><use href="#i-plus" /></svg></summary><p>Angel One (SmartAPI) is live. Zerodha, Upstox, Dhan, Fyers, Groww, ICICI Direct, Kotak Neo, 5paisa, Alice Blue, Shoonya (Finvasia) and Motilal Oswal are rolling out.</p></details>
-              <details><summary>Is my money safe?<svg aria-hidden="true"><use href="#i-plus" /></svg></summary><p>Your funds stay in your broker account. TradeCognix never holds money; it only places orders through your broker's API. API credentials are encrypted at rest.</p></details>
-              <details><summary>How realistic are the backtest costs?<svg aria-hidden="true"><use href="#i-plus" /></svg></summary><p>Each simulated trade pays brokerage, STT, exchange transaction charges, SEBI fees, stamp duty, GST and slippage. Results show gross and net separately, and flag when data is synthetic or option premiums are estimated.</p></details>
-              <details><summary>Is live trading automatic?<svg aria-hidden="true"><use href="#i-plus" /></svg></summary><p>Only after you explicitly switch it on with a two-step confirmation. The kill switch stops every strategy and squares off open positions at once.</p></details>
-              <details><summary>What about SEBI's algo trading rules?<svg aria-hidden="true"><use href="#i-plus" /></svg></summary><p>TradeCognix is built to align with SEBI's retail algo framework: orders go through your own broker, every order is tagged to its strategy, and kill switches and loss caps are always on. Under NSE's 20 Nov 2026 circular, a personal static IP is only for traders who code their own algos, so live trading for everyone else is enabled through partner brokers' servers as they come on board. Backtesting and paper trading work today.</p></details>
+              <details open><summary>Do I need to know how to code?<svg class="tgl" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.25 8h9.5" /><path class="tgl__v" d="M8 3.25v9.5" /></svg></summary><p>No. You write the strategy in plain English and check the rules we pull out of it. Anything we got wrong, you edit before the backtest runs.</p></details>
+              <details><summary>Can I try it without signing up?<svg class="tgl" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.25 8h9.5" /><path class="tgl__v" d="M8 3.25v9.5" /></svg></summary><p>Yes. Write a strategy and backtest it straight away. You only need a free account once you start paper trading, because that&rsquo;s when there are sessions and a journal worth saving.</p></details>
+              <details><summary>Which brokers are supported?<svg class="tgl" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.25 8h9.5" /><path class="tgl__v" d="M8 3.25v9.5" /></svg></summary><p>Angel One (SmartAPI) works today. Zerodha, Upstox, Dhan, Fyers, Groww, ICICI Direct, Kotak Neo, 5paisa, Alice Blue, Shoonya (Finvasia) and Motilal Oswal are being added one at a time.</p></details>
+              <details><summary>Is my money safe?<svg class="tgl" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.25 8h9.5" /><path class="tgl__v" d="M8 3.25v9.5" /></svg></summary><p>Your funds stay in your broker account. TradeCognix never holds money. It only places orders through your broker&rsquo;s API, and your API credentials are encrypted at rest.</p></details>
+              <details><summary>How realistic are the backtest costs?<svg class="tgl" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.25 8h9.5" /><path class="tgl__v" d="M8 3.25v9.5" /></svg></summary><p>Each simulated trade pays brokerage, STT, exchange transaction charges, SEBI fees, stamp duty, GST and slippage. Gross and net are shown separately, and the results tell you when data is synthetic or option premiums are estimated rather than real.</p></details>
+              <details><summary>Is live trading automatic?<svg class="tgl" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.25 8h9.5" /><path class="tgl__v" d="M8 3.25v9.5" /></svg></summary><p>Only after you switch it on yourself with a two-step confirmation. The kill switch stops every strategy and squares off open positions in one go.</p></details>
+              <details><summary>What about SEBI's algo trading rules?<svg class="tgl" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.25 8h9.5" /><path class="tgl__v" d="M8 3.25v9.5" /></svg></summary><p>TradeCognix is designed around SEBI&rsquo;s retail algo framework. Orders go through your own broker, every order is tagged to its strategy, and kill switches and loss caps are always on. Under NSE&rsquo;s 20 Nov 2026 circular, a personal static IP is only for traders who code their own algos, so live trading for everyone else is enabled through partner brokers&rsquo; servers as they come on board. Backtesting and paper trading work today.</p></details>
             </div>
           </div>
         </section>
 
         <section class="cta-band" aria-labelledby="cta-title">
           <div class="wrap">
-            <h2 class="h2" id="cta-title">Test your idea before you risk a rupee.</h2>
-            <p class="lede" style="margin-inline:auto">Describe it, backtest it with real costs, and decide with the net number in front of you.</p>
-            <div class="btns"><button class="btn btn--primary btn--lg" type="button" data-open-app="studio">Try a strategy, no sign-up <svg aria-hidden="true"><use href="#i-arrow" /></svg></button></div>
+            <h2 class="h2" id="cta-title">Find out what your setup nets before next Tuesday&rsquo;s expiry tells you.</h2>
+            <p class="lede" style="margin-inline:auto">It takes a couple of minutes and no sign-up. If the net number is ugly, better you see it here.</p>
+            <div class="btns"><button class="btn btn--primary btn--lg" type="button" data-open-app="studio" data-magnetic>Backtest an idea now <svg aria-hidden="true"><use href="#m-arrow" /></svg></button></div>
           </div>
         </section>
       </main>
@@ -426,7 +429,7 @@
           <div class="foot__cols">
             <div class="foot__brand">
               <a class="logo" href="#top" aria-label="TradeCognix, back to top"><svg class="logo__mark" aria-hidden="true"><use href="#tc-mark" /></svg><span class="logo__word">TradeCognix</span></a>
-              <p>Plain-English algo trading, built for Indian markets. A DevCognix product.</p>
+              <p>Plain-English algo trading for NSE and BSE, made in India by DevCognix.</p>
             </div>
             <div><h4>Product</h4><ul><li><a href="#how">How it works</a></li><li><a href="#features">Features</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#" data-open-app="studio">Strategy Studio</a></li></ul></div>
             <div><h4>Brokers</h4><ul><li><a href="#brokers">Angel One</a></li><li><a href="#brokers">Zerodha</a></li><li><a href="#brokers">Upstox</a></li><li><a href="#brokers">All brokers</a></li></ul></div>
@@ -776,5 +779,6 @@
     <script src="chart.js"></script>
     <script src="app.js"></script>
     <script src="js/api.js"></script>
+    <script src="motion.js" defer></script>
   </body>
 </html>
