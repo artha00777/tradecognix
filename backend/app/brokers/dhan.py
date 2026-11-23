@@ -14,12 +14,12 @@ from typing import Any
 import httpx
 import pandas as pd
 
-from .base import BrokerAdapter, BrokerError, CredentialField, Instrument, OrderRequest, OrderResult, candles_frame, sanitize_tag
+from .base import BrokerAdapter, BrokerError, CredentialField, Instrument, OrderRequest, OrderResult, candles_frame, pick_contract, sanitize_tag
 
 SCRIP_CSV = "https://images.dhan.co/api-data/api-scrip-master.csv"
 INDEX = {"NIFTY": "13", "BANKNIFTY": "25", "FINNIFTY": "27", "MIDCPNIFTY": "442", "SENSEX": "51"}
 SEGMENT = {"NSE": "NSE_EQ", "NFO": "NSE_FNO", "BSE": "BSE_EQ", "BFO": "BSE_FNO", "IDX": "IDX_I"}
-TF = {"1m": 1, "5m": 5, "15m": 15, "25m": 25, "1h": 60}
+TF = {"1m": 1, "5m": 5, "15m": 15, "25m": 25, "1h": 60}  # other intervals: BrokerFeed resamples 1m/5m
 
 
 class DhanAdapter(BrokerAdapter):
@@ -102,10 +102,9 @@ class DhanAdapter(BrokerAdapter):
     def resolve_option(self, underlying: str, expiry: date, strike: float, option_type: str) -> Instrument:
         cands = [self._to_inst(r) for r in self._scrips() if r.get("SEM_INSTRUMENT_NAME") == "OPTIDX" and r.get("SEM_TRADING_SYMBOL", "").startswith(underlying.upper() + "-")
                  and r.get("SEM_OPTION_TYPE") == option_type and abs(float(r.get("SEM_STRIKE_PRICE") or 0) - strike) < 0.01]
-        cands = [c for c in cands if c.expiry and c.expiry >= expiry]
         if not cands:
-            raise BrokerError(f"No {underlying} {strike} {option_type} on/after {expiry}")
-        return min(cands, key=lambda c: c.expiry)
+            raise BrokerError(f"No {underlying} {strike} {option_type} near {expiry}")
+        return pick_contract(cands, expiry)
 
     def historical_candles(self, instrument: Instrument, timeframe: str, start: datetime, end: datetime) -> pd.DataFrame:
         if timeframe not in TF:

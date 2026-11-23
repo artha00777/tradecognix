@@ -11,6 +11,7 @@ Operands in conditions are either numbers or references:
 """
 from __future__ import annotations
 
+import math
 import re
 from typing import Literal, Optional, Union
 
@@ -36,8 +37,19 @@ def _check_time(v: str) -> str:
     return v
 
 
+ID_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]{0,31}$")
+
+
 class IndicatorSpec(BaseModel):
     id: str = Field(..., description="Reference name used in conditions, e.g. ema9")
+
+    @field_validator("id")
+    @classmethod
+    def _id(cls, v: str) -> str:
+        if not ID_RE.match(v) or v in PRICE_FIELDS or v == "time":
+            raise ValueError(f"indicator id {v!r} must be a short identifier (letters, digits, _) and not a price field")
+        return v
+
     kind: Literal["ema", "sma", "rsi", "vwap", "atr", "supertrend", "orb"]
     period: Optional[int] = Field(None, ge=1, le=500)
     multiplier: Optional[float] = Field(None, gt=0, le=20)
@@ -72,6 +84,11 @@ class Condition(BaseModel):
         if self.op == "at_time":
             self.left = "time"
             self.right = _check_time(str(self.right))
+            return self
+        if isinstance(self.right, float) and not math.isfinite(self.right):
+            raise ValueError("condition levels must be finite numbers")
+        if _is_number(self.left) and (isinstance(self.right, (int, float)) or _is_number(str(self.right))):
+            raise ValueError("a condition must compare at least one price/indicator, not two numbers")
         return self
 
     def mirrored(self) -> "Condition":
@@ -137,8 +154,8 @@ class RiskSpec(BaseModel):
 
 
 class Strategy(BaseModel):
-    name: str = "Untitled strategy"
-    description: str = ""
+    name: str = Field("Untitled strategy", max_length=120)
+    description: str = Field("", max_length=4000)
     underlying: str = "NIFTY"
     instrument_type: Literal["option", "future", "equity", "index"] = "option"
     exchange: Literal["NSE", "BSE"] = "NSE"
@@ -171,6 +188,10 @@ class Strategy(BaseModel):
             self.option = None
         if self.underlying == "SENSEX":
             self.exchange = "BSE"
+        if self.timeframe == "1d":
+            # A daily bar closes at 15:30, after any intraday hard exit, so a daily-candle strategy
+            # can only be positional (previously it silently produced zero trades).
+            self.intraday = False
         if self.option and self.option.mode.startswith(("straddle", "strangle")):
             self.direction = "neutral"
         ids = {i.id for i in self.indicators}
@@ -211,10 +232,10 @@ class Strategy(BaseModel):
 
 
 def _is_number(s: str) -> bool:
+    """True for finite numeric strings ("30", "-1.5"); "nan"/"inf" are not numbers here."""
     try:
-        float(s)
-        return True
-    except ValueError:
+        return math.isfinite(float(s))
+    except (TypeError, ValueError):
         return False
 
 

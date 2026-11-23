@@ -30,13 +30,20 @@ def generate_candles(
     seed: int = 7,
     annual_vol: float = 0.14,
     start_price: float | None = None,
+    bar_minutes: int = 5,
 ) -> pd.DataFrame:
+    """Synthetic intraday candles. `bar_minutes` must divide the 375-minute session (1, 3, 5, 15, 25...)."""
+    if bar_minutes <= 0 or 375 % bar_minutes:
+        raise ValueError("bar_minutes must divide 375 (the 09:15-15:30 session)")
     rng = np.random.default_rng(seed)
-    end = end or date.today()
+    if end is None:
+        from ..engine.clock import ist_today
+
+        end = ist_today()
     # walk back enough calendar days to collect `days` weekdays
     all_days = trading_days(end - timedelta(days=days * 2 + 10), end)[-days:]
     price = start_price or BASE_LEVELS.get(symbol.upper(), 20000.0)
-    bars_per_day = 75
+    bars_per_day = 375 // bar_minutes
     # U-shaped intraday vol multiplier
     x = np.linspace(-1, 1, bars_per_day)
     u_shape = 0.7 + 0.9 * x**2
@@ -56,8 +63,8 @@ def generate_candles(
             wick = abs(rng.normal(0, sig * 0.6))
             h = max(o, c) * (1 + wick)
             lo = min(o, c) * (1 - abs(rng.normal(0, sig * 0.6)))
-            vol = int(rng.lognormal(11, 0.4) * u_shape[i])
-            rows.append((ts0 + pd.Timedelta(minutes=5 * i), o, h, lo, c, vol))
+            vol = int(rng.lognormal(11, 0.4) * u_shape[i] * bar_minutes / 5)
+            rows.append((ts0 + pd.Timedelta(minutes=bar_minutes * i), o, h, lo, c, vol))
             price = c
     df = pd.DataFrame(rows, columns=["ts", "open", "high", "low", "close", "volume"]).set_index("ts")
     df.index.name = None

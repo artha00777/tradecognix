@@ -35,12 +35,19 @@ def llm_available() -> bool:
 
 
 def _extract_json(text: str) -> dict:
+    if len(text) > 100_000:
+        raise ValueError("LLM response too large")
     text = text.strip()
     fence = re.search(r"```(?:json)?\s*(\{.*\})\s*```", text, re.S)
     if fence:
         text = fence.group(1)
     start, end = text.find("{"), text.rfind("}")
-    return json.loads(text[start: end + 1])
+    if start < 0 or end <= start:
+        raise ValueError("LLM response contained no JSON object")
+    data = json.loads(text[start: end + 1])
+    if not isinstance(data, dict):
+        raise ValueError("LLM response JSON is not an object")
+    return data
 
 
 def _user_prompt(text: str) -> str:
@@ -55,7 +62,8 @@ def call_gemini(text: str) -> str:
         "contents": [{"role": "user", "parts": [{"text": _user_prompt(text)}]}],
         "generationConfig": {"temperature": 0, "responseMimeType": "application/json"},
     }
-    r = httpx.post(url, params={"key": s.gemini_api_key}, json=body, timeout=s.llm_timeout_seconds)
+    # Key in a header, not the query string: httpx error messages and proxy logs include the URL.
+    r = httpx.post(url, headers={"x-goog-api-key": s.gemini_api_key}, json=body, timeout=s.llm_timeout_seconds)
     r.raise_for_status()
     return r.json()["candidates"][0]["content"]["parts"][0]["text"]
 

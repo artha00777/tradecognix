@@ -12,7 +12,7 @@ from typing import Any
 
 import pandas as pd
 
-from .base import BrokerAdapter, BrokerError, CredentialField, Instrument, OrderRequest, OrderResult, candles_frame, sanitize_tag
+from .base import BrokerAdapter, BrokerError, CredentialField, Instrument, OrderRequest, OrderResult, candles_frame, pick_contract, sanitize_tag
 
 INTERVALS = {"1m": "minute", "3m": "3minute", "5m": "5minute", "10m": "10minute", "15m": "15minute", "30m": "30minute", "1h": "60minute", "1d": "day"}
 MAX_DAYS = {"1m": 60, "3m": 100, "5m": 100, "10m": 100, "15m": 200, "30m": 200, "1h": 400, "1d": 2000}
@@ -91,10 +91,10 @@ class ZerodhaAdapter(BrokerAdapter):
     def resolve_option(self, underlying: str, expiry: date, strike: float, option_type: str) -> Instrument:
         exch = "BFO" if underlying.upper() == "SENSEX" else "NFO"
         rows = [r for r in self._instr_dump(exch) if r.get("name") == underlying.upper() and r.get("instrument_type") == option_type
-                and abs(float(r.get("strike") or 0) - strike) < 0.01 and r.get("expiry") and r["expiry"] >= expiry]
+                and abs(float(r.get("strike") or 0) - strike) < 0.01 and r.get("expiry")]
         if not rows:
-            raise BrokerError(f"No {underlying} {strike} {option_type} contract on/after {expiry}")
-        return self._to_inst(min(rows, key=lambda r: r["expiry"]))
+            raise BrokerError(f"No {underlying} {strike} {option_type} contract near {expiry}")
+        return pick_contract([self._to_inst(r) for r in rows], expiry)
 
     def historical_candles(self, instrument: Instrument, timeframe: str, start: datetime, end: datetime) -> pd.DataFrame:
         frames, cur = [], start

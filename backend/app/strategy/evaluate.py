@@ -49,10 +49,22 @@ def compute_indicators(df: pd.DataFrame, strategy: Strategy) -> pd.DataFrame:
 
 
 def bar_close_times(index: pd.DatetimeIndex, timeframe: str) -> pd.Series:
+    """"HH:MM" close time of each bar, capped at the 15:30 session close.
+
+    The last bar of a session can be shorter than the timeframe (e.g. the 15:15 hourly bar ends at
+    15:30, not 16:15), and a daily bar closes at 15:30.
+    """
+    return pd.Series(bar_close_datetimes(index, timeframe).strftime("%H:%M"), index=index)
+
+
+def bar_close_datetimes(index: pd.DatetimeIndex, timeframe: str) -> pd.DatetimeIndex:
+    """Bar close timestamps (IST naive), capped at that day's 15:30 session close."""
     mins = TF_MINUTES[timeframe]
+    session_close = index.normalize() + pd.Timedelta(hours=15, minutes=30)
     if mins >= 1440:
-        return pd.Series("15:30", index=index)
-    return pd.Series((index + pd.Timedelta(minutes=mins)).strftime("%H:%M"), index=index)
+        return session_close
+    close = index + pd.Timedelta(minutes=mins)
+    return close.where(close <= session_close, session_close)
 
 
 def _operand(frame: pd.DataFrame, x) -> pd.Series | float:

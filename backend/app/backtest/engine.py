@@ -2,8 +2,10 @@
 
 Signals are evaluated at each bar close (same as the live engine, which runs on candle close).
 Fills happen at the signal bar's close plus slippage. Stops/targets are checked intrabar using
-the underlying's high/low mapped to premium. Intraday positions are always squared off at the
-hard-exit time or the last bar of the day.
+the underlying's high/low mapped to premium, conservatively: the stop is assumed to trade before
+the target in the same bar, a bar that *opens* through a stop/target fills at the open (gap), and
+a trailing stop only ratchets after the bar is checked (no same-bar high-then-low hindsight).
+Intraday positions are always squared off at the hard-exit time or the last bar of the day.
 """
 from __future__ import annotations
 
@@ -15,7 +17,7 @@ import pandas as pd
 
 from ..data.candles import TF_MINUTES
 from ..strategy.dsl import Strategy
-from ..strategy.evaluate import build_signals
+from ..strategy.evaluate import bar_close_datetimes, build_signals
 from . import options as opt
 from .costs import CostBreakdown, CostConfig, apply_slippage, order_costs, segment_for
 from .metrics import compute_metrics
@@ -148,23 +150,30 @@ class Backtester:
             fav_spot = bar["high"] if bullish_leg else bar["low"]
             adverse_px = self._leg_price(leg, adverse_spot, ts)
             fav_px = self._leg_price(leg, fav_spot, ts)
+            open_px = self._leg_price(leg, float(bar["open"]), ts)
             e = leg.entry_ref
-            if trail:
-                leg.peak = max(leg.peak, fav_px) if leg.sign > 0 else min(leg.peak, fav_px)
-            # stop loss (checked first: conservative)
-            stop_px = None
+            # stop loss (checked first: conservative). Trailing uses the peak *before* this bar.
+            stop_px, reason = None, "stop_loss"
             if sl:
                 stop_px = e * (1 - sl / 100) if leg.sign > 0 else e * (1 + sl / 100)
             if trail:
                 tpx = leg.peak * (1 - trail / 100) if leg.sign > 0 else leg.peak * (1 + trail / 100)
-                stop_px = tpx if stop_px is None else (max(stop_px, tpx) if leg.sign > 0 else min(stop_px, tpx))
+                tighter = stop_px is None or (tpx > stop_px if leg.sign > 0 else tpx < stop_px)
+                if tighter:
+                    stop_px, reason = tpx, "trailing_stop"
             if stop_px is not None and ((leg.sign > 0 and adverse_px <= stop_px) or (leg.sign < 0 and adverse_px >= stop_px)):
-                self._close_leg(pos, leg, round(stop_px, 2), ts, "stop_loss" if not trail else "trailing_stop")
+                # a bar that opens beyond the stop (gap) fills at the open, not at the stop
+                fill = min(stop_px, open_px) if leg.sign > 0 else max(stop_px, open_px)
+                self._close_leg(pos, leg, round(fill, 2), ts, reason)
                 continue
             if tgt:
                 tgt_px = e * (1 + tgt / 100) if leg.sign > 0 else e * (1 - tgt / 100)
                 if (leg.sign > 0 and fav_px >= tgt_px) or (leg.sign < 0 and fav_px <= tgt_px):
-                    self._close_leg(pos, leg, round(tgt_px, 2), ts, "target")
+                    fill = max(tgt_px, open_px) if leg.sign > 0 else min(tgt_px, open_px)
+                    self._close_leg(pos, leg, round(fill, 2), ts, "target")
+                    continue
+            if trail:  # ratchet only after this bar survived
+                leg.peak = max(leg.peak, fav_px) if leg.sign > 0 else min(leg.peak, fav_px)
 
     def _mtm(self, pos: Position, spot: float, ts: datetime) -> float:
         pnl = 0.0
@@ -225,9 +234,11 @@ class Backtester:
         halted = False
         win_start, win_end, hard = s.entry_window.start, s.entry_window.end, s.hard_exit
 
-        bar_len = pd.Timedelta(minutes=min(TF_MINUTES[s.timeframe], 375))
+        close_dt = bar_close_datetimes(idx, s.timeframe)
+        daily = TF_MINUTES[s.timeframe] >= 1440
+        session_days = sorted({d.date().isoformat() for d in days})
         for i in range(len(f)):
-            ts = (idx[i] + bar_len).to_pydatetime()  # decisions happen at bar close
+            ts = close_dt[i].to_pydatetime()  # decisions happen at bar close (capped at 15:30)
             bar = f.iloc[i]
             spot = float(bar["close"])
             ct = sig.close_time.iloc[i]
@@ -260,7 +271,10 @@ class Backtester:
 
             # ---- look for entries ----
             if pos is None and not halted and trades_today < s.risk.max_trades_per_day:
-                in_window = win_start <= ct <= win_end and ct < hard and not bool(last_of_day.iloc[i])
+                if daily:  # one bar per day: entry-window/hard-exit clock rules do not apply
+                    in_window = i < len(f) - 1
+                else:
+                    in_window = win_start <= ct <= win_end and ct < hard and not (s.intraday and bool(last_of_day.iloc[i]))
                 if in_window:
                     if s.direction in ("long", "both", "neutral") and bool(sig.long_entry.iloc[i]):
                         pos = self._open("long", ts, i, spot)
@@ -268,9 +282,9 @@ class Backtester:
                         pos = self._open("short", ts, i, spot)
 
         if pos is not None:  # close anything left at the final bar
-            trades.append(self._finish(pos, (idx[-1] + bar_len).to_pydatetime(), len(f) - 1, float(f["close"].iloc[-1]), "end_of_data"))
+            trades.append(self._finish(pos, close_dt[-1].to_pydatetime(), len(f) - 1, float(f["close"].iloc[-1]), "end_of_data"))
 
-        metrics, equity = compute_metrics(trades, s.risk.capital, self.whipsaw_bars)
+        metrics, equity = compute_metrics(trades, s.risk.capital, self.whipsaw_bars, session_days=session_days)
         if data_source == "synthetic":
             self.flags.add("synthetic_underlying_data")
         metrics["period"] = {"from": idx[0].isoformat(), "to": idx[-1].isoformat(), "bars": len(f), "timeframe": s.timeframe}

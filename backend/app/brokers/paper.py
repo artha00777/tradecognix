@@ -7,13 +7,13 @@ from __future__ import annotations
 
 import itertools
 import threading
-from dataclasses import dataclass, field
-from datetime import date, datetime
+from dataclasses import dataclass
 from typing import Any, Callable
 
 import pandas as pd
 
 from ..backtest.costs import CostConfig, apply_slippage, order_costs
+from ..engine.clock import ist_now, ist_today
 from .base import BrokerAdapter, BrokerError, Instrument, OrderRequest, OrderResult
 
 PriceSource = Callable[[Instrument], float]
@@ -93,13 +93,20 @@ class PaperBroker(BrokerAdapter):
                           strike=strike, option_type=option_type, lot_size=lot_size(underlying))
 
     def place_order(self, req: OrderRequest) -> OrderResult:
+        if req.quantity <= 0:
+            return OrderResult(order_id="", status="rejected", message="quantity must be positive")
         with self._lock:
-            ref = self._price(req.instrument)
+            try:
+                ref = self._price(req.instrument)
+            except Exception as e:
+                return OrderResult(order_id="", status="rejected", message=f"no price: {e}")
+            if not ref or ref <= 0:
+                return OrderResult(order_id="", status="rejected", message="no valid price")
             side = "buy" if req.side == "BUY" else "sell"
             fill = apply_slippage(ref, side, self.cost_cfg.slippage_pct, req.instrument.tick_size or 0.05)
             segment = "options" if req.instrument.option_type else ("futures" if "FUT" in req.instrument.instrument_type else "equity_intraday")
             exch = "BSE" if req.instrument.exchange in ("BSE", "BFO") else "NSE"
-            costs = order_costs(side, fill, req.quantity, segment, exch, date.today(), self.cost_cfg).total
+            costs = order_costs(side, fill, req.quantity, segment, exch, ist_today(), self.cost_cfg).total
             key = req.instrument.symbol
             pos = self._positions.setdefault(key, PaperPosition(req.instrument))
             signed = req.quantity if req.side == "BUY" else -req.quantity
@@ -123,7 +130,7 @@ class PaperBroker(BrokerAdapter):
             self.cash -= signed * fill + costs
             oid = f"PAPER{next(self._ids):06d}"
             self._orders.append({"order_id": oid, "symbol": key, "side": req.side, "qty": req.quantity, "status": "complete", "avg_price": fill,
-                                 "ref_price": ref, "costs": round(costs, 2), "tag": req.tag, "time": datetime.now().isoformat(timespec="seconds")})
+                                 "ref_price": ref, "costs": round(costs, 2), "tag": req.tag, "time": ist_now().isoformat(timespec="seconds")})
             return OrderResult(order_id=oid, status="filled", avg_price=fill, raw={"costs": costs, "ref_price": ref})
 
     def cancel_order(self, order_id: str) -> OrderResult:

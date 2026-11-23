@@ -119,11 +119,18 @@ def rules_table(s: Strategy) -> dict[str, str]:
         ex.append("opposite signal")
     if s.exit.long:
         ex.append(_join(s, s.exit.long, "any"))
+    if s.exit.short and s.direction in ("short", "both"):
+        ex.append(_join(s, s.exit.short, "any"))
     if s.exit.stop_loss_pct:
         ex.append(f"SL {s.exit.stop_loss_pct:g}%")
     if s.exit.target_pct:
         ex.append(f"target {s.exit.target_pct:g}%")
-    ex.append(f"{s.hard_exit} hard exit")
+    if s.exit.trailing_sl_pct:
+        ex.append(f"trail {s.exit.trailing_sl_pct:g}%")
+    if s.intraday:
+        ex.append(f"{s.hard_exit} hard exit")
+    else:
+        ex.append("positional (no daily square-off)")
     unit = "share" if s.instrument_type == "equity" else "lot"
     risk = f"{s.risk.max_trades_per_day} trades/day · {s.risk.lots} {unit}{'s' if s.risk.lots > 1 else ''}"
     if s.risk.daily_loss_cap:

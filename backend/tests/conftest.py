@@ -39,7 +39,10 @@ def client():
     from app.engine.live import engine as live_engine
     from app.main import app
 
+    from app.ratelimit import limiter
+
     live_engine.sessions.clear()
+    limiter.reset()
     with TestClient(app) as c:
         yield c
     live_engine.sessions.clear()
@@ -49,3 +52,17 @@ def register(client, email="trader@example.com", password="s3cret-pass"):
     r = client.post("/api/auth/register", json={"email": email, "password": password, "name": "T"})
     assert r.status_code == 200, r.text
     return {"Authorization": f"Bearer {r.json()['access_token']}"}
+
+
+def set_plan(email, plan, expires_at=None):
+    """Test helper: change a user's plan directly in the DB."""
+    from sqlmodel import Session, select
+
+    from app.db import get_engine
+    from app.models import User
+
+    with Session(get_engine()) as db:
+        u = db.exec(select(User).where(User.email == email)).one()
+        u.plan, u.plan_expires_at = plan, expires_at
+        db.add(u)
+        db.commit()

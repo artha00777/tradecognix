@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 96" width="800" height="192">
+  <rect width="400" height="96" fill="#FFFFFF"/>
+  <g transform="translate(24 24) scale(1.5)">
+    <rect width="32" height="32" rx="8" fill="#00C46A"/>
+    <path d="M7.5 21.5 13 16l4 3.5 7.5-8.5" fill="none" stroke="#03130A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="24.5" cy="11" r="2.3" fill="#03130A"/>
+  </g>
+  <text x="88" y="59" font-family="Geist, Inter, Helvetica, Arial, sans-serif" font-size="32" font-weight="650" letter-spacing="-1" fill="#0B0D10">TradeCognix</text>
+</svg>

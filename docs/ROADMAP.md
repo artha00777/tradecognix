@@ -44,14 +44,14 @@
 
 | Stream | Model |
 |---|---|
-| **Subscriptions** | Free (paper + limited backtests), Pro ₹999/month or ₹9,990/year (live, sweeps, alerts), Elite (multi-strategy, priority support, managed VPS). |
+| **Subscriptions** | Free (paper + limited backtests), Pro ₹999/month or ₹9,990/year (live, sweeps, alerts), Elite (multi-strategy, priority support, portfolio risk). |
 | **Backtest credits** | Free monthly credits; pay-as-you-go packs for large sweeps and long real-data histories. |
 | **Strategy marketplace** | Creators publish strategies (white-box rules visible, or black-box via SEBI-registered RAs); revenue share on subscriptions. |
 | **Copy trading via SEBI-registered RAs** | Users follow strategies from registered Research Analysts; TradeCognix handles execution in each user's own account; RA and platform share fees. Must follow SEBI RA and algo-provider rules. |
 | **White-label** | Brokers, sub-brokers and advisory firms license TradeCognix under their brand (setup fee + per-active-user fee). |
 | **Broker partnerships** | Referral/revenue share for accounts opened through TradeCognix, and integration fees from brokers that want "plain-English algo" as a feature. |
 | **Courses & cohorts** | Paid courses on systematic trading, risk and costs, built on the platform (backtests as homework). |
-| **Managed VPS / static IP** | One-click hosted engine with a dedicated static IP for broker whitelisting (resold Oracle/AWS/DigitalOcean capacity) at a monthly fee. |
+| ~~Managed VPS / static IP~~ | Dropped: NSE circular NSE/INSP/77559 (20 Nov 2026) bars giving static IPs to clients who don't code their own algos. Replaced by broker-hosted deployment as an empanelled algo provider. |
 | **Data add-ons** | Clean option-chain history, VIX, corporate actions, sold as upgrades. |
 
 All client-facing offerings (marketplace, copy trading, white-label) need the SEBI retail-algo framework in place: broker approval and exchange registration of algos, and RA registration for black-box strategies.

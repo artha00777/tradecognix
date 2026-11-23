@@ -75,6 +75,40 @@ class OrderResult:
     raw: dict[str, Any] = field(default_factory=dict)
 
 
+FILLED_WORDS = {"filled", "complete", "completed", "traded", "executed"}
+REJECTED_WORDS = {"rejected", "failed", "error", "expired"}
+CANCELLED_WORDS = {"cancelled", "canceled"}
+
+
+def normalize_status(status: str | None) -> str:
+    """Map broker-specific order states to: filled | rejected | cancelled | pending."""
+    s = (status or "").strip().lower().replace(" ", "_")
+    if s in FILLED_WORDS:
+        return "filled"
+    if s in REJECTED_WORDS:
+        return "rejected"
+    if s in CANCELLED_WORDS:
+        return "cancelled"
+    return "pending"
+
+
+def pick_contract(candidates: list["Instrument"], expiry: date, today: date | None = None) -> "Instrument":
+    """Choose the live contract whose expiry is closest to the requested one.
+
+    The expiry calendar ignores exchange holidays (a holiday moves expiry a day *earlier*), so
+    "first expiry on/after the computed date" would silently pick next week's contract. Expired
+    contracts (before today, IST) are never returned.
+    """
+    if today is None:
+        from ..engine.clock import ist_today
+
+        today = ist_today()
+    live = [c for c in candidates if c.expiry and c.expiry >= today]
+    if not live:
+        raise BrokerError(f"No unexpired contract found near {expiry}")
+    return min(live, key=lambda c: (abs((c.expiry - expiry).days), c.expiry))
+
+
 def sanitize_tag(tag: str, max_len: int = 20) -> str:
     """Brokers restrict tags (Angel/Kite: <=20 chars, alphanumeric)."""
     return re.sub(r"[^A-Za-z0-9]", "", tag)[:max_len]
@@ -153,6 +187,18 @@ class BrokerAdapter(ABC):
     @abstractmethod
     def order_book(self) -> list[dict[str, Any]]: ...
 
+    def fetch_order(self, order_id: str) -> dict[str, Any] | None:
+        """Latest state of one order: {'status': filled|rejected|cancelled|pending, 'avg_price', 'message'}.
+
+        Default implementation scans order_book(); adapters with a single-order endpoint may override.
+        """
+        for o in self.order_book():
+            if str(o.get("order_id")) == str(order_id):
+                raw = o.get("raw") or {}
+                msg = raw.get("text") or raw.get("status_message") or raw.get("omsErrorDescription") or raw.get("message") or ""
+                return {"status": normalize_status(o.get("status")), "avg_price": float(o.get("avg_price") or 0), "message": str(msg)}
+        return None
+
     # ---- helpers ----
     def square_off_all(self, tag: str = "KILL") -> list[OrderResult]:
         """Close every open intraday position with market orders (used by the kill switch)."""
@@ -167,15 +213,25 @@ class BrokerAdapter(ABC):
 
 
 def candles_frame(rows: list[list[Any]] | list[tuple], ts_unit: str | None = None) -> pd.DataFrame:
-    """Build a standard candle frame from [ts, o, h, l, c, v] rows; converts to IST naive."""
+    """Build a standard candle frame from [ts, o, h, l, c, v] rows; converts to IST naive.
+
+    Strings with an offset ("2026-11-20T09:15:00+05:30") and epoch numbers (UTC) are both handled.
+    """
     if not rows:
-        return pd.DataFrame(columns=["open", "high", "low", "close", "volume"])
+        return pd.DataFrame(columns=["open", "high", "low", "close", "volume"], index=pd.DatetimeIndex([]), dtype=float)
     df = pd.DataFrame([r[:6] for r in rows], columns=["ts", "open", "high", "low", "close", "volume"])
-    ts = pd.to_datetime(df["ts"], unit=ts_unit) if ts_unit else pd.to_datetime(df["ts"])
+    ts = pd.to_datetime(df["ts"], unit=ts_unit) if ts_unit else pd.to_datetime(df["ts"], utc=_mixed_offsets(df["ts"]))
     if ts.dt.tz is not None:
         ts = ts.dt.tz_convert("Asia/Kolkata").dt.tz_localize(None)
     elif ts_unit:  # epoch seconds are UTC
         ts = ts.dt.tz_localize("UTC").dt.tz_convert("Asia/Kolkata").dt.tz_localize(None)
-    df.index = ts
+    df.index = pd.DatetimeIndex(ts)
     df.index.name = None
+    df["volume"] = pd.to_numeric(df["volume"], errors="coerce").fillna(0)
     return df[["open", "high", "low", "close", "volume"]].astype(float)
+
+
+def _mixed_offsets(ts: pd.Series) -> bool:
+    """Strings carrying UTC offsets must be parsed with utc=True (pandas refuses mixed offsets)."""
+    sample = ts.iloc[0]
+    return isinstance(sample, str) and bool(re.search(r"(Z|[+-]\d{2}:?\d{2})$", sample.strip()))

@@ -16,7 +16,8 @@ from typing import Any
 
 import pandas as pd
 
-from .base import BrokerAdapter, BrokerError, CredentialField, Instrument, OrderRequest, OrderResult, candles_frame, sanitize_tag
+from ..engine.clock import ist_now, ist_today
+from .base import BrokerAdapter, BrokerError, CredentialField, Instrument, OrderRequest, OrderResult, candles_frame, pick_contract, sanitize_tag
 
 SCRIP_MASTER_URL = "https://margincalculator.angelbroking.com/OpenAPI_File/files/OpenAPIScripMaster.json"
 INTERVALS = {"1m": "ONE_MINUTE", "3m": "THREE_MINUTE", "5m": "FIVE_MINUTE", "10m": "TEN_MINUTE", "15m": "FIFTEEN_MINUTE",
@@ -71,7 +72,7 @@ class AngelOneAdapter(BrokerAdapter):
         self._api = api
         self.session = {
             "jwt": data["data"]["jwtToken"], "refresh_token": data["data"]["refreshToken"],
-            "feed_token": api.getfeedToken(), "logged_in_at": datetime.now().isoformat(),
+            "feed_token": api.getfeedToken(), "logged_in_at": ist_now().isoformat(),
         }
         return {"ok": True, "client_code": self.credentials["client_code"]}
 
@@ -107,7 +108,7 @@ class AngelOneAdapter(BrokerAdapter):
         if self._master is not None:
             return self._master
         CACHE_DIR.mkdir(parents=True, exist_ok=True)
-        path = CACHE_DIR / f"angel_scrip_master_{date.today().isoformat()}.json"
+        path = CACHE_DIR / f"angel_scrip_master_{ist_today().isoformat()}.json"
         if not path.exists():
             import httpx
 
@@ -156,9 +157,8 @@ class AngelOneAdapter(BrokerAdapter):
         ]
         if not candidates:
             raise BrokerError(f"No {underlying} {strike} {option_type} contract in scrip master")
-        insts = sorted((self._to_instrument(r) for r in candidates), key=lambda i: i.expiry or date.max)
-        on_or_after = [i for i in insts if i.expiry and i.expiry >= expiry]
-        return on_or_after[0] if on_or_after else insts[-1]
+        # previously fell back to the LAST listed contract when none matched, which could be expired
+        return pick_contract([self._to_instrument(r) for r in candidates], expiry)
 
     # ---------- market data ----------
     def historical_candles(self, instrument: Instrument, timeframe: str, start: datetime, end: datetime) -> pd.DataFrame:

@@ -8,13 +8,15 @@ from __future__ import annotations
 
 import gzip
 import json
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 from typing import Any
 
 import httpx
 import pandas as pd
 
-from .base import BrokerAdapter, BrokerError, CredentialField, Instrument, OrderRequest, OrderResult, candles_frame, sanitize_tag
+from .base import BrokerAdapter, BrokerError, CredentialField, Instrument, OrderRequest, OrderResult, candles_frame, pick_contract, sanitize_tag
+
+from ..engine.clock import IST
 
 API = "https://api.upstox.com"
 HFT = "https://api-hft.upstox.com"
@@ -55,6 +57,8 @@ class UpstoxAdapter(BrokerAdapter):
             body = r.json()
         except ValueError:
             raise BrokerError(f"Upstox {url}: HTTP {r.status_code}")
+        if not isinstance(body, dict):
+            raise BrokerError(f"Upstox {url}: unexpected response")
         if r.status_code >= 400 or body.get("status") == "error":
             errs = body.get("errors") or [{}]
             raise BrokerError(f"Upstox: {errs[0].get('message', r.text[:200])}")
@@ -91,7 +95,8 @@ class UpstoxAdapter(BrokerAdapter):
 
     @staticmethod
     def _to_inst(r: dict) -> Instrument:
-        exp = datetime.fromtimestamp(r["expiry"] / 1000).date() if r.get("expiry") else None
+        # epoch ms -> IST date (server-local tz would shift it a day on UTC hosts)
+        exp = datetime.fromtimestamp(r["expiry"] / 1000, tz=IST).date() if r.get("expiry") else None
         return Instrument(symbol=r.get("trading_symbol", ""), token=r["instrument_key"], exchange=r.get("segment", ""), name=r.get("name", ""),
                           instrument_type=r.get("instrument_type", ""), expiry=exp, strike=r.get("strike_price"),
                           option_type=r.get("instrument_type") if r.get("instrument_type") in ("CE", "PE") else None,
@@ -110,10 +115,9 @@ class UpstoxAdapter(BrokerAdapter):
         seg = "BSE_FO" if underlying.upper() == "SENSEX" else "NSE_FO"
         rows = [self._to_inst(r) for r in self._all_instruments() if r.get("segment") == seg and r.get("underlying_symbol") == underlying.upper()
                 and r.get("instrument_type") == option_type and abs(float(r.get("strike_price") or 0) - strike) < 0.01]
-        rows = [i for i in rows if i.expiry and i.expiry >= expiry]
         if not rows:
-            raise BrokerError(f"No {underlying} {strike} {option_type} on/after {expiry}")
-        return min(rows, key=lambda i: i.expiry)
+            raise BrokerError(f"No {underlying} {strike} {option_type} near {expiry}")
+        return pick_contract(rows, expiry)
 
     def historical_candles(self, instrument: Instrument, timeframe: str, start: datetime, end: datetime) -> pd.DataFrame:
         unit, n = V3_UNITS[timeframe]

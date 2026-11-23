@@ -9,8 +9,19 @@ from sqlmodel import Field, SQLModel
 
 
 def utcnow() -> datetime:
-    """Timezone-aware UTC now (all stored datetimes are tz-aware)."""
+    """Timezone-aware UTC now. All datetimes are written in UTC.
+
+    Note: SQLite (and Postgres `timestamp without time zone`) hand values back tz-naive; use
+    `as_utc()` before comparing or serialising them.
+    """
     return datetime.now(timezone.utc)
+
+
+def as_utc(dt: Optional[datetime]) -> Optional[datetime]:
+    """Treat a naive datetime read from the DB as UTC; convert aware ones to UTC."""
+    if dt is None:
+        return None
+    return dt.replace(tzinfo=timezone.utc) if dt.tzinfo is None else dt.astimezone(timezone.utc)
 
 
 class User(SQLModel, table=True):
@@ -20,6 +31,10 @@ class User(SQLModel, table=True):
     password_hash: str
     role: str = Field(default="client", index=True)  # client | admin
     is_active: bool = True
+    plan: str = Field(default="free", index=True)  # free | pro | elite (see app/billing/plans.py)
+    plan_expires_at: Optional[datetime] = None  # None = no expiry (admin-granted / free)
+    referral_code: Optional[str] = Field(default=None, index=True, unique=True)
+    referred_by: Optional[int] = Field(default=None, foreign_key="user.id")
     created_at: datetime = Field(default_factory=utcnow)
 
 
@@ -115,3 +130,29 @@ class JournalEntry(SQLModel, table=True):
     tags: list[Any] = Field(default_factory=list, sa_column=Column(JSON))
     notes: str = ""
     created_at: datetime = Field(default_factory=utcnow)
+
+
+class UsageEvent(SQLModel, table=True):
+    """Metered actions for plan limits (backtests, sweeps). Counted per IST day."""
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="user.id", index=True)
+    kind: str = Field(index=True)  # backtest | sweep
+    created_at: datetime = Field(default_factory=utcnow, index=True)
+
+
+class Payment(SQLModel, table=True):
+    """A Razorpay order created by checkout; becomes `paid` after signature verification."""
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="user.id", index=True)
+    provider: str = "razorpay"
+    order_id: str = Field(index=True, unique=True)
+    payment_id: str = ""
+    plan: str
+    interval: str  # monthly | yearly
+    amount_paise: int
+    currency: str = "INR"
+    status: str = Field(default="created", index=True)  # created | paid | failed
+    created_at: datetime = Field(default_factory=utcnow)
+    paid_at: Optional[datetime] = None

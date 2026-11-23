@@ -51,7 +51,8 @@ HINGLISH = {
 TF_WORDS = [
     (r"\b(\d{1,2})\s*-?\s*(?:min(?:ute)?s?|mins?|m)\b(?:\s*(?:candle|chart|tf|timeframe|bar)s?)?", None),
     (r"\b(?:1|one)\s*-?\s*(?:hour|hr|h)\b|\bhourly\b", "1h"),
-    (r"\bdaily\b|\b1\s*d(ay)?\s*candles?\b|\bday candles?\b", "1d"),
+    # "daily candles" / "on daily" -- but not "daily loss limit" / "daily target"
+    (r"\bdaily\s*(?:candles?|charts?|bars?|timeframe|tf)\b|\bon\s+(?:the\s+)?daily\b(?!\s*(?:loss|max|limit|cap|target|profit))|\b1\s*d(ay)?\s*candles?\b|\bday candles?\b", "1d"),
 ]
 VALID_TF = {"1": "1m", "3": "3m", "5": "5m", "10": "10m", "15": "15m", "30": "30m", "60": "1h"}
 TIME_RE = re.compile(r"(?<![\d.])(\d{1,2})(?:[:.](\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)?(?![\d%])", re.I)
@@ -93,7 +94,9 @@ def _num(s: str) -> float:
 class RuleBasedParser:
     def parse(self, text: str) -> ParseResult:
         warnings: list[str] = []
-        raw = text.strip()
+        raw = (text or "").strip()
+        if len(raw) > 4000:
+            raise ValueError("Strategy text is too long (max 4000 characters).")
         t = " " + raw.lower().replace("₹", " rs ").replace("–", "-").replace("—", "-") + " "
         for pat, rep in HINGLISH.items():
             t = re.sub(pat, rep, t)
@@ -136,7 +139,8 @@ class RuleBasedParser:
         # ---- timeframe ----
         timeframe = None
         for pat, fixed in TF_WORDS:
-            m = re.search(pat, t)
+            # "first 15 min" describes an opening range, not the candle timeframe
+            m = next((x for x in re.finditer(pat, t) if not re.search(r"(first|opening|initial)\s*$", t[max(0, x.start() - 12): x.start()])), None)
             if m:
                 if fixed:
                     timeframe = fixed
@@ -206,7 +210,6 @@ class RuleBasedParser:
         both_ways = re.search(r"\bboth (?:ways|directions|sides)\b|\beither (?:way|direction)\b|\blong (?:and|&|or) short\b", t)
         if both_ways and direction is None:
             direction = "both"
-        crossover_generic = re.search(r"cross(?:over|es|ing)?\b", entry_part)
 
         ma_pairs = re.findall(r"(\d{1,3})\s*/\s*(\d{1,3})\s*(ema|sma|dma)", t)
         mas = re.findall(r"(?:(\d{1,3})\s*-?\s*(?:period\s*|day\s*)?(ema|sma|dma)\b|\b(ema|sma|dma)\s*\(?\s*(\d{1,3}))", entry_part or t)
@@ -387,7 +390,8 @@ class RuleBasedParser:
         mt = re.search(r"max(?:imum)?\s*(?:of\s*)?(\d+)\s*(?:trades?|entries|positions?)|(\d+)\s*trades?\s*(?:a|per)\s*day|(one|two|three)\s+trades?\s*(?:a|per)\s*day", t)
         word = {"one": 1, "two": 2, "three": 3}
         max_trades = int(mt.group(1) or mt.group(2)) if mt and (mt.group(1) or mt.group(2)) else (word[mt.group(3)] if mt else 3)
-        dl = re.search(r"(?:daily\s*)?(?:max(?:imum)?\s*)?loss\s*(?:limit|cap)?\s*(?:of|is|at)?\s*(?:rs\.?|inr)?\s*(\d[\d,]*)(?:\s*(k|thousand|lakh|l)\b)?|(?:rs\.?|inr)\s*(\d[\d,]*)\s*(?:daily\s*)?loss", t)
+        # "daily loss limit 5000", "max loss 2k", "rs 3000 daily loss" -- but never "stop loss 200 points"
+        dl = re.search(r"(?<!stop )(?<!stop-)(?<!stop)(?:daily\s*)?(?:max(?:imum)?\s*)?loss\s*(?:limit|cap)?\s*(?:of|is|at)?\s*(?:rs\.?|inr)?\s*(\d[\d,]*)(?![\d,])(?!\s*(?:%|percent|pc\b|points?|pts?\b))(?:\s*(k|thousand|lakh|l)\b)?|(?:rs\.?|inr)\s*(\d[\d,]*)\s*(?:daily\s*)?loss", t)
         daily_cap = None
         if dl:
             v = _num(dl.group(1) or dl.group(3))

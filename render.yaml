@@ -10,6 +10,10 @@ services:
     plan: free
     healthCheckPath: /health
     envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: TRUST_PROXY_HEADERS
+        value: "true"   # Render terminates TLS in front of the app
       - key: LIVE_TRADING_ENABLED
         value: "false"
       - key: DATABASE_URL
@@ -22,3 +26,9 @@ services:
         sync: false
       - key: ADMIN_EMAILS
         value: contact@devcognix.com
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+      - key: RAZORPAY_WEBHOOK_SECRET
+        sync: false

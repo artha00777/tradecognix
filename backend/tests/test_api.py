@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from conftest import register
+from conftest import register, set_plan
 
 VIDEO = "Buy Nifty ATM call when 9 EMA crosses above 21 EMA on 15-min candles after 9:30 AM. Exit on opposite cross or 3:15 PM. Max 2 trades a day."
 
@@ -35,7 +35,11 @@ def test_strategy_crud_backtest_and_journal(client):
     run = client.post("/api/backtests/run", json={"strategy_id": s["id"], "days": 30}, headers=h).json()
     assert run["id"]
     assert client.get(f"/api/backtests/{run['id']}/trades", headers=h).json()["total"] == run["trade_count"]
-    sweep = client.post("/api/backtests/sweep", json={"strategy_id": s["id"], "days": 20, "timeframes": ["5m", "15m"], "modes": ["atm_buy"]}, headers=h).json()
+    sweep_req = {"strategy_id": s["id"], "days": 20, "timeframes": ["5m", "15m"], "modes": ["atm_buy"]}
+    r = client.post("/api/backtests/sweep", json=sweep_req, headers=h)
+    assert r.status_code == 402 and r.json()["detail"]["feature"] == "sweeps"  # free plan: no sweeps
+    set_plan("trader@example.com", "pro")
+    sweep = client.post("/api/backtests/sweep", json=sweep_req, headers=h).json()
     assert len(sweep["rows"]) == 2
     # editing rules revokes live confirmation
     client.post(f"/api/strategies/{s['id']}/confirm-live", json={"confirm_text": "LIVE", "acknowledge_risk": True}, headers=h)
@@ -52,6 +56,9 @@ def test_live_blocked_without_server_flag(client):
     h = register(client)
     s = client.post("/api/strategies", json={"prompt": VIDEO}, headers=h).json()
     client.post(f"/api/strategies/{s['id']}/confirm-live", json={"confirm_text": "LIVE", "acknowledge_risk": True}, headers=h)
+    r = client.post("/api/engine/start", json={"strategy_id": s["id"], "mode": "live", "confirm_text": "LIVE"}, headers=h)
+    assert r.status_code == 402 and r.json()["detail"]["feature"] == "live_trading"  # free plan is paper-only
+    set_plan("trader@example.com", "pro")
     r = client.post("/api/engine/start", json={"strategy_id": s["id"], "mode": "live", "confirm_text": "LIVE"}, headers=h)
     assert r.status_code == 403 and "disabled" in r.json()["detail"]
 
@@ -101,7 +108,9 @@ def test_broker_connect_encrypts_and_skeleton_reports(client):
                     "credentials": {"api_key": "KEY12345", "client_code": "A1", "pin": "1234", "totp_secret": "JBSWY3DPEHPK3PXP"}}, headers=h).json()
     aid = r["account"]["id"]
     masked = client.get(f"/api/brokers/accounts/{aid}/credentials", headers=h).json()["credentials"]
-    assert masked["api_key"].endswith("2345") and "KEY1" not in masked["api_key"]
+    # at most a third of a secret is revealed; a 4-digit PIN is fully masked
+    assert masked["api_key"].endswith("45") and "KEY1" not in masked["api_key"] and "2345" not in masked["api_key"]
+    assert masked["pin"] == "••••"
     from sqlmodel import Session
     from app.db import get_engine
     from app.models import BrokerAccount

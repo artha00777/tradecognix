@@ -1,16 +1,18 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Literal, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy import func
 from sqlmodel import Session, select
 
+from ..billing.plans import PLAN_KEYS, effective_plan_key
 from ..config import get_settings
 from ..db import get_session
 from ..engine.live import engine
-from ..models import BacktestRun, BrokerAccount, JournalEntry, LiveSession, OrderLog, StrategyRecord, User
+from ..models import BacktestRun, BrokerAccount, JournalEntry, LiveSession, OrderLog, Payment, StrategyRecord, User, as_utc
 from .deps import admin_user
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
@@ -23,13 +25,17 @@ def users(_: User = Depends(admin_user), db: Session = Depends(get_session)):
     brokers = {}
     for a in db.exec(select(BrokerAccount)).all():
         brokers.setdefault(a.user_id, []).append({"broker": a.broker, "status": a.status})
-    return {"users": [{"id": u.id, "email": u.email, "name": u.name, "role": u.role, "is_active": u.is_active, "created_at": u.created_at,
+    return {"users": [{"id": u.id, "email": u.email, "name": u.name, "role": u.role, "is_active": u.is_active, "created_at": as_utc(u.created_at),
+                       "plan": effective_plan_key(u), "stored_plan": u.plan, "plan_expires_at": as_utc(u.plan_expires_at),
+                       "referral_code": u.referral_code, "referred_by": u.referred_by,
                        "strategies": counts.get(u.id, 0), "brokers": brokers.get(u.id, [])} for u in rows]}
 
 
 class UserPatch(BaseModel):
     role: Optional[Literal["client", "admin"]] = None
     is_active: Optional[bool] = None
+    plan: Optional[Literal["free", "pro", "elite"]] = None
+    plan_expires_at: Optional[datetime] = Field(None, description="Omit/null for no expiry (admin grant)")
 
 
 @router.patch("/users/{uid}")
@@ -45,9 +51,19 @@ def patch_user(uid: int, body: UserPatch, admin: User = Depends(admin_user), db:
         u.is_active = body.is_active
         if not u.is_active:
             engine.kill_user(u.id)
+    if body.plan is not None:
+        u.plan = body.plan
+        exp = body.plan_expires_at
+        u.plan_expires_at = as_utc(exp) if exp else None
+        if body.plan == "free":
+            u.plan_expires_at = None
+            # downgrade: live sessions are no longer allowed on this plan
+            for sid, rs in list(engine.sessions.items()):
+                if rs.user_id == u.id and rs.mode == "live":
+                    engine.kill(sid)
     db.add(u)
     db.commit()
-    return {"ok": True}
+    return {"ok": True, "plan": effective_plan_key(u)}
 
 
 @router.get("/strategies")
@@ -91,6 +107,8 @@ def stats(_: User = Depends(admin_user), db: Session = Depends(get_session)):
         "live_confirmed_strategies": count(StrategyRecord, StrategyRecord.live_confirmed == True),  # noqa: E712
         "broker_accounts": count(BrokerAccount), "connected_brokers": count(BrokerAccount, BrokerAccount.status == "connected"),
         "backtests": count(BacktestRun), "orders": count(OrderLog), "journal_trades": count(JournalEntry),
+        "plans": {k: count(User, User.plan == k) for k in PLAN_KEYS},
+        "paid_payments": count(Payment, Payment.status == "paid"),
         "journal_net_pnl": round(float(net or 0), 2), "running_sessions": len(engine.sessions),
         "running_live": sum(1 for s in engine.sessions.values() if s.mode == "live"),
         "live_trading_enabled": get_settings().live_trading_enabled,

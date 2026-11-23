@@ -12,9 +12,8 @@ from __future__ import annotations
 import logging
 import threading
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Optional
-from zoneinfo import ZoneInfo
 
 from sqlmodel import Session, select
 
@@ -25,16 +24,19 @@ from ..data.candles import TF_MINUTES
 from ..db import get_engine
 from ..models import JournalEntry, LiveSession, OrderLog, StrategyRecord, utcnow
 from ..strategy.dsl import Strategy
+from .clock import IST, ist_now
 from .feeds import BrokerFeed, SyntheticFeed
 from .guardrails import GuardrailError
 from .runner import StrategyRunner
 
 log = logging.getLogger("tradecognix.engine")
-IST = ZoneInfo("Asia/Kolkata")
+OPEN_MIN, CLOSE_MIN = 9 * 60 + 15, 15 * 60 + 30
 
 
-def ist_now() -> datetime:
-    return datetime.now(IST).replace(tzinfo=None, second=0, microsecond=0)
+def _ist_to_utc(iso: str) -> datetime:
+    """Runner timestamps are IST wall-clock strings; store them as UTC like every other column."""
+    dt = datetime.fromisoformat(iso)
+    return (dt.replace(tzinfo=IST) if dt.tzinfo is None else dt).astimezone(timezone.utc)
 
 
 @dataclass
@@ -51,7 +53,7 @@ class RunningSession:
 class LiveEngine:
     def __init__(self):
         self.sessions: dict[int, RunningSession] = {}
-        self._lock = threading.RLock()
+        self._lock = threading.RLock()  # guards `sessions` and serialises ticks vs stop/kill
         self._scheduler = None
         self.listeners: list = []  # websocket broadcast hooks: fn(user_id, payload)
 
@@ -62,7 +64,8 @@ class LiveEngine:
         from apscheduler.schedulers.background import BackgroundScheduler
 
         sch = BackgroundScheduler(timezone=IST)
-        sch.add_job(self.tick, "cron", day_of_week="mon-fri", hour="9-15", minute="*", second=5, id="tc-tick", max_instances=1, coalesce=True)
+        sch.add_job(self.tick, "cron", day_of_week="mon-fri", hour="9-15", minute="*", second=5, id="tc-tick",
+                    max_instances=1, coalesce=True, misfire_grace_time=30)
         sch.start()
         self._scheduler = sch
         log.info("engine scheduler started")
@@ -101,19 +104,35 @@ class LiveEngine:
         with self._lock:
             self.sessions[rs.session_id] = rs
 
-    def stop(self, session_id: int, status: str = "stopped", square_off: bool = True) -> None:
+    def stop(self, session_id: int, status: str = "stopped", square_off: bool = True, reason: str = "") -> bool:
+        """Remove a session (squaring off first). Returns False if the square-off was incomplete."""
         with self._lock:
             rs = self.sessions.pop(session_id, None)
-        if rs and square_off and rs.runner.state.get("position"):
-            rs.runner.kill(ist_now()) if status == "killed" else rs.runner._close(ist_now(), "manual_stop")
-        self._update_session(session_id, status=status, state=rs.runner.state if rs else None, stopped=True)
+            ok = True
+            if rs and square_off and rs.runner.state.get("position"):
+                try:
+                    ok = rs.runner.kill(ist_now()) if status == "killed" else rs.runner._close(ist_now(), "manual_stop")
+                except Exception as e:
+                    ok = False
+                    log.exception("square-off failed for session %s", session_id)
+                    rs.runner._log("error", f"square-off failed: {e}", ist_now())
+            if rs and rs.runner.state.get("position"):
+                ok = False
+            halt_reason = reason or ("" if ok else "square-off incomplete: close the open position at the broker")
+            self._update_session(session_id, status=status, state=rs.runner.state if rs else None, stopped=True, halt_reason=halt_reason)
+            return ok
 
-    def kill(self, session_id: int) -> None:
+    def kill(self, session_id: int) -> bool:
         with self._lock:
             rs = self.sessions.get(session_id)
-        if rs:
-            rs.runner.kill(ist_now())
-        self.stop(session_id, status="killed", square_off=False)
+            ok = True
+            if rs:
+                try:
+                    ok = rs.runner.kill(ist_now())
+                except Exception:
+                    ok = False
+                    log.exception("kill failed for session %s", session_id)
+            return self.stop(session_id, status="killed", square_off=False) and ok
 
     def kill_user(self, user_id: int) -> int:
         ids = [sid for sid, rs in list(self.sessions.items()) if rs.user_id == user_id]
@@ -129,19 +148,35 @@ class LiveEngine:
 
     # ---------- ticking ----------
     def tick(self, now: Optional[datetime] = None) -> dict[int, Any]:
-        now = now or ist_now()
+        """One engine step at IST wall-clock `now` (naive IST; aware datetimes are converted).
+
+        Serialised by a lock so the scheduler and a manual /tick can never process the same bar
+        twice (each runner also remembers the last processed bar).
+        """
+        from .clock import to_ist_naive
+
+        now = to_ist_naive(now) if now else ist_now()
+        now = now.replace(second=0, microsecond=0)
+        with self._lock:
+            return self._tick_locked(now)
+
+    def _tick_locked(self, now: datetime) -> dict[int, Any]:
         results: dict[int, Any] = {}
         settings = get_settings()
+        minute_of_day = now.hour * 60 + now.minute
+        if not (OPEN_MIN <= minute_of_day <= CLOSE_MIN):
+            return {sid: {"action": "none", "reason": "market_closed"} for sid in self.sessions}
         for sid, rs in list(self.sessions.items()):
             try:
                 if rs.mode == "live" and not settings.live_trading_enabled:
                     rs.runner.kill(now)
-                    self.stop(sid, status="halted", square_off=False)
+                    self.stop(sid, status="halted", square_off=False, reason="LIVE_TRADING_ENABLED turned off")
                     results[sid] = {"action": "halted", "reason": "LIVE_TRADING_ENABLED turned off"}
                     continue
                 mins = TF_MINUTES[rs.runner.s.timeframe]
-                minutes_since_open = (now.hour * 60 + now.minute) - (9 * 60 + 15)
-                if minutes_since_open > 0 and (mins >= 1440 or minutes_since_open % mins == 0 or now.strftime("%H:%M") == "15:30"):
+                minutes_since_open = minute_of_day - OPEN_MIN
+                bar_closed = minutes_since_open > 0 and (minutes_since_open % mins == 0 if mins < 1440 else minute_of_day == CLOSE_MIN)
+                if bar_closed or (minute_of_day == CLOSE_MIN and mins < 1440):
                     candles = rs.feed.candles(rs.runner.s.timeframe, now)
                     if isinstance(rs.feed, SyntheticFeed):
                         rs.feed.now = now
@@ -171,7 +206,8 @@ class LiveEngine:
         return [{"session_id": sid, **self._public_status(rs)} for sid, rs in list(self.sessions.items()) if user_id is None or rs.user_id == user_id]
 
     # ---------- persistence ----------
-    def _update_session(self, sid: int, status: str | None = None, state: dict | None = None, trades: int | None = None, pnl: float | None = None, stopped: bool = False) -> None:
+    def _update_session(self, sid: int, status: str | None = None, state: dict | None = None, trades: int | None = None, pnl: float | None = None,
+                        stopped: bool = False, halt_reason: str = "") -> None:
         with Session(get_engine()) as db:
             row = db.get(LiveSession, sid)
             if not row:
@@ -186,6 +222,8 @@ class LiveEngine:
                 row.realised_pnl_today = pnl
             if stopped:
                 row.stopped_at = utcnow()
+            if halt_reason:
+                row.halt_reason = halt_reason[:300]
             db.add(row)
             db.commit()
 
@@ -199,7 +237,7 @@ class LiveEngine:
     def _persist_trade(self, sid: int, user_id: int, strategy_id: int, tr: dict) -> None:
         with Session(get_engine()) as db:
             db.add(JournalEntry(user_id=user_id, strategy_id=strategy_id, session_id=sid, strategy_tag=tr["tag"], mode=tr["mode"], symbol=tr["symbol"],
-                                side=tr["side"], quantity=tr["qty"], entry_time=datetime.fromisoformat(tr["entry_time"]).replace(tzinfo=IST), exit_time=datetime.fromisoformat(tr["exit_time"]).replace(tzinfo=IST),
+                                side=tr["side"], quantity=tr["qty"], entry_time=_ist_to_utc(tr["entry_time"]), exit_time=_ist_to_utc(tr["exit_time"]),
                                 entry_price=tr["entry_price"], exit_price=tr["exit_price"], gross_pnl=tr["gross_pnl"], costs=tr["costs"], net_pnl=tr["net_pnl"],
                                 exit_reason=tr["exit_reason"], tags=[tr["tag"], tr["mode"], tr["direction"]]))
             db.commit()
@@ -224,6 +262,8 @@ class LiveEngine:
                     continue
                 rec = db.get(StrategyRecord, sess.strategy_id)
                 try:
+                    if rec is None:
+                        raise RuntimeError("strategy was deleted")
                     broker, key = broker_factory(db, sess)
                     self.register(self.build_runner(rec, sess, broker, key))
                     n += 1

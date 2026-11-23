@@ -1,1226 +1,780 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en-IN" data-theme="dark">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>TradeCognix · Plain-English algo trading for India</title>
-    <meta name="description" content="Describe your strategy in plain English. TradeCognix backtests it on NSE data, paper-trades it live, then executes through your own broker." />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>TradeCognix · Plain-English algo trading for Indian traders</title>
+    <meta name="description" content="Describe a trading strategy in plain English. TradeCognix turns it into rules, backtests it on NSE data with real Indian costs (brokerage, STT, GST, stamp duty, slippage), paper-trades it, then runs it live through your own broker." />
+    <meta name="theme-color" content="#08090b" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="color-scheme" content="dark light" />
+
+    <!-- Open Graph / social. Replace og:url and og:image with absolute URLs once the production domain is set. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="TradeCognix" />
+    <meta property="og:title" content="TradeCognix · Plain-English algo trading for Indian traders" />
+    <meta property="og:description" content="Describe a strategy in English, backtest it with real Indian costs, paper trade it, then go live through your own broker." />
+    <meta property="og:image" content="og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="en_IN" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="TradeCognix · Plain-English algo trading for Indian traders" />
+    <meta name="twitter:description" content="Describe a strategy in English, backtest it with real Indian costs, paper trade it, then go live through your own broker." />
+    <meta name="twitter:image" content="og.png" />
+
     <link rel="icon" type="image/svg+xml" href="mark.svg" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500;1,9..144,600&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
-    />
-    <link rel="stylesheet" href="hark.css" />
-    <link rel="stylesheet" href="hark-hero.css" />
-    <link rel="stylesheet" href="hark-charts.css" />
-    <style>
-      :root {
-        --x-ink: #0B1020; --x-navy: #121A30; --x-line: #232C46; --x-ivory: #F6F3EC;
-        --x-gold: #C9A86A; --x-gold-a: #B8925A; --x-gold-b: #E9D3A3; --x-gold-d: #7A5B2C;
-        --x-green: #2FBF8A; --x-red: #E5645A; --x-muted: #8A93AB; --x-muted-l: #5B6275;
-        --x-text: #E9EBF2; --x-card-l: #FFFDF8; --x-line-l: #E2DCCD;
-        --x-serif: "Fraunces", Georgia, serif; --x-ui: "Manrope", system-ui, sans-serif;
-        --x-mono: "JetBrains Mono", ui-monospace, monospace;
-        --x-grad: linear-gradient(100deg, #B8925A, #E9D3A3);
-        --x-ease: cubic-bezier(.2, .7, .1, 1);
-        --x-wrap: 1200px;
-        --x-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+
+    <script>
+      /* Theme before first paint: saved choice, else dark. */
+      (function () { try { var t = localStorage.getItem("tc-theme"); document.documentElement.setAttribute("data-theme", t === "light" ? "light" : "dark"); } catch (e) {} })();
+    </script>
+    <link rel="preload" href="fonts/geist-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="styles.css" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "TradeCognix",
+        "applicationCategory": "FinanceApplication",
+        "operatingSystem": "Web",
+        "description": "Plain-English algo trading for Indian retail traders: describe a strategy in English, backtest it on NSE data with real Indian costs, paper trade it, then trade live through your own broker.",
+        "inLanguage": "en-IN",
+        "publisher": { "@type": "Organization", "name": "DevCognix", "email": "contact@devcognix.com" },
+        "offers": [
+          { "@type": "Offer", "name": "Free", "price": "0", "priceCurrency": "INR" },
+          { "@type": "Offer", "name": "Pro (monthly)", "price": "999", "priceCurrency": "INR" },
+          { "@type": "Offer", "name": "Pro (yearly)", "price": "9990", "priceCurrency": "INR" },
+          { "@type": "Offer", "name": "Elite (monthly)", "price": "2499", "priceCurrency": "INR" }
+        ]
       }
-      body { background: var(--x-ink); }
-      .x-site, .x-app { font-family: var(--x-ui); color: var(--x-text); font-size: 16px; line-height: 1.55; font-weight: 500; }
-      .x-site { margin-inline: calc(50% - 50vw); margin-top: -12px; }
-      .x-site[hidden], .x-app[hidden], .x-view[hidden], .x-modal[hidden] { display: none !important; }
-      .x-site ::selection, .x-app ::selection { background: var(--x-gold); color: var(--x-ink); }
-      .x-in { max-width: var(--x-wrap); margin: 0 auto; padding-inline: clamp(20px, 4vw, 40px); }
-      .x-mono { font-family: var(--x-mono); font-variant-numeric: tabular-nums; font-weight: 400; }
-      .x-up { color: var(--x-green); } .x-down { color: var(--x-red); }
-      .x-dark { background: var(--x-ink); position: relative; isolation: isolate; }
-      .x-dark::before { content: ""; position: absolute; inset: 0; background-image: var(--x-noise); opacity: .03; pointer-events: none; z-index: -1; }
-      .x-light { background: var(--x-ivory); color: var(--x-ink); }
-      .x-grid { background-image: linear-gradient(var(--x-line) 1px, transparent 1px), linear-gradient(90deg, var(--x-line) 1px, transparent 1px); background-size: 72px 72px; -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 30%, #000 30%, transparent 80%); mask-image: radial-gradient(ellipse 80% 70% at 50% 30%, #000 30%, transparent 80%); position: absolute; inset: 0; opacity: .5; z-index: -1; pointer-events: none; }
-      .x-sec { padding-block: clamp(72px, 10vw, 128px); }
-      .x-eyebrow { font-family: var(--x-mono); font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--x-gold); margin: 0 0 20px; }
-      .x-light .x-eyebrow { color: var(--x-gold-d); }
-      .x-h2 { font-family: var(--x-serif); font-weight: 500; font-size: clamp(34px, 4.6vw, 60px); line-height: 1.05; letter-spacing: -.025em; margin: 0; max-width: 20ch; font-variation-settings: "opsz" 144; }
-      .x-h2 em, .x-h1 em, .x-big em { font-style: italic; color: var(--x-gold); }
-      .x-light .x-h2 em { color: var(--x-gold-d); }
-      .x-lede { font-size: 18px; color: var(--x-muted); max-width: 56ch; margin-top: 20px; }
-      .x-light .x-lede { color: var(--x-muted-l); }
-      .x-head { margin-bottom: clamp(40px, 6vw, 64px); }
-      .x-note { font-size: 12px; color: var(--x-muted); font-family: var(--x-mono); letter-spacing: .04em; }
-      .x-light .x-note { color: var(--x-muted-l); }
-
-      /* word reveal */
-      .x-w { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: .1em; margin-bottom: -.1em; }
-      .x-w > span { display: inline-block; transform: translateY(108%); transition: transform 1s var(--x-ease); transition-delay: calc(var(--i, 0) * 70ms); }
-      .is-in .x-w > span { transform: none; }
-      .x-fade { opacity: 0; transform: translateY(14px); transition: opacity .9s var(--x-ease), transform .9s var(--x-ease); transition-delay: var(--d, 0ms); }
-      .x-fade.is-in { opacity: 1; transform: none; }
-
-      /* buttons */
-      .x-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 20px; border-radius: 10px; font: 700 14px/1 var(--x-ui); letter-spacing: .01em; text-decoration: none; cursor: pointer; border: 1px solid transparent; transition: transform .25s var(--x-ease), box-shadow .25s, background .25s, border-color .25s, color .25s; white-space: nowrap; }
-      .x-btn--gold { background-color: #D8BE8A; background-image: var(--x-grad); color: var(--x-ink); box-shadow: 0 1px 0 rgba(255,255,255,.35) inset, 0 8px 24px -12px rgba(201,168,106,.6); }
-      .x-btn--gold:hover { box-shadow: 0 1px 0 rgba(255,255,255,.35) inset, 0 14px 32px -12px rgba(201,168,106,.75); }
-      .x-btn--ghost { background: transparent; color: var(--x-text); border-color: var(--x-line); }
-      .x-btn--ghost:hover { border-color: var(--x-muted); }
-      .x-btn--ink { background: var(--x-ink); color: var(--x-ivory); }
-      .x-btn--ink:hover { background: #1b2238; }
-      .x-btn--line-l { background: transparent; color: var(--x-ink); border-color: #CFC7B4; }
-      .x-btn--line-l:hover { border-color: var(--x-ink); }
-      .x-btn--sm { min-height: 36px; padding: 0 14px; font-size: 13px; border-radius: 8px; }
-      .x-btn[disabled] { opacity: .4; cursor: not-allowed; }
-      .x-btn:focus-visible, .x-site a:focus-visible, .x-app button:focus-visible { outline: 2px solid var(--x-gold); outline-offset: 3px; }
-      .x-btns { display: flex; flex-wrap: wrap; gap: 12px; }
-
-      /* logo */
-      .x-logo { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--x-ivory); min-height: 44px; }
-      @media (max-width: 820px) { .x-btn--sm { min-height: 44px; } }
-      .x-logo svg { width: 34px; height: 34px; flex: none; }
-      .x-logo__word { font: 800 20px/1 var(--x-ui); letter-spacing: -.02em; }
-      .x-logo__word span { font-weight: 400; color: var(--x-gold); }
-      .x-pulse { transform-box: fill-box; transform-origin: center; animation: x-pulse 2.4s ease-in-out infinite; }
-      @keyframes x-pulse { 0%, 100% { opacity: .35; transform: scale(1); } 50% { opacity: 0; transform: scale(1.7); } }
-      .x-dotlive { width: 8px; height: 8px; border-radius: 50%; background: var(--x-green); display: inline-block; box-shadow: 0 0 0 0 rgba(47,191,138,.5); animation: x-ring 2.4s infinite; }
-      @keyframes x-ring { 0% { box-shadow: 0 0 0 0 rgba(47,191,138,.45); } 70%, 100% { box-shadow: 0 0 0 8px rgba(47,191,138,0); } }
-
-      /* nav */
-      .x-nav { position: sticky; top: 0; z-index: 40; background: rgba(11,16,32,.94); border-bottom: 1px solid var(--x-line); }
-      .x-nav__in { display: flex; align-items: center; gap: 32px; height: 68px; }
-      .x-nav__links { display: flex; gap: 4px; margin-right: auto; }
-      .x-nav__links a { color: var(--x-muted); text-decoration: none; font-size: 14px; font-weight: 600; padding: 10px 12px; border-radius: 8px; transition: color .2s; }
-      .x-nav__links a:hover { color: var(--x-ivory); }
-      .x-nav__cta { display: flex; gap: 10px; margin-left: auto; }
-      @media (max-width: 960px) { .x-nav__links { display: none; } .x-nav__signin { display: none !important; } }
-
-      /* ticker */
-      .x-tape { display: flex; align-items: center; border-bottom: 1px solid var(--x-line); background: var(--x-ink); height: 40px; overflow: hidden; }
-      .x-tape__label { flex: none; padding: 0 16px; font-family: var(--x-mono); font-size: 12px; color: var(--x-muted); border-right: 1px solid var(--x-line); height: 100%; display: flex; align-items: center; gap: 8px; background: var(--x-ink); position: relative; z-index: 1; }
-      .x-tape__view { overflow: hidden; flex: 1; -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); }
-      .x-tape__track { display: flex; width: max-content; animation: x-marquee 48s linear infinite; }
-      .x-tape:hover .x-tape__track { animation-play-state: paused; }
-      .x-tape__item { display: flex; gap: 10px; padding: 0 28px; font-family: var(--x-mono); font-size: 13px; white-space: nowrap; font-variant-numeric: tabular-nums; }
-      .x-tape__item b { font-weight: 500; color: var(--x-ivory); font-family: var(--x-ui); font-size: 12px; letter-spacing: .06em; }
-      @keyframes x-marquee { to { transform: translateX(-50%); } }
-
-      /* hero */
-      .x-hero { padding-block: clamp(64px, 9vw, 112px) clamp(80px, 10vw, 136px); overflow: hidden; }
-      .x-hero__grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: clamp(32px, 5vw, 64px); align-items: center; }
-      .x-h1 { font-family: var(--x-serif); font-weight: 500; font-size: clamp(44px, 6.4vw, 86px); line-height: 1.0; letter-spacing: -.035em; margin: 0; font-variation-settings: "opsz" 144; }
-      .x-h1 em { color: #DCC28F; padding-right: .06em; }
-      .x-hero__sub { font-size: clamp(17px, 1.5vw, 19px); color: #B4BBCD; max-width: 52ch; margin: 28px 0 36px; }
-      .x-signal { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 70%; z-index: -1; pointer-events: none; }
-      .x-signal path { fill: none; stroke: url(#x-gold-grad); stroke-width: 1.5; stroke-dasharray: 2600; stroke-dashoffset: 2600; animation: x-draw 9s var(--x-ease) .6s forwards; opacity: .55; }
-      .x-signal path.x-signal__ghost { stroke: var(--x-line); stroke-dasharray: none; stroke-dashoffset: 0; animation: none; opacity: 1; }
-      @keyframes x-draw { to { stroke-dashoffset: 0; } }
-      @media (max-width: 900px) { .x-hero__grid { grid-template-columns: 1fr; } }
-
-      /* hero mock */
-      .x-mock { background: var(--x-navy); border: 1px solid var(--x-line); border-radius: 18px; box-shadow: 0 40px 80px -40px rgba(0,0,0,.8), 0 0 0 1px rgba(255,255,255,.02) inset; overflow: hidden; }
-      .x-mock__bar { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--x-line); font-size: 13px; color: var(--x-muted); font-weight: 600; }
-      .x-mock__body { padding: 18px; display: grid; gap: 14px; }
-      .x-prompt { background: var(--x-ink); border: 1px solid var(--x-line); border-radius: 12px; padding: 14px 16px; min-height: 108px; font-size: 15px; color: var(--x-ivory); line-height: 1.55; }
-      .x-prompt__label { display: block; font-family: var(--x-mono); font-size: 12px; color: var(--x-muted); margin-bottom: 6px; }
-      .x-caret { display: inline-block; width: 2px; height: 1.1em; background: var(--x-gold); vertical-align: -3px; margin-left: 1px; animation: x-blink 1s steps(1) infinite; }
-      @keyframes x-blink { 50% { opacity: 0; } }
-      .x-parsed { border: 1px solid var(--x-line); border-radius: 12px; padding: 14px 16px; opacity: .35; transition: opacity .5s; }
-      .x-parsed.is-on { opacity: 1; }
-      .x-parsed__head { display: flex; justify-content: space-between; font-size: 12px; color: var(--x-muted); font-family: var(--x-mono); margin-bottom: 10px; }
-      .x-rules { display: flex; flex-wrap: wrap; gap: 6px; }
-      .x-rule { display: inline-flex; gap: 6px; align-items: baseline; border: 1px solid var(--x-line); background: #141C33; border-radius: 8px; padding: 6px 10px; font-size: 13px; color: var(--x-ivory); }
-      .x-rule b { font-weight: 600; font-size: 12px; color: var(--x-muted); }
-      .x-mock .x-rule { opacity: 0; transform: translateY(6px); transition: opacity .4s, transform .4s var(--x-ease); }
-      .x-mock .x-rule.is-on { opacity: 1; transform: none; }
-      .x-mini { display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: end; }
-      .x-mini__fig { font-family: var(--x-mono); font-size: 12px; color: var(--x-muted); }
-      .x-mini__fig strong { display: block; font-size: 22px; font-weight: 500; color: var(--x-green); }
-      .x-mini svg { width: 100%; height: 64px; }
-      .x-mini path.x-curve { fill: none; stroke: var(--x-gold); stroke-width: 2; stroke-linecap: round; stroke-dasharray: 400; stroke-dashoffset: 400; transition: stroke-dashoffset 2.2s var(--x-ease); }
-      .x-mini path.x-curve-fill { fill: url(#x-mini-fill); opacity: 0; transition: opacity 1.2s .9s; }
-      .x-mini.is-on path.x-curve { stroke-dashoffset: 0; } .x-mini.is-on path.x-curve-fill { opacity: 1; }
-
-      /* trust */
-      .x-trust { padding-block: 56px; border-top: 1px solid var(--x-line); }
-      .x-trust__top { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; }
-      .x-trust__title { font-size: 14px; font-weight: 600; color: var(--x-muted); }
-      .x-brokers { display: flex; flex-wrap: wrap; gap: 10px; }
-      .x-broker { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--x-line); border-radius: 999px; padding: 9px 16px; font: 700 15px/1 var(--x-ui); letter-spacing: -.01em; color: #C7CCDA; transition: border-color .25s, color .25s; }
-      .x-broker:hover { border-color: var(--x-gold); color: var(--x-ivory); }
-      .x-broker small { font-weight: 500; color: var(--x-muted); font-size: 12px; }
-
-      /* stats */
-      .x-stats { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--x-line); border-bottom: 1px solid var(--x-line); }
-      .x-stat { padding: 40px 28px; border-left: 1px solid var(--x-line); }
-      .x-stat:first-child { border-left: 0; padding-left: 0; }
-      .x-stat__fig { font-family: var(--x-serif); font-weight: 500; font-size: clamp(40px, 4.6vw, 60px); letter-spacing: -.03em; line-height: 1; color: var(--x-ivory); font-variant-numeric: tabular-nums; }
-      .x-stat__fig span.x-gold { color: var(--x-gold); }
-      .x-stat__label { margin-top: 12px; color: var(--x-muted); font-size: 14px; }
-      @media (max-width: 800px) { .x-stats { grid-template-columns: 1fr 1fr; } .x-stat { padding: 28px 16px; } .x-stat:nth-child(3) { border-left: 0; padding-left: 0; } .x-stat:nth-child(n+3) { border-top: 1px solid var(--x-line); } }
-
-      /* how */
-      .x-steps { display: grid; grid-template-columns: 1fr 1fr; gap: 0 clamp(32px, 5vw, 72px); }
-      .x-step { border-top: 1px solid var(--x-line-l); padding: 32px 0 48px; display: grid; grid-template-columns: auto 1fr; gap: 24px; }
-      .x-step__num { font-family: var(--x-serif); font-size: clamp(64px, 7vw, 96px); line-height: .8; font-weight: 400; letter-spacing: -.04em; color: var(--x-gold-d); font-variation-settings: "opsz" 144; }
-      .x-step h3, .x-feat h3, .x-tpl h3 { font: 700 20px/1.25 var(--x-ui); letter-spacing: -.015em; margin: 0 0 10px; }
-      .x-step p { color: var(--x-muted-l); margin: 0; }
-      .x-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; padding: 0; list-style: none; }
-      .x-tags li { font-family: var(--x-mono); font-size: 12px; border: 1px solid var(--x-line-l); border-radius: 6px; padding: 4px 8px; color: var(--x-muted-l); background: var(--x-card-l); }
-      @media (max-width: 800px) { .x-steps { grid-template-columns: 1fr; } }
-
-      /* features */
-      .x-feats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-      .x-feat { background: var(--x-card-l); border: 1px solid var(--x-line-l); border-radius: 16px; padding: 28px; transition: transform .35s var(--x-ease), box-shadow .35s var(--x-ease); }
-      .x-feat:hover, .x-tpl:hover, .x-plan:hover, .x-bcard:hover { transform: translateY(-2px); box-shadow: 0 18px 40px -24px rgba(11,16,32,.35); }
-      .x-feat svg { width: 40px; height: 40px; margin-bottom: 28px; stroke: var(--x-ink); fill: none; stroke-width: 1.4; }
-      .x-feat svg .g { stroke: var(--x-gold-d); }
-      .x-feat p { color: var(--x-muted-l); margin: 0; font-size: 15px; }
-      @media (max-width: 960px) { .x-feats { grid-template-columns: 1fr 1fr; } }
-      @media (max-width: 620px) { .x-feats { grid-template-columns: 1fr; } }
-
-      /* templates */
-      .x-rail { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(280px, 320px); gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 20px; scrollbar-width: thin; scrollbar-color: var(--x-line) transparent; }
-      .x-tpl { scroll-snap-align: start; background: var(--x-navy); border: 1px solid var(--x-line); border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 14px; transition: transform .35s var(--x-ease), box-shadow .35s var(--x-ease), border-color .35s; }
-      .x-tpl:hover { border-color: #34405f; box-shadow: 0 18px 40px -24px #000; }
-      .x-tpl h3 { margin: 0; }
-      .x-tpl p { margin: 0; color: var(--x-muted); font-size: 14px; flex: 1; }
-      .x-tpl__tags { display: flex; gap: 6px; }
-      .x-tag { font-family: var(--x-mono); font-size: 12px; border: 1px solid var(--x-line); border-radius: 6px; padding: 3px 8px; color: #B4BBCD; }
-      .x-tag--gold { border-color: rgba(201,168,106,.45); color: var(--x-gold-b); }
-      .x-tpl svg { width: 100%; height: 56px; }
-      .x-tpl svg path { fill: none; stroke: var(--x-gold); stroke-width: 1.6; stroke-linejoin: round; }
-      .x-tpl__foot { display: flex; justify-content: space-between; align-items: center; font-family: var(--x-mono); font-size: 12px; color: var(--x-muted); }
-      .x-tpl__foot button { background: none; border: 0; color: var(--x-gold); font: 700 13px var(--x-ui); cursor: pointer; padding: 8px 0; min-height: 44px; }
-
-      /* proof */
-      .x-proof { display: grid; grid-template-columns: .8fr 1.2fr; gap: clamp(32px, 5vw, 72px); align-items: center; }
-      .x-card { background: var(--x-navy); border: 1px solid var(--x-line); border-radius: 18px; overflow: hidden; }
-      .x-card__head { padding: 18px 24px; border-bottom: 1px solid var(--x-line); display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 13px; color: var(--x-muted); }
-      .x-card__head strong { color: var(--x-ivory); font-weight: 700; }
-      .x-metrics { display: grid; grid-template-columns: repeat(3, 1fr); }
-      .x-metric { padding: 22px 24px; border-right: 1px solid var(--x-line); border-bottom: 1px solid var(--x-line); }
-      .x-metric:nth-child(3n) { border-right: 0; }
-      .x-metric span { display: block; font-size: 12px; color: var(--x-muted); font-weight: 600; letter-spacing: .02em; margin-bottom: 6px; }
-      .x-metric strong { font-family: var(--x-mono); font-weight: 500; font-size: clamp(20px, 2.2vw, 26px); color: var(--x-ivory); font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
-      .x-card__foot { padding: 16px 24px; }
-      @media (max-width: 900px) { .x-proof { grid-template-columns: 1fr; } }
-      @media (max-width: 520px) { .x-metrics { grid-template-columns: 1fr 1fr; } .x-metric:nth-child(3n) { border-right: 1px solid var(--x-line); } .x-metric:nth-child(2n) { border-right: 0; } }
-
-      /* business */
-      .x-biz { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(32px, 5vw, 72px); align-items: center; }
-      .x-checks { list-style: none; padding: 0; margin: 28px 0 32px; display: grid; gap: 12px; }
-      .x-checks li { display: grid; grid-template-columns: 20px 1fr; gap: 12px; color: var(--x-muted-l); }
-      .x-checks li::before { content: ""; width: 14px; height: 8px; border-left: 1.5px solid var(--x-gold-d); border-bottom: 1.5px solid var(--x-gold-d); transform: rotate(-45deg); margin-top: 6px; }
-      .x-checks strong { color: var(--x-ink); font-weight: 700; }
-      .x-console { background: var(--x-ink); color: var(--x-text); border-radius: 18px; overflow: hidden; box-shadow: 0 40px 80px -40px rgba(11,16,32,.55); }
-      .x-console table, .x-tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
-      .x-console th, .x-console td, .x-tbl th, .x-tbl td { padding: 12px 18px; border-bottom: 1px solid var(--x-line); text-align: left; font-weight: 500; }
-      .x-console thead th, .x-tbl thead th { font-size: 12px; color: var(--x-muted); font-weight: 600; letter-spacing: .02em; }
-      .x-tbl td.r, .x-tbl th.r, .x-console td.r, .x-console th.r { text-align: right; font-family: var(--x-mono); font-variant-numeric: tabular-nums; }
-      .x-tbl tbody tr:last-child td, .x-console tbody tr:last-child td { border-bottom: 0; }
-      .x-status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--x-line); color: #B4BBCD; }
-      .x-status::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--x-muted); }
-      .x-status--live { color: var(--x-green); border-color: rgba(47,191,138,.35); } .x-status--live::before { background: var(--x-green); }
-      .x-status--paper { color: var(--x-gold-b); border-color: rgba(201,168,106,.4); } .x-status--paper::before { background: var(--x-gold); }
-      @media (max-width: 900px) { .x-biz { grid-template-columns: 1fr; } }
-
-      /* pricing */
-      .x-toggle { display: inline-flex; border: 1px solid #CFC7B4; border-radius: 999px; padding: 4px; margin-top: 28px; background: var(--x-card-l); }
-      .x-toggle button { border: 0; background: transparent; font: 700 14px var(--x-ui); padding: 0 18px; min-height: 44px; border-radius: 999px; cursor: pointer; color: var(--x-muted-l); }
-      .x-toggle button[aria-pressed="true"] { background: var(--x-ink); color: var(--x-ivory); }
-      .x-toggle small { color: var(--x-gold-d); font-weight: 700; }
-      .x-toggle button[aria-pressed="true"] small { color: var(--x-gold-b); }
-      .x-plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; align-items: stretch; }
-      .x-plan { background: var(--x-card-l); border: 1px solid var(--x-line-l); border-radius: 18px; padding: 32px; display: flex; flex-direction: column; gap: 20px; transition: transform .35s var(--x-ease), box-shadow .35s var(--x-ease); }
-      .x-plan--pro { background: var(--x-ink); color: var(--x-text); border-color: var(--x-ink); position: relative; overflow: hidden; isolation: isolate; }
-      .x-plan--pro::before { content: ""; position: absolute; inset: 0 0 auto; height: 2px; background: var(--x-grad); }
-      .x-plan h3 { font: 700 15px var(--x-ui); margin: 0; display: flex; justify-content: space-between; align-items: center; }
-      .x-price { font-family: var(--x-serif); font-weight: 500; font-size: 52px; letter-spacing: -.03em; line-height: 1; }
-      .x-price small { font-family: var(--x-ui); font-size: 14px; font-weight: 600; color: var(--x-muted-l); letter-spacing: 0; margin-left: 4px; }
-      .x-plan--pro .x-price small { color: var(--x-muted); }
-      .x-plan ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; flex: 1; font-size: 15px; }
-      .x-plan li { padding-left: 22px; position: relative; color: var(--x-muted-l); }
-      .x-plan--pro li { color: #B4BBCD; }
-      .x-plan li::before { content: ""; position: absolute; left: 0; top: .7em; width: 10px; height: 1.5px; background: var(--x-gold-d); }
-      .x-plan--pro li::before { background: var(--x-gold); }
-      @media (max-width: 900px) { .x-plans { grid-template-columns: 1fr; } }
-
-      /* faq */
-      .x-faq { display: grid; grid-template-columns: .8fr 1.2fr; gap: clamp(32px, 5vw, 72px); }
-      .x-faq details { border-top: 1px solid var(--x-line-l); }
-      .x-faq details:last-child { border-bottom: 1px solid var(--x-line-l); }
-      .x-faq summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 22px 0; font: 700 18px/1.35 var(--x-ui); letter-spacing: -.01em; min-height: 44px; }
-      .x-faq summary::-webkit-details-marker { display: none; }
-      .x-faq summary::after { content: ""; flex: none; width: 12px; height: 12px; background: linear-gradient(var(--x-ink), var(--x-ink)) center/12px 1.5px no-repeat, linear-gradient(var(--x-ink), var(--x-ink)) center/1.5px 12px no-repeat; transition: transform .35s var(--x-ease); }
-      .x-faq details[open] summary::after { transform: rotate(45deg); }
-      .x-faq details p { margin: 0 0 24px; color: var(--x-muted-l); max-width: 60ch; }
-      @media (max-width: 900px) { .x-faq { grid-template-columns: 1fr; } }
-
-      /* footer */
-      .x-foot { padding-top: clamp(88px, 12vw, 160px); overflow: hidden; }
-      .x-big { font-family: var(--x-serif); font-weight: 500; font-size: clamp(48px, 8.4vw, 128px); line-height: .98; letter-spacing: -.04em; margin: 0; font-variation-settings: "opsz" 144; }
-      .x-contact { margin-top: clamp(56px, 8vw, 96px); display: grid; gap: 20px; }
-      .x-contact__label { display: flex; align-items: center; gap: 12px; font-family: var(--x-mono); font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--x-gold); margin: 0; }
-      .x-livedot { position: relative; width: 12px; height: 12px; flex: none; }
-      .x-livedot::before, .x-livedot::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: var(--x-gold-b); }
-      .x-livedot::after { animation: x-pulse 2.4s ease-in-out infinite; }
-      .x-phone { display: inline-block; justify-self: start; font-family: var(--x-serif); font-weight: 500; font-size: clamp(44px, 9vw, 136px); line-height: 1.02; letter-spacing: -.035em; text-decoration: none; color: var(--x-ivory); position: relative; padding-bottom: 14px; font-variant-numeric: lining-nums; }
-      .x-phone .x-w > span { color: var(--x-ivory); transition: transform 1s var(--x-ease), color .6s var(--x-ease); transition-delay: calc(var(--i, 0) * 110ms), 0ms; }
-      .x-phone:hover .x-w > span, .x-phone:focus-visible .x-w > span { color: var(--x-gold-b); transition-delay: calc(var(--i, 0) * 110ms), calc(var(--i, 0) * 80ms); }
-      .x-phone:hover .x-w:nth-child(odd) > span { color: var(--x-gold); }
-      .x-phone::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--x-grad); transform: scaleX(0); transform-origin: left; transition: transform 1.6s var(--x-ease) .5s; }
-      .x-phone.is-in::after { transform: scaleX(1); }
-      .x-contact__row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
-      .x-contact__row a.x-mail { color: var(--x-muted); font-size: 16px; text-decoration: none; border-bottom: 1px solid var(--x-line); padding: 12px 0 6px; min-height: 44px; display: inline-flex; align-items: center; margin-left: 8px; }
-      .x-contact__row a.x-mail:hover { color: var(--x-ivory); border-color: var(--x-gold); }
-      .x-cols { display: grid; grid-template-columns: 1.4fr repeat(4, 1fr); gap: 32px; margin-top: clamp(72px, 10vw, 128px); padding-block: 48px; border-top: 1px solid var(--x-line); }
-      .x-cols h4 { font: 700 13px var(--x-ui); color: var(--x-ivory); margin: 0 0 16px; letter-spacing: .02em; }
-      .x-cols ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 4px; }
-      .x-cols a { color: var(--x-muted); text-decoration: none; font-size: 14px; display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; padding: 0; }
-      .x-cols a:hover { color: var(--x-ivory); }
-      .x-cols p { color: var(--x-muted); font-size: 14px; margin: 16px 0 0; max-width: 30ch; }
-      .x-bottom { border-top: 1px solid var(--x-line); padding-block: 28px 40px; display: grid; gap: 12px; color: var(--x-muted); font-size: 13px; }
-      .x-bottom p { margin: 0; max-width: 90ch; }
-      @media (max-width: 900px) { .x-cols { grid-template-columns: 1fr 1fr; } .x-cols > :first-child { grid-column: 1 / -1; } }
-
-      /* ===== APP ===== */
-      .x-app { position: fixed; inset: 0; z-index: 100; background: var(--x-ink); display: grid; grid-template-columns: 240px 1fr; grid-template-rows: 64px 1fr; grid-template-areas: "side top" "side main"; }
-      .x-side { grid-area: side; border-right: 1px solid var(--x-line); background: #0D1326; display: flex; flex-direction: column; padding: 18px 14px; gap: 24px; }
-      .x-side .x-logo { padding: 4px 8px; }
-      .x-side .x-logo svg { width: 30px; height: 30px; }
-      .x-side .x-logo__word { font-size: 18px; }
-      .x-tabs { display: grid; gap: 2px; }
-      .x-tab { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 42px; padding: 0 12px; border: 0; background: transparent; color: var(--x-muted); font: 600 14px var(--x-ui); border-radius: 8px; cursor: pointer; text-align: left; transition: background .2s, color .2s; }
-      .x-tab svg { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
-      .x-tab:hover { color: var(--x-ivory); background: rgba(255,255,255,.03); }
-      .x-tab[aria-current="page"] { color: var(--x-ivory); background: var(--x-navy); box-shadow: inset 2px 0 0 var(--x-gold); }
-      .x-side__foot { margin-top: auto; display: grid; gap: 10px; }
-      .x-back { color: var(--x-muted); font-size: 13px; font-weight: 600; background: none; border: 0; cursor: pointer; text-align: left; padding: 10px 12px; min-height: 44px; border-radius: 8px; }
-      .x-back:hover { color: var(--x-ivory); }
-      .x-demo { margin: 0 8px; font-size: 12px; color: var(--x-muted); border: 1px dashed var(--x-line); border-radius: 8px; padding: 10px; }
-      .x-top { grid-area: top; display: flex; align-items: center; gap: 10px; padding: 0 28px; border-bottom: 1px solid var(--x-line); }
-      .x-top__title { font: 600 15px var(--x-ui); color: var(--x-ivory); margin-right: auto; }
-      .x-pill { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: #B4BBCD; border: 1px solid var(--x-line); border-radius: 999px; padding: 6px 12px; white-space: nowrap; }
-      .x-pill i { width: 6px; height: 6px; border-radius: 50%; background: var(--x-red); }
-      .x-pill i.g { background: var(--x-green); }
-      .x-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--x-grad); color: var(--x-ink); display: grid; place-items: center; font: 800 12px var(--x-ui); flex: none; }
-      .x-main { grid-area: main; overflow-y: auto; padding: 28px; }
-      .x-view { max-width: 1180px; margin: 0 auto; display: grid; gap: 20px; animation: x-viewin .5s var(--x-ease); }
-      @keyframes x-viewin { from { opacity: 0; transform: translateY(6px); } }
-      .x-vhead h2 { font-family: var(--x-serif); font-weight: 500; font-size: 34px; letter-spacing: -.025em; margin: 0; }
-      .x-vhead p { margin: 6px 0 0; color: var(--x-muted); font-size: 14px; }
-      .x-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
-      .x-kpi { background: var(--x-navy); border: 1px solid var(--x-line); border-radius: 14px; padding: 18px 20px; }
-      .x-kpi span { font-size: 12px; color: var(--x-muted); font-weight: 600; }
-      .x-kpi strong { display: block; font-family: var(--x-mono); font-weight: 500; font-size: 26px; margin-top: 8px; color: var(--x-ivory); letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
-      .x-kpi small { font-family: var(--x-mono); font-size: 12px; }
-      .x-panel { background: var(--x-navy); border: 1px solid var(--x-line); border-radius: 14px; overflow: hidden; }
-      .x-panel__head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding: 16px 20px; border-bottom: 1px solid var(--x-line); }
-      .x-panel__head h3 { font: 700 15px var(--x-ui); margin: 0; color: var(--x-ivory); }
-      .x-panel__body { padding: 20px; }
-      .x-scroll { overflow-x: auto; }
-      .x-tbl { min-width: 560px; }
-      @media (max-width: 1000px) { .x-kpis { grid-template-columns: 1fr 1fr; } }
-
-      /* studio */
-      .x-studio textarea { width: 100%; min-height: 140px; resize: vertical; background: var(--x-ink); color: var(--x-ivory); border: 1px solid var(--x-line); border-radius: 12px; padding: 16px; font: 500 16px/1.6 var(--x-ui); }
-      .x-studio textarea:focus, .x-field input:focus, .x-livebox input:focus { outline: none; border-color: var(--x-gold); box-shadow: 0 0 0 3px rgba(201,168,106,.15); }
-      .x-studio label.x-lbl { display: block; font: 700 13px var(--x-ui); color: var(--x-ivory); margin-bottom: 10px; }
-      .x-examples { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 18px; }
-      .x-ex { border: 1px solid var(--x-line); background: transparent; color: #B4BBCD; font: 600 13px var(--x-ui); border-radius: 999px; padding: 0 14px; min-height: 36px; cursor: pointer; transition: border-color .2s, color .2s; }
-      .x-ex:hover { border-color: var(--x-gold); color: var(--x-ivory); }
-      .x-studio__actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-      .x-progress { height: 2px; background: var(--x-line); border-radius: 2px; overflow: hidden; margin-top: 18px; }
-      .x-progress i { display: block; height: 100%; width: 0; background: var(--x-grad); }
-      .x-progress.is-run i { animation: x-prog 1.5s var(--x-ease) forwards; }
-      @keyframes x-prog { to { width: 100%; } }
-      .x-steplog { font-family: var(--x-mono); font-size: 12px; color: var(--x-muted); margin-top: 10px; min-height: 18px; }
-      .x-edit { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-      .x-edit .x-rule { display: grid; gap: 4px; padding: 12px 14px; border-radius: 10px; }
-      .x-edit .x-rule [contenteditable] { outline: none; font-weight: 600; color: var(--x-ivory); border-bottom: 1px dashed transparent; }
-      .x-edit .x-rule [contenteditable]:focus { border-bottom-color: var(--x-gold); }
-      .x-edit .x-rule:focus-within { border-color: var(--x-gold); }
-      .x-mgrid { display: grid; grid-template-columns: repeat(7, 1fr); border-bottom: 1px solid var(--x-line); }
-      .x-mgrid .x-metric { padding: 16px 18px; }
-      .x-mgrid .x-metric:nth-child(3n) { border-right: 1px solid var(--x-line); }
-      .x-mgrid .x-metric:last-child { border-right: 0; }
-      .x-mgrid .x-metric strong { font-size: 19px; }
-      .x-twocol { display: grid; grid-template-columns: 1.4fr 1fr; gap: 0; }
-      .x-twocol > div { padding: 20px; }
-      .x-twocol > div + div { border-left: 1px solid var(--x-line); }
-      .x-cap { font: 700 13px var(--x-ui); color: var(--x-ivory); margin: 0 0 4px; }
-      .x-cap small { display: block; font-weight: 500; color: var(--x-muted); font-size: 12px; margin-top: 2px; }
-      .x-chartbox { position: relative; height: 240px; margin-top: 12px; }
-      .x-chartbox--sm { height: 150px; }
-      @media (max-width: 1100px) { .x-mgrid { grid-template-columns: repeat(4, 1fr); } .x-mgrid .x-metric { border-right: 1px solid var(--x-line) !important; } }
-      @media (max-width: 900px) { .x-edit { grid-template-columns: 1fr 1fr; } .x-twocol { grid-template-columns: 1fr; } .x-twocol > div + div { border-left: 0; border-top: 1px solid var(--x-line); } }
-      @media (max-width: 560px) { .x-edit, .x-kpis { grid-template-columns: 1fr; } .x-mgrid { grid-template-columns: 1fr 1fr; } }
-
-      /* brokers */
-      .x-bgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
-      .x-bcard { background: var(--x-navy); border: 1px solid var(--x-line); border-radius: 14px; padding: 20px; display: grid; gap: 16px; transition: transform .35s var(--x-ease), box-shadow .35s var(--x-ease); }
-      .x-bcard:hover { box-shadow: 0 18px 40px -24px #000; }
-      .x-bcard__mono { width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--x-line); display: grid; place-items: center; font: 800 14px var(--x-ui); color: var(--x-gold-b); background: var(--x-ink); }
-      .x-bcard h3 { margin: 0; font: 700 16px var(--x-ui); color: var(--x-ivory); }
-      .x-bcard p { margin: 2px 0 0; font-size: 12px; color: var(--x-muted); }
-      .x-bcard__row { display: flex; gap: 12px; align-items: center; }
-      .x-connected { display: inline-flex; align-items: center; gap: 8px; font: 700 13px var(--x-ui); color: var(--x-green); min-height: 36px; }
-
-      /* empty */
-      .x-empty { display: grid; place-items: center; text-align: center; padding: 72px 24px; gap: 8px; }
-      .x-empty svg { width: 220px; height: 120px; margin-bottom: 16px; }
-      .x-empty h3 { font-family: var(--x-serif); font-weight: 500; font-size: 28px; margin: 0; letter-spacing: -.02em; }
-      .x-empty p { color: var(--x-muted); margin: 0; max-width: 44ch; }
-
-      /* modal */
-      .x-modal { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; padding: 20px; background: rgba(5,8,18,.72); }
-      .x-modal__box { width: min(480px, 100%); background: var(--x-navy); border: 1px solid var(--x-line); border-radius: 18px; padding: 28px; display: grid; gap: 16px; box-shadow: 0 40px 100px -30px #000; animation: x-viewin .35s var(--x-ease); max-height: calc(100vh - 40px); overflow-y: auto; }
-      .x-modal__box h3 { font-family: var(--x-serif); font-weight: 500; font-size: 26px; letter-spacing: -.02em; margin: 0; color: var(--x-ivory); }
-      .x-modal__box p { margin: 0; color: var(--x-muted); font-size: 14px; }
-      .x-field { display: grid; gap: 6px; }
-      .x-field span { font-size: 12px; font-weight: 700; color: #B4BBCD; }
-      .x-field input, .x-livebox input { background: var(--x-ink); border: 1px solid var(--x-line); border-radius: 10px; min-height: 44px; padding: 0 14px; color: var(--x-ivory); font: 500 15px var(--x-mono); }
-      .x-warn { border: 1px solid rgba(229,100,90,.35); background: rgba(229,100,90,.06); border-radius: 10px; padding: 12px 14px; font-size: 13px; color: #F0B2AC; }
-      .x-modal__actions { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
-      .x-toast { position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 20px); opacity: 0; z-index: 300; background: var(--x-ivory); color: var(--x-ink); font: 700 14px var(--x-ui); padding: 12px 18px; border-radius: 10px; transition: opacity .3s, transform .3s var(--x-ease); pointer-events: none; }
-      .x-toast.is-on { opacity: 1; transform: translate(-50%, 0); }
-
-      @media (max-width: 820px) {
-        .x-app { grid-template-columns: 1fr; grid-template-rows: 56px 1fr 64px; grid-template-areas: "top" "main" "side"; }
-        .x-side { flex-direction: row; padding: 0; border-right: 0; border-top: 1px solid var(--x-line); gap: 0; }
-        .x-side > .x-logo, .x-side__foot .x-demo { display: none; }
-        .x-tabs { display: flex; overflow-x: auto; flex: 1; gap: 0; scrollbar-width: none; }
-        .x-tab { flex-direction: column; justify-content: center; gap: 4px; min-width: 72px; min-height: 64px; font-size: 12px; padding: 0 6px; border-radius: 0; text-align: center; }
-        .x-tab[aria-current="page"] { box-shadow: inset 0 2px 0 var(--x-gold); background: transparent; }
-        .x-side__foot { margin: 0; border-left: 1px solid var(--x-line); }
-        .x-back { font-size: 12px; padding: 0 10px; height: 64px; }
-        .x-top { padding: 0 16px; }
-        .x-top .x-pill--broker, .x-top__title { display: none; }
-        .x-top .x-pill:first-of-type { margin-right: auto; }
-        .x-main { padding: 18px 16px; }
-      }
-
-      @media (prefers-reduced-motion: reduce) {
-        .x-site *, .x-app *, .x-site *::before, .x-site *::after { animation: none !important; transition: none !important; }
-        .x-w > span, .x-fade { transform: none !important; opacity: 1 !important; }
-        .x-signal path { stroke-dashoffset: 0; }
-        .x-phone::after { transform: scaleX(1); }
-        .x-tape__track { flex-wrap: wrap; }
-      }
-    </style>
+    </script>
   </head>
   <body>
-    <div class="page" id="top">
-      <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-        <defs>
-          <linearGradient id="x-gold-grad" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#B8925A" /><stop offset="1" stop-color="#E9D3A3" /></linearGradient>
-          <linearGradient id="x-mini-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C9A86A" stop-opacity=".32" /><stop offset="1" stop-color="#C9A86A" stop-opacity="0" /></linearGradient>
-          <symbol id="x-mark" viewBox="0 0 120 120">
-            <rect x="4" y="4" width="112" height="112" rx="28" fill="#0B1020" stroke="#232C46" stroke-width="2" />
-            <rect x="30" y="62" width="12" height="26" rx="3" fill="#2A3350" />
-            <line x1="36" y1="54" x2="36" y2="94" stroke="#2A3350" stroke-width="2.5" stroke-linecap="round" />
-            <rect x="54" y="48" width="12" height="34" rx="3" fill="#3B4670" />
-            <line x1="60" y1="40" x2="60" y2="88" stroke="#3B4670" stroke-width="2.5" stroke-linecap="round" />
-            <path d="M26 80 L48 64 L62 70 L90 38" fill="none" stroke="url(#x-gold-grad)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
-            <circle cx="90" cy="38" r="7" fill="#E9D3A3" />
-            <circle class="x-pulse" cx="90" cy="38" r="13" fill="#E9D3A3" fill-opacity=".35" />
-          </symbol>
-        </defs>
-      </svg>
+    <a class="skip" href="#main">Skip to content</a>
 
-      <div class="x-site" id="x-site">
-        <header class="x-nav">
-          <div class="x-in x-nav__in">
-            <a class="x-logo" href="#top" aria-label="TradeCognix home"><svg aria-hidden="true"><use href="#x-mark" /></svg><span class="x-logo__word">Trade<span>Cognix</span></span></a>
-            <nav class="x-nav__links" aria-label="Main">
-              <a href="#platform">Platform</a><a href="#how">How it works</a><a href="#brokers">Brokers</a><a href="#pricing">Pricing</a><a href="#contact">Contact</a>
-            </nav>
-            <div class="x-nav__cta">
-              <button class="x-btn x-btn--ghost x-btn--sm x-nav__signin" type="button" data-open-app="dashboard">Sign in</button>
-              <button class="x-btn x-btn--gold x-btn--sm x-mag" type="button" data-open-app="dashboard">Launch App</button>
-            </div>
-          </div>
-        </header>
+    <!-- Icon sprite -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+      <defs>
+        <symbol id="tc-mark" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#00C46A" /><path d="M7.5 21.5 13 16l4 3.5 7.5-8.5" fill="none" stroke="#03130A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" /><circle cx="24.5" cy="11" r="2.3" fill="#03130A" /></symbol>
+        <symbol id="i-check" viewBox="0 0 16 16"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></symbol>
+        <symbol id="i-arrow" viewBox="0 0 16 16"><path d="M3 8h10M9 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></symbol>
+        <symbol id="i-plus" viewBox="0 0 16 16"><path d="M8 3v10M3 8h10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" /></symbol>
+        <symbol id="i-pencil" viewBox="0 0 16 16"><path d="M3 13l.6-2.6L10.8 3.2a1.4 1.4 0 0 1 2 2L5.6 12.4z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" /></symbol>
+        <symbol id="i-sun" viewBox="0 0 20 20"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="10" cy="10" r="3.5" /><path d="M10 2v1.5M10 16.5V18M2 10h1.5M16.5 10H18M4.3 4.3l1.1 1.1M14.6 14.6l1.1 1.1M4.3 15.7l1.1-1.1M14.6 5.4l1.1-1.1" /></g></symbol>
+        <symbol id="i-moon" viewBox="0 0 20 20"><path d="M16 12.5A6.5 6.5 0 0 1 7.5 4a6.5 6.5 0 1 0 8.5 8.5z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" /></symbol>
+        <symbol id="i-power" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M8 2v6" /><path d="M4.6 4.2a5 5 0 1 0 6.8 0" /></g></symbol>
+        <symbol id="i-warn" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2.2 14.4 13.5H1.6z" /><path d="M8 6.5v3M8 11.6v.1" /></g></symbol>
+        <symbol id="i-info" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="6.2" /><path d="M8 7.3v3.6M8 5v.1" /></g></symbol>
+        <symbol id="i-lock" viewBox="0 0 16 16"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><rect x="3" y="7" width="10" height="7" rx="1.6" /><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" /></g></symbol>
+        <symbol id="i-plusmin" viewBox="0 0 16 16"><path d="M8 3v10M3 8h10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" /></symbol>
+        <!-- feature icons -->
+        <symbol id="f-text" viewBox="0 0 20 20"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h12M4 9h8M4 13h10" /><path d="M14 15.5l1.5-1.5 2 2" /></g></symbol>
+        <symbol id="f-rupee" viewBox="0 0 20 20"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h9M6 7.5h9M6 4h2.5a3.5 3.5 0 0 1 0 7H6l6.5 5.5" /></g></symbol>
+        <symbol id="f-sweep" viewBox="0 0 20 20"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 5h12M4 10h12M4 15h12" /><circle cx="8" cy="5" r="1.6" fill="currentColor" /><circle cx="13" cy="10" r="1.6" fill="currentColor" /><circle cx="6" cy="15" r="1.6" fill="currentColor" /></g></symbol>
+        <symbol id="f-engine" viewBox="0 0 20 20"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15l4-5 3 2.5L16 5" /><path d="M12.5 5H16v3.5" /></g></symbol>
+        <symbol id="f-shield" viewBox="0 0 20 20"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"><path d="M10 2.5 16 5v4.5c0 4-2.7 6.6-6 8-3.3-1.4-6-4-6-8V5z" /><path d="M7.5 10l2 2 3.5-4" /></g></symbol>
+        <symbol id="f-bell" viewBox="0 0 20 20"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"><path d="M5 13.5V9a5 5 0 0 1 10 0v4.5l1.5 1.5h-13z" /><path d="M8.5 17.5h3" /></g></symbol>
+        <symbol id="f-book" viewBox="0 0 20 20"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"><path d="M5 3h8l3 3v11H5z" /><path d="M8 9h5M8 12h5" /></g></symbol>
+        <symbol id="f-plug" viewBox="0 0 20 20"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 12l4-4" /><path d="M9 6l1.5-1.5a3 3 0 0 1 4.2 4.2L13 10M11 14l-1.5 1.5a3 3 0 0 1-4.2-4.2L7 10" /></g></symbol>
+        <!-- app nav icons -->
+        <symbol id="n-home" viewBox="0 0 20 20"><rect x="3" y="3" width="6" height="6" rx="1.5" /><rect x="11" y="3" width="6" height="6" rx="1.5" /><rect x="3" y="11" width="6" height="6" rx="1.5" /><rect x="11" y="11" width="6" height="6" rx="1.5" /></symbol>
+        <symbol id="n-studio" viewBox="0 0 20 20"><path d="M4 15.5l.7-3L13 4.2a1.5 1.5 0 0 1 2.1 2.1L6.8 14.6z" /><path d="M11.5 5.7l2.1 2.1" /><path d="M10 16h6" /></symbol>
+        <symbol id="n-bt" viewBox="0 0 20 20"><path d="M3 17h14M3 17V3" /><path d="M6 13l3-4 3 2 4-6" /></symbol>
+        <symbol id="n-live" viewBox="0 0 20 20"><circle cx="10" cy="10" r="2" /><path d="M6.5 6.5a5 5 0 0 0 0 7M13.5 6.5a5 5 0 0 1 0 7M4 4a8.5 8.5 0 0 0 0 12M16 4a8.5 8.5 0 0 1 0 12" /></symbol>
+        <symbol id="n-journal" viewBox="0 0 20 20"><path d="M5 3h8l3 3v11H5z" /><path d="M8 9h5M8 12h5" /></symbol>
+        <symbol id="n-broker" viewBox="0 0 20 20"><path d="M8 12l4-4" /><path d="M9 6l1.5-1.5a3 3 0 0 1 4.2 4.2L13 10M11 14l-1.5 1.5a3 3 0 0 1-4.2-4.2L7 10" /></symbol>
+        <symbol id="n-settings" viewBox="0 0 20 20"><circle cx="10" cy="10" r="2.5" /><path d="M10 2.5v2M10 15.5v2M2.5 10h2M15.5 10h2M4.7 4.7l1.4 1.4M13.9 13.9l1.4 1.4M4.7 15.3l1.4-1.4M13.9 6.1l1.4-1.4" /></symbol>
+        <symbol id="n-more" viewBox="0 0 20 20"><circle cx="5" cy="10" r="1.2" /><circle cx="10" cy="10" r="1.2" /><circle cx="15" cy="10" r="1.2" /></symbol>
+      </defs>
+    </svg>
 
-        <div class="x-tape" aria-label="Index ticker, illustrative data">
-          <span class="x-tape__label">Illustrative data</span>
-          <div class="x-tape__view">
-            <div class="x-tape__track" id="x-tape"></div>
+    <!-- =========================== MARKETING SITE =========================== -->
+    <div class="site" id="x-site">
+      <header class="nav" id="top">
+        <div class="wrap nav__in">
+          <a class="logo" href="#top" aria-label="TradeCognix home"><svg class="logo__mark" aria-hidden="true"><use href="#tc-mark" /></svg><span class="logo__word">TradeCognix</span></a>
+          <nav class="nav__links" aria-label="Main">
+            <a href="#how">How it works</a><a href="#features">Product</a><a href="#brokers">Brokers</a><a href="#pricing">Pricing</a><a href="#partners">For brokers &amp; advisors</a><a href="#faq">FAQ</a>
+          </nav>
+          <div class="nav__right">
+            <button class="icon-btn theme-toggle" type="button" data-theme-toggle aria-label="Switch colour theme"><svg class="i-moon" aria-hidden="true"><use href="#i-moon" /></svg><svg class="i-sun" aria-hidden="true"><use href="#i-sun" /></svg></button>
+            <button class="btn btn--ghost btn--sm nav__signin" type="button" data-open-app="dashboard">Sign in</button>
+            <button class="btn btn--primary btn--sm" type="button" data-open-app="studio">Try it free</button>
           </div>
         </div>
+      </header>
 
-        <section class="x-hero x-dark">
-          <div class="x-grid"></div>
-          <svg class="x-signal" viewBox="0 0 1440 400" preserveAspectRatio="none" aria-hidden="true">
-            <path class="x-signal__ghost" d="M0 300 H1440" />
-            <path d="M0 330 C120 320 160 290 240 300 S380 340 460 280 S600 250 680 270 S820 300 900 220 S1040 200 1120 170 S1280 150 1340 90 S1420 70 1440 60" />
-          </svg>
-          <div class="x-in x-hero__grid">
-            <div>
-              <p class="x-eyebrow x-fade" style="--d:0ms">Algo trading for every Indian trader</p>
-              <h1 class="x-h1 x-split" data-on-load>Describe your strategy. We'll <em>trade</em> it.</h1>
-              <p class="x-hero__sub x-fade" style="--d:500ms">Write rules in plain English. TradeCognix turns them into a tested, automated strategy: backtested on years of NSE data, paper-traded live, then executed through your own broker.</p>
-              <div class="x-btns x-fade" style="--d:650ms">
-                <button class="x-btn x-btn--gold x-mag" type="button" data-open-app="studio">Build your first strategy</button>
-                <a class="x-btn x-btn--ghost" href="#how">Watch how it works</a>
+      <main id="main">
+        <!-- Hero -->
+        <section class="hero" aria-labelledby="hero-title">
+          <div class="wrap hero__grid">
+            <div class="hero__copy">
+              <p class="hero__eyebrow"><b>NSE · BSE</b>Algo trading for Indian retail traders</p>
+              <h1 class="h1" id="hero-title">Describe a strategy in plain English. <span class="accent">Backtest it with real Indian costs.</span></h1>
+              <p class="hero__sub">TradeCognix turns your words into precise, editable rules, tests them on NSE data after brokerage, STT, GST, stamp duty and slippage, then paper-trades and runs them live through your own broker.</p>
+              <button class="btn btn--primary btn--lg" type="button" data-open-app="studio">Try a strategy, no sign-up <svg aria-hidden="true"><use href="#i-arrow" /></svg></button>
+              <div class="hero__meta">
+                <span><svg aria-hidden="true"><use href="#i-check" /></svg>Free backtests</span>
+                <span><svg aria-hidden="true"><use href="#i-check" /></svg>Zero code</span>
+                <span><svg aria-hidden="true"><use href="#i-check" /></svg>Funds stay with your broker</span>
               </div>
             </div>
-            <div class="x-mock x-fade" style="--d:300ms" aria-label="Product preview: an English prompt turned into strategy rules">
-              <div class="x-mock__bar"><span>Strategy Studio</span><span class="x-mono">draft · v1</span></div>
-              <div class="x-mock__body">
-                <div class="x-prompt"><span class="x-prompt__label">Describe your strategy</span><span id="x-type"></span><span class="x-caret" aria-hidden="true"></span></div>
-                <div class="x-parsed" id="x-parsed">
-                  <div class="x-parsed__head"><span id="x-parse-state">Waiting for input</span><span>6 rules</span></div>
-                  <div class="x-rules">
-                    <span class="x-rule"><b>Instrument</b>NIFTY options</span>
-                    <span class="x-rule"><b>Timeframe</b>15m</span>
-                    <span class="x-rule"><b>Entry</b>EMA 9 ▲ EMA 21</span>
-                    <span class="x-rule"><b>Window</b>after 09:30</span>
-                    <span class="x-rule"><b>Exit</b>opposite cross / 15:15 hard exit</span>
-                    <span class="x-rule"><b>Risk</b>2 trades/day</span>
+
+            <figure class="mock" aria-label="Product preview: a plain-English strategy parsed into rules with its backtest equity curve. Illustrative data.">
+              <div class="mock__win">
+                <div class="mock__bar"><strong>9/21 EMA crossover</strong><span class="num">NIFTY · 15m</span><span class="badge badge--live">Backtested</span></div>
+                <div class="mock__body">
+                  <div class="mock__left">
+                    <p class="mock__prompt"><small>Your words</small>Buy Nifty ATM call when 9 EMA crosses above 21 EMA on 15-min candles after 9:30. Exit on opposite cross or 3:15 PM. Max 2 trades a day.</p>
+                    <dl class="spec">
+                      <div><dt>Instrument</dt><dd>NIFTY · Buy ATM CE</dd></div>
+                      <div><dt>Entry</dt><dd>EMA 9 ▲ EMA 21</dd></div>
+                      <div><dt>Window</dt><dd>after 09:30 IST</dd></div>
+                      <div><dt>Exit</dt><dd>opp. cross / 15:15</dd></div>
+                      <div><dt>Risk</dt><dd>2 trades/day</dd></div>
+                    </dl>
+                  </div>
+                  <div class="mock__right">
+                    <div class="mock__kpis">
+                      <div><span>Net P&amp;L</span><strong class="up">₹53,000</strong></div>
+                      <div><span>Win rate</span><strong>50.8%</strong></div>
+                      <div><span>Profit factor</span><strong>1.14</strong></div>
+                      <div><span>Costs</span><strong class="down">₹77,000</strong></div>
+                    </div>
+                    <div class="mock__chart">
+                      <svg viewBox="0 0 440 172" aria-hidden="true">
+                        <g class="grid"><line x1="34" x2="440" y1="13" y2="13" /><line x1="34" x2="440" y1="53.9" y2="53.9" /><line x1="34" x2="440" y1="94.8" y2="94.8" /></g>
+                        <g class="axis"><text x="0" y="56.9">₹40k</text><text x="0" y="97.8">₹20k</text><text x="8" y="138.6">₹0</text>
+                          <text x="40" y="168">Sep ’24</text><text x="160" y="168">Jun ’25</text><text x="280" y="168">Mar ’26</text><text x="400" y="168">Nov ’26</text></g>
+                        <line class="zero" x1="34" x2="440" y1="135.6" y2="135.6" />
+                        <g transform="translate(40 14)">
+                          <path class="eq-fill" d="M0,107.6 L4.5,107.6 L9,103 L13.5,102.9 L18,103.3 L22.5,107.4 L27,107.2 L31.5,98.9 L36,94.9 L40.4,87.1 L44.9,84.1 L49.4,80.2 L53.9,77.6 L58.4,86.1 L62.9,79.5 L67.4,74.9 L71.9,70.4 L76.4,79.1 L80.9,88.1 L85.4,92 L89.9,93.3 L94.4,89.9 L98.9,88.7 L103.4,84 L107.9,86.4 L112.4,83 L116.9,79.2 L121.3,81.6 L125.8,69.8 L130.3,64.9 L134.8,56.2 L139.3,58.4 L143.8,61.4 L148.3,61.9 L152.8,61.1 L157.3,55.8 L161.8,52.7 L166.3,53.9 L170.8,58.2 L175.3,59.8 L179.8,51 L184.3,54.3 L188.8,51.3 L193.3,47.3 L197.8,54.7 L202.2,52.9 L206.7,43.6 L211.2,54.2 L215.7,54.6 L220.2,53.8 L224.7,57.2 L229.2,52.7 L233.7,51.5 L238.2,58.9 L242.7,52.4 L247.2,46.8 L251.7,39.6 L256.2,29.4 L260.7,25.7 L265.2,23.5 L269.7,29.8 L274.2,24.6 L278.7,26.8 L283.1,28 L287.6,34.1 L292.1,38.5 L296.6,40.2 L301.1,30.9 L305.6,41.6 L310.1,48.9 L314.6,46 L319.1,35.7 L323.6,30.7 L328.1,40.7 L332.6,54.4 L337.1,50.7 L341.6,53.6 L346.1,58.9 L350.6,51.5 L355.1,43.3 L359.6,40.9 L364,37.9 L368.5,33.8 L373,22.6 L377.5,17.4 L382,12.8 L386.5,8 L391,15.9 L395.5,6.7 L400,0 L400,121.6 L0,121.6Z" transform="scale(1 1)" />
+                          <path class="eq" d="M0,107.6 L4.5,107.6 L9,103 L13.5,102.9 L18,103.3 L22.5,107.4 L27,107.2 L31.5,98.9 L36,94.9 L40.4,87.1 L44.9,84.1 L49.4,80.2 L53.9,77.6 L58.4,86.1 L62.9,79.5 L67.4,74.9 L71.9,70.4 L76.4,79.1 L80.9,88.1 L85.4,92 L89.9,93.3 L94.4,89.9 L98.9,88.7 L103.4,84 L107.9,86.4 L112.4,83 L116.9,79.2 L121.3,81.6 L125.8,69.8 L130.3,64.9 L134.8,56.2 L139.3,58.4 L143.8,61.4 L148.3,61.9 L152.8,61.1 L157.3,55.8 L161.8,52.7 L166.3,53.9 L170.8,58.2 L175.3,59.8 L179.8,51 L184.3,54.3 L188.8,51.3 L193.3,47.3 L197.8,54.7 L202.2,52.9 L206.7,43.6 L211.2,54.2 L215.7,54.6 L220.2,53.8 L224.7,57.2 L229.2,52.7 L233.7,51.5 L238.2,58.9 L242.7,52.4 L247.2,46.8 L251.7,39.6 L256.2,29.4 L260.7,25.7 L265.2,23.5 L269.7,29.8 L274.2,24.6 L278.7,26.8 L283.1,28 L287.6,34.1 L292.1,38.5 L296.6,40.2 L301.1,30.9 L305.6,41.6 L310.1,48.9 L314.6,46 L319.1,35.7 L323.6,30.7 L328.1,40.7 L332.6,54.4 L337.1,50.7 L341.6,53.6 L346.1,58.9 L350.6,51.5 L355.1,43.3 L359.6,40.9 L364,37.9 L368.5,33.8 L373,22.6 L377.5,17.4 L382,12.8 L386.5,8 L391,15.9 L395.5,6.7 L400,0" />
+                        </g>
+                      </svg>
+                    </div>
+                    <p class="mock__costs"><span>Gross <b>₹1,30,000</b></span><span>− Costs <b>₹77,000</b></span><span>= Net <b class="up">₹53,000</b></span><span>382 trades</span></p>
                   </div>
                 </div>
-                <div class="x-mini" id="x-mini">
-                  <div class="x-mini__fig">Backtest equity<strong>+₹53,000</strong>net, illustrative</div>
-                  <svg viewBox="0 0 300 64" preserveAspectRatio="none" aria-hidden="true">
-                    <path class="x-curve-fill" d="M0 58 L20 55 L40 57 L60 50 L80 52 L100 44 L120 47 L140 38 L160 41 L180 32 L200 35 L220 24 L240 27 L260 16 L280 18 L300 8 L300 64 L0 64Z" />
-                    <path class="x-curve" d="M0 58 L20 55 L40 57 L60 50 L80 52 L100 44 L120 47 L140 38 L160 41 L180 32 L200 35 L220 24 L240 27 L260 16 L280 18 L300 8" />
-                  </svg>
+              </div>
+              <div class="mock__float" aria-hidden="true">
+                <header><span class="dot-live"></span>Paper session<span class="faint">IST</span></header>
+                <div class="olog">
+                  <div><span class="t">09:45:00</span><span class="up">BUY</span><span>NIFTY 24650 CE × 75</span><span>112.40</span></div>
+                  <div><span class="t">11:15:00</span><span class="down">SELL</span><span>NIFTY 24650 CE × 75</span><span>138.05</span></div>
+                  <div><span class="t">13:30:00</span><span class="up">BUY</span><span>NIFTY 24700 CE × 75</span><span>96.15</span></div>
                 </div>
               </div>
+              <figcaption class="mock__caption">Illustrative backtest from a reference study. Not a performance claim.</figcaption>
+            </figure>
+          </div>
+        </section>
+
+        <!-- Brokers -->
+        <section class="brokers" id="brokers" aria-labelledby="brokers-title">
+          <div class="wrap">
+            <div class="brokers__top">
+              <p id="brokers-title">Trade through the broker you already use. Your funds never leave it.</p>
+              <span class="note">Angel One SmartAPI is live · others rolling out</span>
+            </div>
+            <div class="brokers__row">
+              <div class="wordmark"><b>Angel One</b><small class="is-live"><span class="dot-live" aria-hidden="true"></span>Live</small></div>
+              <div class="wordmark"><b>Zerodha</b><small>Kite Connect · soon</small></div>
+              <div class="wordmark"><b>Upstox</b><small>Upstox API · soon</small></div>
+              <div class="wordmark"><b>Dhan</b><small>DhanHQ · soon</small></div>
+              <div class="wordmark"><b>Fyers</b><small>Fyers API · soon</small></div>
+              <div class="wordmark"><b>Groww</b><small>Trade API · soon</small></div>
+              <div class="wordmark"><b>ICICI Direct</b><small>Breeze · soon</small></div>
+              <div class="wordmark"><b>Kotak Neo</b><small>Neo API · soon</small></div>
+              <div class="wordmark"><b>5paisa</b><small>Xstream · soon</small></div>
+              <div class="wordmark"><b>Alice Blue</b><small>ANT API · soon</small></div>
+              <div class="wordmark"><b>Shoonya</b><small>Finvasia · soon</small></div>
+              <div class="wordmark"><b>Motilal Oswal</b><small>MO API · soon</small></div>
             </div>
           </div>
         </section>
 
-        <section class="x-dark" id="brokers">
-          <div class="x-in x-trust">
-            <div class="x-trust__top">
-              <p class="x-trust__title">Works with India's leading brokers</p>
-              <p class="x-note"><span class="x-dotlive" aria-hidden="true"></span>&nbsp; Angel One SmartAPI live · others rolling out</p>
+        <!-- How it works -->
+        <section class="sec" id="how" aria-labelledby="how-title">
+          <div class="wrap">
+            <div class="sec__head">
+              <p class="kicker">How it works</p>
+              <h2 class="h2" id="how-title">From a sentence to a live strategy in three steps.</h2>
+              <p class="lede">No code, no spreadsheets. Each step is reversible until you deliberately switch on live trading.</p>
             </div>
-            <div class="x-brokers x-fade">
-              <span class="x-broker"><span class="x-dotlive" aria-hidden="true"></span>Angel One <small>Live</small></span>
-              <span class="x-broker">Zerodha</span><span class="x-broker">Upstox</span><span class="x-broker">Groww</span><span class="x-broker">Dhan</span><span class="x-broker">Fyers</span><span class="x-broker">ICICI Direct</span><span class="x-broker">Kotak Neo</span><span class="x-broker">5paisa</span><span class="x-broker">Alice Blue</span><span class="x-broker">Shoonya <small>Finvasia</small></span><span class="x-broker">Motilal Oswal</span>
-            </div>
-          </div>
-          <div class="x-in" style="padding-bottom:clamp(56px,8vw,96px)">
-            <div class="x-stats">
-              <div class="x-stat"><div class="x-stat__fig"><span data-count="11">11</span><span class="x-gold">+</span></div><p class="x-stat__label">Brokers supported</p></div>
-              <div class="x-stat"><div class="x-stat__fig"><span data-count="2020" data-from="2008">2020</span><span class="x-gold">→</span></div><p class="x-stat__label">Historical data, 2020 to today</p></div>
-              <div class="x-stat"><div class="x-stat__fig"><span class="x-gold">&lt;</span><span data-count="60">60</span><small style="font-size:.45em;letter-spacing:0"> sec</small></div><p class="x-stat__label">From English to backtest</p></div>
-              <div class="x-stat"><div class="x-stat__fig"><span data-count="0" data-from="1200">0</span></div><p class="x-stat__label">Lines of code</p></div>
-            </div>
-          </div>
-        </section>
-
-        <section class="x-light x-sec" id="how">
-          <div class="x-in">
-            <div class="x-head">
-              <p class="x-eyebrow">How it works</p>
-              <h2 class="x-h2 x-split">From a sentence to a live strategy, in <em>four</em> deliberate steps.</h2>
-            </div>
-            <div class="x-steps">
-              <article class="x-step x-fade">
-                <p class="x-step__num">01</p>
-                <div><h3>Connect your broker</h3><p>Link your account with a secure API key and TOTP. Keys are encrypted at rest and never shared.</p></div>
-              </article>
-              <article class="x-step x-fade" style="--d:100ms">
-                <p class="x-step__num">02</p>
-                <div><h3>Describe it in plain English</h3><p>Write the rules the way you'd explain them to a friend. We turn them into precise, editable conditions.</p></div>
-              </article>
-              <article class="x-step x-fade">
-                <p class="x-step__num">03</p>
-                <div>
-                  <h3>Backtest with real costs</h3>
-                  <p>Every trade pays slippage, brokerage, STT, exchange charges, GST and stamp duty. See gross against net P&amp;L, win rate, profit factor, expectancy and max drawdown, with whipsaw detection.</p>
-                  <ul class="x-tags"><li>Gross vs net</li><li>Profit factor</li><li>Expectancy</li><li>Max DD</li><li>Whipsaws</li></ul>
+            <div class="steps">
+              <article class="card step">
+                <span class="step__n">1</span>
+                <h3>Describe it in plain English</h3>
+                <p>Write the rules the way you'd explain them to a friend. We extract instrument, timeframe, entry, exit, time window and risk, and you can edit every one.</p>
+                <div class="step__ui">
+                  <div class="chips-static"><span>NIFTY</span><span>15m</span><span>EMA 9 ▲ 21</span><span>after 09:30</span><span>15:15 exit</span></div>
                 </div>
               </article>
-              <article class="x-step x-fade" style="--d:100ms">
-                <p class="x-step__num">04</p>
-                <div><h3>Paper trade, then go live</h3><p>Run it on live prices with no money at risk. Going live takes a deliberate two-step switch, and a kill switch stops everything at once.</p></div>
+              <article class="card step">
+                <span class="step__n">2</span>
+                <h3>Backtest with real Indian costs</h3>
+                <p>Every simulated trade pays brokerage, STT, exchange and SEBI fees, GST, stamp duty and slippage. You see gross and net side by side.</p>
+                <div class="step__ui" aria-hidden="true">
+                  <div class="row"><span>Gross P&amp;L</span><span>₹1,30,000</span></div>
+                  <div class="bar"><i style="width:59%;background:var(--down);opacity:.7"></i><i style="width:41%;background:var(--brand)"></i></div>
+                  <div class="row"><span>Costs · Net</span><span><span class="down">₹77,000</span> · <span class="up">₹53,000</span></span></div>
+                </div>
+              </article>
+              <article class="card step">
+                <span class="step__n">3</span>
+                <h3>Paper trade, then go live</h3>
+                <p>Run it on live prices with no money at risk. Going live is a deliberate two-step switch through your broker, with a kill switch that stops everything at once.</p>
+                <div class="step__ui" aria-hidden="true">
+                  <div class="row"><span>Paper · 9/21 EMA</span><span class="up">running</span></div>
+                  <div class="row"><span>Live · needs “LIVE” confirm</span><span>off</span></div>
+                </div>
               </article>
             </div>
           </div>
         </section>
 
-        <section class="x-light x-sec" id="platform" style="padding-top:0">
-          <div class="x-in">
-            <div class="x-head">
-              <p class="x-eyebrow">Platform</p>
-              <h2 class="x-h2 x-split">Everything a systematic trader needs. <em>Nothing</em> they don't.</h2>
+        <!-- Features -->
+        <section class="sec sec--tint" id="features" aria-labelledby="feat-title">
+          <div class="wrap">
+            <div class="sec__head">
+              <p class="kicker">Product</p>
+              <h2 class="h2" id="feat-title">Everything a systematic trader needs. Nothing they don't.</h2>
             </div>
-            <div class="x-feats">
-              <article class="x-feat x-fade">
-                <svg viewBox="0 0 40 40" aria-hidden="true"><rect x="4" y="8" width="32" height="24" rx="4" /><path d="M10 16h14M10 22h20" /><path class="g" d="M28 16h2" /></svg>
-                <h3>Plain-English Strategy Studio</h3><p>Type the idea, get structured rules you can read, edit and version.</p>
-              </article>
-              <article class="x-feat x-fade" style="--d:80ms">
-                <svg viewBox="0 0 40 40" aria-hidden="true"><rect x="4" y="6" width="14" height="12" rx="3" /><rect x="22" y="6" width="14" height="12" rx="3" /><rect x="4" y="22" width="14" height="12" rx="3" /><rect class="g" x="22" y="22" width="14" height="12" rx="3" /></svg>
-                <h3>Multi-strategy portfolio</h3><p>Run several strategies side by side, each with its own capital and limits.</p>
-              </article>
-              <article class="x-feat x-fade" style="--d:160ms">
-                <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M4 34h32M4 34V6" /><path class="g" d="M8 28l7-8 6 4 11-14" /></svg>
-                <h3>Realistic backtesting engine</h3><p>Years of NSE candles with every Indian charge applied, so net P&amp;L means net.</p>
-              </article>
-              <article class="x-feat x-fade">
-                <svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="14" /><path d="M20 6v28" /><path class="g" d="M20 13a7 7 0 0 1 0 14" /></svg>
-                <h3>Paper &amp; live engine</h3><p>The same engine runs paper and live, so what you tested is what trades.</p>
-              </article>
-              <article class="x-feat x-fade" style="--d:80ms">
-                <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 4l13 5v10c0 8-6 14-13 17C13 33 7 27 7 19V9z" /><path class="g" d="M14 20l4 4 8-9" /></svg>
-                <h3>Risk guardrails</h3><p>Daily loss cap, max trades, a hard exit time and a kill switch on every strategy.</p>
-              </article>
-              <article class="x-feat x-fade" style="--d:160ms">
-                <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M9 4h16l6 6v26H9z" /><path d="M14 16h12M14 22h12M14 28h7" /><path class="g" d="M25 4v6h6" /></svg>
-                <h3>Trade journal</h3><p>Every fill is logged and auto-tagged by strategy, ready for review.</p>
-              </article>
+            <div class="feats">
+              <article class="feat"><span class="feat__icon"><svg aria-hidden="true"><use href="#f-text" /></svg></span><h3>Plain-English Strategy Studio</h3><p>Type the idea, get structured rules you can read, edit and save.</p></article>
+              <article class="feat"><span class="feat__icon"><svg aria-hidden="true"><use href="#f-rupee" /></svg></span><h3>Real Indian cost model</h3><p>Brokerage, STT, exchange, SEBI, stamp duty, GST and slippage on every fill.</p></article>
+              <article class="feat"><span class="feat__icon"><svg aria-hidden="true"><use href="#f-sweep" /></svg></span><h3>Parameter sweeps</h3><p>Test a range of EMAs, stops or times in one run and compare net results.</p></article>
+              <article class="feat"><span class="feat__icon"><svg aria-hidden="true"><use href="#f-engine" /></svg></span><h3>One engine, paper to live</h3><p>The engine that paper-trades is the one that goes live, so what you tested is what trades.</p></article>
+              <article class="feat"><span class="feat__icon"><svg aria-hidden="true"><use href="#f-shield" /></svg></span><h3>Guardrails &amp; kill switch</h3><p>Daily loss cap, max trades, hard exit time, and one button that squares off everything.</p></article>
+              <article class="feat"><span class="feat__icon"><svg aria-hidden="true"><use href="#f-plug" /></svg></span><h3>Your broker, your funds</h3><p>Orders go through your own broker API. We never hold your money.</p></article>
+              <article class="feat"><span class="feat__icon"><svg aria-hidden="true"><use href="#f-bell" /></svg></span><h3>Telegram alerts</h3><p>Entries, exits and halts pushed to your phone on Pro and Elite.</p></article>
+              <article class="feat"><span class="feat__icon"><svg aria-hidden="true"><use href="#f-book" /></svg></span><h3>Built for SEBI's algo rules</h3><p>Order tagging, kill switches and explicit live confirmation, with live orders routed the way NSE's retail-algo rules require.</p></article>
             </div>
           </div>
         </section>
 
-        <section class="x-dark x-sec" id="templates">
-          <div class="x-in">
-            <div class="x-head" style="display:flex;justify-content:space-between;align-items:end;gap:24px;flex-wrap:wrap">
-              <div>
-                <p class="x-eyebrow">Strategy templates</p>
-                <h2 class="x-h2 x-split">Start from a proven <em>shape</em>, then make it yours.</h2>
-              </div>
-              <p class="x-note">Sparklines illustrative · scroll →</p>
-            </div>
-            <div class="x-rail" id="x-rail" tabindex="0" aria-label="Strategy templates"></div>
-          </div>
-        </section>
-
-        <section class="x-dark x-sec" style="padding-top:0">
-          <div class="x-in x-proof">
+        <!-- Cost transparency -->
+        <section class="sec" aria-labelledby="cost-title">
+          <div class="wrap costs">
             <div>
-              <p class="x-eyebrow">Proof, with the costs left in</p>
-              <h2 class="x-h2 x-split">Half the trades won. The <em>net</em> still held.</h2>
-              <p class="x-lede">A 9/21 EMA crossover on Nifty, run through the same engine you'll use. Costs took ₹77,000 of the ₹1,30,000 gross, and we show you that up front.</p>
+              <p class="kicker">Costs left in</p>
+              <h2 class="h2" id="cost-title">Half the trades won. Costs ate most of the gross.</h2>
+              <p class="lede">A 9/21 EMA crossover on Nifty, run through the same engine you'll use. Most backtesters hide this. We put it first, because it decides whether a strategy is worth trading.</p>
             </div>
-            <div class="x-card x-fade">
-              <div class="x-card__head"><strong>Sample backtest</strong><span class="x-mono">NIFTY 9/21 EMA · 15-min · ATM sell · Sep 2024–Nov 2026</span></div>
-              <div class="x-metrics">
-                <div class="x-metric"><span>Trades</span><strong data-count="382">382</strong></div>
-                <div class="x-metric"><span>Wins</span><strong class="x-up" data-count="194">194</strong></div>
-                <div class="x-metric"><span>Losses</span><strong class="x-down" data-count="188">188</strong></div>
-                <div class="x-metric"><span>Win rate</span><strong data-count="50.79" data-dec="2" data-suffix="%">50.79%</strong></div>
-                <div class="x-metric"><span>Gross P&amp;L</span><strong data-count="130000" data-prefix="₹">₹1,30,000</strong></div>
-                <div class="x-metric"><span>Net P&amp;L</span><strong class="x-up" data-count="53000" data-prefix="₹">₹53,000</strong></div>
-                <div class="x-metric"><span>Max drawdown</span><strong class="x-down" data-count="35500" data-prefix="₹">₹35,500</strong></div>
-                <div class="x-metric"><span>Profit factor</span><strong data-count="1.14" data-dec="2">1.14</strong></div>
-                <div class="x-metric"><span>Expectancy</span><strong data-count="139" data-prefix="₹" data-suffix="/trade">₹139/trade</strong></div>
+            <div class="card">
+              <div class="panel__head"><h3>Sample backtest</h3><span class="note num">NIFTY 9/21 EMA · 15m · Sep 2024 – Nov 2026</span></div>
+              <div class="panel__body waterfall" role="table" aria-label="Gross to net breakdown">
+                <div class="wf-row" role="row"><span role="cell">Gross P&amp;L</span><span class="track" aria-hidden="true"><i style="left:0;width:100%;background:var(--text-3);opacity:.5"></i></span><span class="num" role="cell">₹1,30,000</span></div>
+                <div class="wf-row" role="row"><span role="cell">Charges &amp; slippage</span><span class="track" aria-hidden="true"><i style="left:41%;width:59%;background:var(--down);opacity:.75"></i></span><span class="num down" role="cell">−₹77,000</span></div>
+                <div class="wf-row wf-row--total" role="row"><span role="cell">Net P&amp;L</span><span class="track" aria-hidden="true"><i style="left:0;width:41%;background:var(--brand)"></i></span><span class="num up" role="cell">₹53,000</span></div>
+                <div class="wf-row" role="row"><span role="cell">Trades · win rate</span><span></span><span class="num" role="cell">382 · 50.79%</span></div>
+                <div class="wf-row" role="row"><span role="cell">Max drawdown</span><span></span><span class="num down" role="cell">₹35,500</span></div>
+                <p class="note">From a reference study. Past performance is not indicative of future results.</p>
               </div>
-              <div class="x-card__foot"><p class="x-note">From a reference study. Past performance is not indicative of future results.</p></div>
             </div>
           </div>
         </section>
 
-        <section class="x-light x-sec" id="business">
-          <div class="x-in x-biz">
-            <div>
-              <p class="x-eyebrow">For businesses</p>
-              <h2 class="x-h2 x-split">Run TradeCognix under <em>your</em> brand.</h2>
-              <p class="x-lede">For advisors, educators and sub-brokers who want to give clients systematic trading without building the stack.</p>
-              <ul class="x-checks">
-                <li><span><strong>Onboard clients</strong> with their own broker connections.</span></li>
-                <li><span><strong>White-label</strong> the platform with your name and colours.</span></li>
-                <li><span><strong>Manage everyone</strong> from one admin console.</span></li>
-              </ul>
-              <a class="x-btn x-btn--ink" href="#contact">Talk to us</a>
+        <!-- Social proof: placeholder until real, verified material exists -->
+        <section class="sec sec--tint" aria-labelledby="proof-title">
+          <div class="wrap">
+            <div class="sec__head">
+              <p class="kicker">What traders say <span class="badge badge--ph">Placeholder</span></p>
+              <h2 class="h2" id="proof-title">Room for real stories.</h2>
+              <p class="lede">These slots stay empty until we have verified, attributed feedback. No invented quotes, no made-up user counts.</p>
             </div>
-            <div class="x-console x-fade" aria-label="Admin console preview, illustrative">
-              <div class="x-mock__bar"><span>Admin console · Your Brand Capital</span><span class="x-mono">demo</span></div>
-              <table>
-                <thead><tr><th scope="col">Client</th><th scope="col">Broker</th><th scope="col">Strategies</th><th scope="col">Status</th></tr></thead>
-                <tbody>
-                  <tr><td>R. Iyer</td><td>Angel One</td><td class="x-mono">3</td><td><span class="x-status x-status--live">Live</span></td></tr>
-                  <tr><td>S. Mehta</td><td>Zerodha</td><td class="x-mono">2</td><td><span class="x-status x-status--paper">Paper</span></td></tr>
-                  <tr><td>A. Khan</td><td>Upstox</td><td class="x-mono">1</td><td><span class="x-status x-status--paper">Paper</span></td></tr>
-                  <tr><td>P. Rao</td><td>Dhan</td><td class="x-mono">0</td><td><span class="x-status">Onboarding</span></td></tr>
-                </tbody>
-              </table>
+            <div class="proof">
+              <div class="proof__ph"><strong>Testimonial slot</strong>Replace with a real quote, name and city from a verified user, with their written consent.</div>
+              <div class="proof__ph"><strong>Testimonial slot</strong>Replace with a real quote, name and city from a verified user, with their written consent.</div>
+              <div class="proof__ph"><strong>Metric slot</strong>Replace with a real, auditable platform metric (for example backtests run), with its date and source.</div>
             </div>
+            <div class="proof__logos" aria-label="Press and partner logo placeholders"><span>Press / partner logo</span><span>Press / partner logo</span><span>Press / partner logo</span><span>Press / partner logo</span></div>
           </div>
         </section>
 
-        <section class="x-light x-sec" id="pricing" style="padding-top:0">
-          <div class="x-in">
-            <div class="x-head">
-              <p class="x-eyebrow">Pricing · illustrative</p>
-              <h2 class="x-h2 x-split">Start free. Pay when it <em>trades</em>.</h2>
-              <div class="x-toggle" role="group" aria-label="Billing period">
+        <!-- Pricing -->
+        <section class="sec" id="pricing" aria-labelledby="pricing-title">
+          <div class="wrap">
+            <div class="pricing__head">
+              <div class="sec__head">
+                <p class="kicker">Pricing</p>
+                <h2 class="h2" id="pricing-title">Start free. Pay when it trades.</h2>
+                <p class="lede">Backtest and paper trade for free. Upgrade when you're ready to run live through your broker.</p>
+              </div>
+              <div class="seg" role="group" aria-label="Billing period">
                 <button type="button" aria-pressed="true" data-bill="m">Monthly</button>
                 <button type="button" aria-pressed="false" data-bill="y">Yearly <small>2 months free</small></button>
               </div>
             </div>
-            <div class="x-plans">
-              <article class="x-plan x-fade">
-                <h3>Starter</h3>
-                <p class="x-price">Free</p>
-                <ul><li>1 strategy</li><li>Backtests</li><li>Paper trading</li></ul>
-                <button class="x-btn x-btn--line-l" type="button" data-open-app="studio">Start free</button>
+            <div class="plans">
+              <article class="card plan">
+                <div class="plan__name">Free</div>
+                <p class="plan__desc">Learn the workflow and validate ideas.</p>
+                <div class="price"><strong class="num">₹0</strong><span>forever</span></div>
+                <p class="price__note">No card needed</p>
+                <button class="btn btn--secondary btn--block" type="button" data-open-app="studio">Start free</button>
+                <ul>
+                  <li><svg aria-hidden="true"><use href="#i-check" /></svg><span><strong>Paper trading</strong> on live prices</span></li>
+                  <li><svg aria-hidden="true"><use href="#i-check" /></svg><span><strong>5 backtests</strong> per day</span></li>
+                  <li><svg aria-hidden="true"><use href="#i-check" /></svg><span><strong>1 strategy</strong></span></li>
+                  <li><svg aria-hidden="true"><use href="#i-check" /></svg><span>Plain-English Strategy Studio</span></li>
+                  <li><svg aria-hidden="true"><use href="#i-check" /></svg><span>Real Indian cost model</span></li>
+                </ul>
               </article>
-              <article class="x-plan x-plan--pro x-fade" style="--d:80ms">
-                <h3>Pro <span class="x-tag x-tag--gold">Most traders</span></h3>
-                <p class="x-price" id="x-pro-price">₹999<small>/month</small></p>
-                <ul><li>10 strategies</li><li>Live trading</li><li>1 broker</li><li>Alerts</li></ul>
-                <button class="x-btn x-btn--gold x-mag" type="button" data-open-app="studio">Go Pro</button>
+              <article class="card plan plan--rec">
+                <div class="plan__name">Pro <span class="badge badge--live badge--plain">Recommended</span></div>
+                <p class="plan__desc">Go live through your own broker.</p>
+                <div class="price"><strong class="num" id="x-pro-price">₹999</strong><span id="x-pro-per">/month</span></div>
+                <p class="price__note" id="x-pro-note">or ₹9,990/year</p>
+                <button class="btn btn--primary btn--block" type="button" data-open-app="studio" data-plan="pro">Get Pro</button>
+                <ul>
+                  <li><svg aria-hidden="true"><use href="#i-check" /></svg><span>Everything in Free</span></li>
+                  <li><svg aria-hidden="true"><use href="#i-check" /></svg><span><strong>Live trading</strong> via your broker</span></li>
+                  <li><svg aria-hidden="true"><use href="#i-check" /></svg><span><strong>Parameter sweeps</strong></span></li>
+                  <li><svg aria-hidden="true"><use href="#i-check" /></svg><span><strong>Telegram alerts</strong></span></li>
+                  <li><svg aria-hidden="true"><use href="#i-check" /></svg><span><strong>5 strategies</strong></span></li>
+                </ul>
               </article>
-              <article class="x-plan x-fade" style="--d:160ms">
-                <h3>Business</h3>
-                <p class="x-price" style="font-size:40px">Talk to us</p>
-                <ul><li>White-label</li><li>Client management</li><li>Admin panel</li><li>Multiple brokers</li></ul>
-                <a class="x-btn x-btn--line-l" href="#contact">Contact sales</a>
+              <article class="card plan">
+                <div class="plan__name">Elite</div>
+                <p class="plan__desc">For active traders running several systems.</p>
+                <div class="price"><strong class="num">₹2,499</strong><span>/month</span></div>
+                <p class="price__note" id="x-elite-note">Billed monthly</p>
+                <button class="btn btn--secondary btn--block" type="button" data-open-app="studio" data-plan="elite">Get Elite</button>
+                <ul>
+                  <li><svg aria-hidden="true"><use href="#i-check" /></svg><span>Everything in Pro</span></li>
+                  <li><svg aria-hidden="true"><use href="#i-check" /></svg><span><strong>Unlimited strategies</strong></span></li>
+                  <li><svg aria-hidden="true"><use href="#i-check" /></svg><span><strong>Priority support</strong></span></li>
+                  <li><svg aria-hidden="true"><use href="#i-check" /></svg><span><strong>Multi-strategy portfolio risk</strong> and daily P&amp;L digests</span></li>
+                </ul>
               </article>
             </div>
+            <p class="pricing__foot">Prices in Indian rupees. Brokerage, STT, exchange fees and other statutory charges are levied by your broker and the exchange, not by TradeCognix.</p>
           </div>
         </section>
 
-        <section class="x-light x-sec" id="faq" style="padding-top:0">
-          <div class="x-in x-faq">
+        <!-- White label -->
+        <section class="sec sec--tint" id="partners" aria-labelledby="partners-title">
+          <div class="wrap biz">
             <div>
-              <p class="x-eyebrow">FAQ</p>
-              <h2 class="x-h2 x-split">Straight <em>answers</em>.</h2>
-            </div>
-            <div>
-              <details open><summary>Do I need to know coding?</summary><p>No. You describe the strategy in plain English and edit the rules we extract. Zero lines of code.</p></details>
-              <details><summary>Which brokers are supported?</summary><p>Angel One (SmartAPI) is live. Zerodha, Upstox, Groww, Dhan, Fyers, ICICI Direct, Kotak Neo, 5paisa, Alice Blue, Shoonya (Finvasia) and Motilal Oswal are rolling out.</p></details>
-              <details><summary>Is my money safe?</summary><p>Your funds stay in your broker account. We never hold money; we only place orders through your API.</p></details>
-              <details><summary>Is live trading automatic?</summary><p>Only after you explicitly enable it with a two-step switch. You can hit the kill switch at any time.</p></details>
-              <details><summary>What about SEBI's algo trading rules?</summary><p>TradeCognix is built to align with SEBI's retail algo framework: broker-approved strategies, static IP whitelisting and order tagging.</p></details>
-            </div>
-          </div>
-        </section>
-
-        <footer class="x-dark x-foot" id="contact">
-          <div class="x-grid" style="opacity:.35"></div>
-          <div class="x-in">
-            <h2 class="x-big x-split">Let's build your <em>edge</em>.</h2>
-            <div class="x-contact">
-              <p class="x-contact__label"><span class="x-livedot" aria-hidden="true"></span>Talk to the founder</p>
-              <a class="x-phone x-split-groups" href="tel:+919019088160" aria-label="Call +91 901 908 8160">+91 901 908 8160</a>
-              <div class="x-contact__row">
-                <a class="x-btn x-btn--gold x-mag" href="https://wa.me/919019088160" target="_blank" rel="noopener">
-                  <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2.5 13.5l.8-2.6A6 6 0 1 1 5.6 13z" stroke-linejoin="round" /></svg>
-                  Message on WhatsApp
-                </a>
-                <a class="x-mail" href="mailto:contact@devcognix.com">contact@devcognix.com</a>
+              <p class="kicker">For brokers &amp; advisors</p>
+              <h2 class="h2" id="partners-title">Run TradeCognix under your own brand.</h2>
+              <p class="lede">For brokers, advisors, educators and sub-brokers who want to give clients systematic trading without building the stack.</p>
+              <ul class="checks">
+                <li><svg aria-hidden="true"><use href="#i-check" /></svg><span><strong>White-label</strong> the platform with your name, domain and colours.</span></li>
+                <li><svg aria-hidden="true"><use href="#i-check" /></svg><span><strong>Onboard clients</strong> with their own broker connections.</span></li>
+                <li><svg aria-hidden="true"><use href="#i-check" /></svg><span><strong>Oversee everyone</strong> from one admin console, with a platform-wide kill switch.</span></li>
+              </ul>
+              <div class="btns">
+                <a class="btn btn--primary" href="mailto:contact@devcognix.com?subject=TradeCognix%20white-label%20enquiry">Contact us <svg aria-hidden="true"><use href="#i-arrow" /></svg></a>
+                <a class="btn btn--ghost" href="mailto:contact@devcognix.com">contact@devcognix.com</a>
               </div>
             </div>
-            <div class="x-cols">
-              <div>
-                <a class="x-logo" href="#top" aria-label="TradeCognix, back to top"><svg aria-hidden="true"><use href="#x-mark" /></svg><span class="x-logo__word">Trade<span>Cognix</span></span></a>
-                <p>Plain-English algo trading, built for Indian markets.</p>
-              </div>
-              <div><h4>Platform</h4><ul><li><a href="#platform">Features</a></li><li><a href="#how">How it works</a></li><li><a href="#templates">Templates</a></li><li><a href="#pricing">Pricing</a></li></ul></div>
-              <div><h4>Brokers</h4><ul><li><a href="#brokers">Angel One</a></li><li><a href="#brokers">Zerodha</a></li><li><a href="#brokers">Upstox</a></li><li><a href="#brokers">All brokers</a></li></ul></div>
-              <div><h4>Company</h4><ul><li><a href="#business">For businesses</a></li><li><a href="#faq">FAQ</a></li><li><a href="mailto:contact@devcognix.com">Email us</a></li></ul></div>
-              <div><h4>Legal</h4><ul><li><a href="#contact">Privacy</a></li><li><a href="#contact">Terms</a></li><li><a href="#contact">Risk disclosure</a></li></ul></div>
-            </div>
-            <div class="x-bottom">
-              <p>© 2026 TradeCognix. A DevCognix product.</p>
-              <p>Investments in securities markets are subject to market risks. Read all related documents carefully before investing. TradeCognix is a technology platform and does not provide investment advice.</p>
-            </div>
-          </div>
-        </footer>
-      </div>
-
-      <div class="x-app" id="x-app" hidden>
-        <aside class="x-side">
-          <a class="x-logo" href="#top" data-back aria-label="TradeCognix"><svg aria-hidden="true"><use href="#x-mark" /></svg><span class="x-logo__word">Trade<span>Cognix</span></span></a>
-          <nav class="x-tabs" aria-label="App">
-            <button class="x-tab" type="button" data-view="dashboard"><svg viewBox="0 0 20 20"><rect x="3" y="3" width="6" height="6" rx="1.5" /><rect x="11" y="3" width="6" height="6" rx="1.5" /><rect x="3" y="11" width="6" height="6" rx="1.5" /><rect x="11" y="11" width="6" height="6" rx="1.5" /></svg>Dashboard</button>
-            <button class="x-tab" type="button" data-view="studio"><svg viewBox="0 0 20 20"><path d="M4 15l2.5-.5L15 6l-2-2-8.5 8.5z" /><path d="M11 6l2 2" /></svg>Strategy Studio</button>
-            <button class="x-tab" type="button" data-view="backtests"><svg viewBox="0 0 20 20"><path d="M3 17h14M3 17V3" /><path d="M6 13l3-4 3 2 4-6" /></svg>Backtests</button>
-            <button class="x-tab" type="button" data-view="paper"><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="7" /><path d="M10 3v14" /></svg>Paper/Live</button>
-            <button class="x-tab" type="button" data-view="journal"><svg viewBox="0 0 20 20"><path d="M5 3h8l3 3v11H5z" /><path d="M8 9h5M8 12h5" /></svg>Journal</button>
-            <button class="x-tab" type="button" data-view="brokers"><svg viewBox="0 0 20 20"><path d="M8 12l4-4" /><path d="M9 6l1.5-1.5a3 3 0 0 1 4.2 4.2L13 10M11 14l-1.5 1.5a3 3 0 0 1-4.2-4.2L7 10" /></svg>Brokers</button>
-            <button class="x-tab" type="button" data-view="settings"><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="2.5" /><path d="M10 2.5v2M10 15.5v2M2.5 10h2M15.5 10h2M4.7 4.7l1.4 1.4M13.9 13.9l1.4 1.4M4.7 15.3l1.4-1.4M13.9 6.1l1.4-1.4" /></svg>Settings</button>
-          </nav>
-          <div class="x-side__foot">
-            <p class="x-demo">Demo workspace. All figures are illustrative.</p>
-            <button class="x-back" type="button" data-back>← Back to site</button>
-          </div>
-        </aside>
-        <header class="x-top">
-          <p class="x-top__title" id="x-top-title">Dashboard</p>
-          <span class="x-pill"><i aria-hidden="true"></i>Market closed · opens Mon 09:15 IST</span>
-          <span class="x-pill x-pill--broker"><i class="g" aria-hidden="true"></i>Angel One · demo</span>
-          <span class="x-avatar" aria-label="Signed in as DC">DC</span>
-        </header>
-        <main class="x-main" id="x-main">
-          <!-- dashboard -->
-          <section class="x-view" data-v="dashboard" hidden>
-            <div class="x-vhead"><h2>Good evening, DC</h2><p>Your demo portfolio at a glance. Illustrative numbers.</p></div>
-            <div class="x-kpis">
-              <div class="x-kpi"><span>Portfolio P&amp;L today</span><strong class="x-up">+₹4,280</strong><small class="x-up">+0.86%</small></div>
-              <div class="x-kpi"><span>Active strategies</span><strong>3</strong><small style="color:var(--x-muted)">2 paper · 1 draft</small></div>
-              <div class="x-kpi"><span>Open positions</span><strong>2</strong><small style="color:var(--x-muted)">NIFTY CE · BANKNIFTY PE</small></div>
-              <div class="x-kpi"><span>Win rate 30d</span><strong>54.2%</strong><small class="x-up">+3.1 pts</small></div>
-            </div>
-            <div class="x-panel">
-              <div class="x-panel__head"><h3>Equity, last 30 sessions</h3><span class="x-note">Demo account · ₹5,00,000 start</span></div>
-              <div class="x-panel__body">
-                <p class="x-cap">Equity climbed from ₹5,00,000 to ₹5,38,600 over 30 sessions<small>Closing equity, ₹ · illustrative</small></p>
-                <div class="x-chartbox"><canvas id="x-dash-chart" role="img" aria-label="Demo equity rose from 5 lakh to about 5.39 lakh rupees over 30 sessions"></canvas></div>
-              </div>
-            </div>
-            <div class="x-panel">
-              <div class="x-panel__head"><h3>Strategies</h3><button class="x-btn x-btn--ghost x-btn--sm" type="button" data-go="studio">New strategy</button></div>
-              <div class="x-scroll">
-                <table class="x-tbl">
-                  <thead><tr><th scope="col">Strategy</th><th scope="col">Status</th><th scope="col" class="r">Today P&amp;L</th><th scope="col" class="r">Trades</th></tr></thead>
+            <div class="panel" aria-label="Admin console preview with illustrative data">
+              <div class="panel__head"><h3>Admin console · Your Brand Capital</h3><span class="badge badge--plain">Illustrative</span></div>
+              <div class="scroll-x">
+                <table class="tbl">
+                  <thead><tr><th scope="col">Client</th><th scope="col">Broker</th><th scope="col" class="r">Strategies</th><th scope="col">Status</th></tr></thead>
                   <tbody>
-                    <tr><td>9/21 EMA Crossover <span class="x-note">· NIFTY 15m</span></td><td><span class="x-status x-status--paper">Paper</span></td><td class="r x-up">+₹3,120</td><td class="r">2</td></tr>
-                    <tr><td>ORB Nifty <span class="x-note">· 9:15–9:30 range</span></td><td><span class="x-status">Draft</span></td><td class="r" style="color:var(--x-muted)">—</td><td class="r">0</td></tr>
-                    <tr><td>Short Straddle 9:20 <span class="x-note">· BANKNIFTY</span></td><td><span class="x-status x-status--paper">Paper</span></td><td class="r x-up">+₹1,160</td><td class="r">1</td></tr>
+                    <tr><td>R. Iyer</td><td>Angel One</td><td class="r">3</td><td><span class="badge badge--live">Live</span></td></tr>
+                    <tr><td>S. Mehta</td><td>Zerodha</td><td class="r">2</td><td><span class="badge badge--paper">Paper</span></td></tr>
+                    <tr><td>A. Khan</td><td>Upstox</td><td class="r">1</td><td><span class="badge badge--paper">Paper</span></td></tr>
+                    <tr><td>P. Rao</td><td>Dhan</td><td class="r">0</td><td><span class="badge">Onboarding</span></td></tr>
                   </tbody>
                 </table>
               </div>
             </div>
+          </div>
+        </section>
+
+        <!-- FAQ -->
+        <section class="sec" id="faq" aria-labelledby="faq-title">
+          <div class="wrap faq">
+            <div class="sec__head">
+              <p class="kicker">FAQ</p>
+              <h2 class="h2" id="faq-title">Straight answers.</h2>
+              <p class="lede">Something else? <a href="mailto:contact@devcognix.com">contact@devcognix.com</a></p>
+            </div>
+            <div>
+              <details open><summary>Do I need to know how to code?<svg aria-hidden="true"><use href="#i-plus" /></svg></summary><p>No. You describe the strategy in plain English and review the rules we extract. Every rule is editable before you backtest.</p></details>
+              <details><summary>Can I try it without signing up?<svg aria-hidden="true"><use href="#i-plus" /></svg></summary><p>Yes. Describe a strategy and run a backtest straight away. You only create a free account when you want to paper trade, so your sessions and journal are saved.</p></details>
+              <details><summary>Which brokers are supported?<svg aria-hidden="true"><use href="#i-plus" /></svg></summary><p>Angel One (SmartAPI) is live. Zerodha, Upstox, Dhan, Fyers, Groww, ICICI Direct, Kotak Neo, 5paisa, Alice Blue, Shoonya (Finvasia) and Motilal Oswal are rolling out.</p></details>
+              <details><summary>Is my money safe?<svg aria-hidden="true"><use href="#i-plus" /></svg></summary><p>Your funds stay in your broker account. TradeCognix never holds money; it only places orders through your broker's API. API credentials are encrypted at rest.</p></details>
+              <details><summary>How realistic are the backtest costs?<svg aria-hidden="true"><use href="#i-plus" /></svg></summary><p>Each simulated trade pays brokerage, STT, exchange transaction charges, SEBI fees, stamp duty, GST and slippage. Results show gross and net separately, and flag when data is synthetic or option premiums are estimated.</p></details>
+              <details><summary>Is live trading automatic?<svg aria-hidden="true"><use href="#i-plus" /></svg></summary><p>Only after you explicitly switch it on with a two-step confirmation. The kill switch stops every strategy and squares off open positions at once.</p></details>
+              <details><summary>What about SEBI's algo trading rules?<svg aria-hidden="true"><use href="#i-plus" /></svg></summary><p>TradeCognix is built to align with SEBI's retail algo framework: orders go through your own broker, every order is tagged to its strategy, and kill switches and loss caps are always on. Under NSE's 20 Nov 2026 circular, a personal static IP is only for traders who code their own algos, so live trading for everyone else is enabled through partner brokers' servers as they come on board. Backtesting and paper trading work today.</p></details>
+            </div>
+          </div>
+        </section>
+
+        <section class="cta-band" aria-labelledby="cta-title">
+          <div class="wrap">
+            <h2 class="h2" id="cta-title">Test your idea before you risk a rupee.</h2>
+            <p class="lede" style="margin-inline:auto">Describe it, backtest it with real costs, and decide with the net number in front of you.</p>
+            <div class="btns"><button class="btn btn--primary btn--lg" type="button" data-open-app="studio">Try a strategy, no sign-up <svg aria-hidden="true"><use href="#i-arrow" /></svg></button></div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="foot" id="contact">
+        <div class="wrap">
+          <div class="foot__cols">
+            <div class="foot__brand">
+              <a class="logo" href="#top" aria-label="TradeCognix, back to top"><svg class="logo__mark" aria-hidden="true"><use href="#tc-mark" /></svg><span class="logo__word">TradeCognix</span></a>
+              <p>Plain-English algo trading, built for Indian markets. A DevCognix product.</p>
+            </div>
+            <div><h4>Product</h4><ul><li><a href="#how">How it works</a></li><li><a href="#features">Features</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#" data-open-app="studio">Strategy Studio</a></li></ul></div>
+            <div><h4>Brokers</h4><ul><li><a href="#brokers">Angel One</a></li><li><a href="#brokers">Zerodha</a></li><li><a href="#brokers">Upstox</a></li><li><a href="#brokers">All brokers</a></li></ul></div>
+            <div><h4>Company</h4><ul><li><a href="#partners">For brokers &amp; advisors</a></li><li><a href="#faq">FAQ</a></li><li><a href="mailto:contact@devcognix.com">contact@devcognix.com</a></li><li><a href="https://wa.me/919019088160" target="_blank" rel="noopener">WhatsApp +91 90190 88160</a></li></ul></div>
+            <div><h4>Legal</h4><ul><li><a href="mailto:contact@devcognix.com?subject=Privacy%20policy">Privacy</a></li><li><a href="mailto:contact@devcognix.com?subject=Terms">Terms</a></li><li><a href="#risk">Risk disclosure</a></li></ul></div>
+          </div>
+
+          <section class="risk" id="risk" aria-labelledby="risk-title">
+            <h4 id="risk-title"><svg aria-hidden="true"><use href="#i-warn" /></svg>Risk disclosures on derivatives</h4>
+            <ul>
+              <li>9 out of 10 individual traders in equity Futures and Options Segment, incurred net losses.</li>
+              <li>On an average, loss makers registered net trading loss close to ₹50,000.</li>
+              <li>Over and above the net trading losses incurred, loss makers expended an additional 28% of net trading losses as transaction costs.</li>
+              <li>Those making net trading profits, incurred between 15% to 50% of such profits as transaction cost.</li>
+            </ul>
+            <small>Source: SEBI study dated January 25, 2023 on “Analysis of Profit and Loss of Individual Traders dealing in equity Futures and Options (F&amp;O) Segment”, based on FY 2021-22. Most individual F&amp;O traders lose money. TradeCognix is a technology platform; nothing on this site is investment advice or a recommendation to buy or sell any security. Backtests and paper results are simulated and are not indicative of future returns. Investments in securities markets are subject to market risks; read all related documents carefully before investing.</small>
           </section>
 
-          <!-- studio -->
-          <section class="x-view x-studio" data-v="studio" hidden>
-            <div class="x-vhead"><h2>Strategy Studio</h2><p>Write the rules in plain English. Edit anything we get wrong.</p></div>
-            <div class="x-panel"><div class="x-panel__body">
-              <label class="x-lbl" for="x-input">Describe your strategy in plain English</label>
-              <textarea id="x-input" placeholder="e.g. Buy Nifty ATM call when 9 EMA crosses above 21 EMA on 15-min candles after 9:30 AM…">Buy Nifty ATM call when 9 EMA crosses above 21 EMA on 15-min candles after 9:30 AM. Exit on opposite cross or 3:15 PM. Max 2 trades a day.</textarea>
-              <div class="x-examples" aria-label="Example prompts">
-                <button class="x-ex" type="button" data-ex="Buy Nifty ATM call when 9 EMA crosses above 21 EMA on 15-min candles after 9:30 AM. Exit on opposite cross or 3:15 PM. Max 2 trades a day.">9/21 EMA on Nifty</button>
-                <button class="x-ex" type="button" data-ex="Sell BankNifty ATM straddle at 9:20 AM. Stop loss 25% on each leg. Exit everything at 3:10 PM. Max 1 trade a day.">BankNifty straddle 9:20</button>
-                <button class="x-ex" type="button" data-ex="Buy Nifty ATM put when price breaks below the 9:15 to 9:30 opening range on 5-min candles. Stop loss 1%, target 2%. Exit by 3:15 PM. Max 1 trade a day.">Opening range breakdown</button>
-                <button class="x-ex" type="button" data-ex="Buy Reliance when RSI 14 drops below 30 on 30-min candles and sell when RSI crosses above 60. Max 3 trades a day, daily loss limit 5000.">RSI mean reversion</button>
-              </div>
-              <div class="x-studio__actions">
-                <button class="x-btn x-btn--gold x-mag" type="button" id="x-gen">Generate strategy</button>
-                <span class="x-note">Parsing is rule-based in this prototype</span>
-              </div>
-              <div class="x-progress" id="x-gen-prog"><i></i></div>
-              <p class="x-steplog" id="x-gen-log" aria-live="polite"></p>
-            </div></div>
+          <div class="foot__bottom">
+            <span>© 2026 TradeCognix · DevCognix</span>
+            <span>Prices in ₹ · Times in IST</span>
+          </div>
+        </div>
+      </footer>
+    </div>
 
-            <div class="x-panel" id="x-rules-panel" hidden>
-              <div class="x-panel__head"><h3>Parsed rules</h3><span class="x-note">Click any value to edit</span></div>
-              <div class="x-panel__body">
-                <div class="x-edit" id="x-edit"></div>
-                <div class="x-studio__actions" style="margin-top:18px">
-                  <button class="x-btn x-btn--gold x-mag" type="button" id="x-run">Run backtest</button>
-                  <span class="x-note">NSE data, Jan 2020 to today · illustrative</span>
+    <!-- =========================== APP =========================== -->
+    <div class="app" id="x-app" hidden>
+      <aside class="side">
+        <a class="logo" href="#top" data-back aria-label="TradeCognix, back to site"><svg class="logo__mark" aria-hidden="true"><use href="#tc-mark" /></svg><span class="logo__word">TradeCognix</span></a>
+        <nav class="tabs" aria-label="App">
+          <span class="tabs__label">Workspace</span>
+          <button class="tab" type="button" data-view="dashboard"><svg aria-hidden="true"><use href="#n-home" /></svg>Dashboard</button>
+          <button class="tab" type="button" data-view="studio"><svg aria-hidden="true"><use href="#n-studio" /></svg><span class="lg">Strategy Studio</span><span class="sm">Studio</span></button>
+          <button class="tab tab--desk" type="button" data-view="backtests"><svg aria-hidden="true"><use href="#n-bt" /></svg>Backtests<span class="count" id="x-bt-count"></span></button>
+          <button class="tab" type="button" data-view="paper"><svg aria-hidden="true"><use href="#n-live" /></svg><span class="lg">Paper &amp; live</span><span class="sm">Live</span><span class="count" id="x-sess-count"></span></button>
+          <button class="tab tab--desk" type="button" data-view="journal"><svg aria-hidden="true"><use href="#n-journal" /></svg>Journal</button>
+          <button class="tab" type="button" data-view="brokers"><svg aria-hidden="true"><use href="#n-broker" /></svg>Brokers</button>
+          <span class="tabs__label">Account</span>
+          <button class="tab tab--desk" type="button" data-view="settings"><svg aria-hidden="true"><use href="#n-settings" /></svg>Settings</button>
+          <button class="tab tab--more" type="button" data-view="settings"><svg aria-hidden="true"><use href="#n-more" /></svg>More</button>
+        </nav>
+        <div class="side__foot">
+          <div class="side__demo" id="x-mode-card"><b><span class="dot-live" aria-hidden="true"></span><span id="x-mode-title">Demo workspace</span></b><span id="x-mode-text">Runs in your browser. Figures are illustrative.</span></div>
+          <a class="side__back" href="#top" data-back><svg width="14" height="14" aria-hidden="true" style="transform:rotate(180deg)"><use href="#i-arrow" /></svg>Back to site</a>
+        </div>
+      </aside>
+
+      <div class="app__col">
+        <header class="top">
+          <a class="logo top__logo" href="#top" data-back aria-label="Back to site"><svg class="logo__mark" aria-hidden="true"><use href="#tc-mark" /></svg></a>
+          <p class="top__title" id="x-top-title">Dashboard</p>
+          <span class="mkt" id="x-mkt" title="NSE equity session 09:15–15:30 IST, Mon–Fri. Exchange holidays not accounted for."><i aria-hidden="true"></i><span class="mkt__long" id="x-mkt-text">NSE</span><span class="num" id="x-clock">--:-- IST</span></span>
+          <button class="kill" id="x-kill" type="button" aria-label="Kill switch: stop all running strategies"><svg aria-hidden="true"><use href="#i-power" /></svg><span>Kill switch</span></button>
+          <button class="icon-btn theme-toggle" type="button" data-theme-toggle aria-label="Switch colour theme"><svg class="i-moon" aria-hidden="true"><use href="#i-moon" /></svg><svg class="i-sun" aria-hidden="true"><use href="#i-sun" /></svg></button>
+          <button class="avatar is-guest" id="x-avatar" type="button" data-view="settings" aria-label="Account and settings">?</button>
+        </header>
+
+        <main class="main" id="x-main" tabindex="-1">
+          <!-- Dashboard -->
+          <section class="view" data-v="dashboard" hidden>
+            <div class="vhead">
+              <div><h1 id="x-greet">Good evening</h1><p>Your demo portfolio at a glance. Illustrative numbers.</p></div>
+              <button class="btn btn--primary" type="button" data-view="studio"><svg aria-hidden="true"><use href="#i-plus" /></svg>New strategy</button>
+            </div>
+            <div class="kpis">
+              <div class="card kpi"><span>Portfolio P&amp;L today</span><strong class="up">+₹4,280</strong><small class="up">+0.86%</small></div>
+              <div class="card kpi"><span>Active strategies</span><strong>3</strong><small>2 paper · 1 draft</small></div>
+              <div class="card kpi"><span>Open positions</span><strong>2</strong><small>NIFTY CE · BANKNIFTY PE</small></div>
+              <div class="card kpi"><span>Win rate, 30 days</span><strong>54.2%</strong><small class="up">+3.1 pts</small></div>
+            </div>
+            <div class="dash">
+              <div style="display:grid;gap:16px;min-width:0">
+                <div class="panel">
+                  <div class="panel__head"><h3>Equity, last 30 sessions</h3><span class="note">Demo account · ₹5,00,000 start</span></div>
+                  <div class="panel__body">
+                    <p class="cap">Equity rose from ₹5.00 L to ₹5.39 L over 30 sessions<small>Closing equity · illustrative</small></p>
+                    <div class="chartbox"><canvas id="x-dash-chart" role="img" aria-label="Demo equity rose from 5 lakh to about 5.39 lakh rupees over 30 sessions"></canvas></div>
+                  </div>
                 </div>
-                <div class="x-progress" id="x-run-prog"><i></i></div>
-                <p class="x-steplog" id="x-run-log" aria-live="polite"></p>
+                <div class="panel">
+                  <div class="panel__head"><h3>Strategies</h3><button class="btn btn--secondary btn--sm" type="button" data-view="studio">New strategy</button></div>
+                  <div class="scroll-x">
+                    <table class="tbl tbl--min">
+                      <thead><tr><th scope="col">Strategy</th><th scope="col">Status</th><th scope="col" class="r">Today P&amp;L</th><th scope="col" class="r">Trades</th></tr></thead>
+                      <tbody>
+                        <tr><td>9/21 EMA Crossover<span class="sub">NIFTY · 15m</span></td><td><span class="badge badge--paper">Paper</span></td><td class="r up">+₹3,120</td><td class="r">2</td></tr>
+                        <tr><td>ORB Nifty<span class="sub">09:15–09:30 range</span></td><td><span class="badge">Draft</span></td><td class="r faint">—</td><td class="r">0</td></tr>
+                        <tr><td>Short Straddle 09:20<span class="sub">BANKNIFTY</span></td><td><span class="badge badge--paper">Paper</span></td><td class="r up">+₹1,160</td><td class="r">1</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+              <div class="panel">
+                <div class="panel__head"><h3>Get started</h3><span class="note num" id="x-ck-count">0/5</span></div>
+                <div class="progressbar" style="margin-top:14px"><i id="x-ck-bar" style="width:0"></i></div>
+                <ol class="checklist" id="x-checklist">
+                  <li data-ck="describe"><button type="button" data-view="studio"><span class="tick"><svg aria-hidden="true"><use href="#i-check" /></svg></span><span class="ck-label">Describe a strategy<br /><small>Plain English, no code</small></span></button></li>
+                  <li data-ck="backtest"><button type="button" data-view="studio"><span class="tick"><svg aria-hidden="true"><use href="#i-check" /></svg></span><span class="ck-label">Run a backtest<br /><small>Real Indian costs</small></span></button></li>
+                  <li data-ck="account"><button type="button" data-auth-open><span class="tick"><svg aria-hidden="true"><use href="#i-check" /></svg></span><span class="ck-label">Create a free account<br /><small>Needed to paper trade</small></span></button></li>
+                  <li data-ck="broker"><button type="button" data-view="brokers"><span class="tick"><svg aria-hidden="true"><use href="#i-check" /></svg></span><span class="ck-label">Connect your broker<br /><small>Angel One is live</small></span></button></li>
+                  <li data-ck="paper"><button type="button" data-view="studio"><span class="tick"><svg aria-hidden="true"><use href="#i-check" /></svg></span><span class="ck-label">Start paper trading<br /><small>No money at risk</small></span></button></li>
+                </ol>
               </div>
             </div>
+          </section>
 
-            <div class="x-panel" id="x-results" hidden>
-              <div class="x-panel__head"><h3>Backtest results</h3><span class="x-note" id="x-res-scope">Illustrative</span></div>
-              <div class="x-mgrid" id="x-mgrid"></div>
-              <div class="x-twocol">
-                <div>
-                  <p class="x-cap" id="x-eq-cap">Equity curve<small>Cumulative net P&amp;L, ₹ · simulated</small></p>
-                  <div class="x-chartbox"><canvas id="x-bt-chart" role="img" aria-label="Simulated equity curve of the backtest"></canvas></div>
+          <!-- Strategy Studio -->
+          <section class="view" data-v="studio" hidden>
+            <div class="vhead">
+              <div><h1>Strategy Studio</h1><p>Describe it in plain English. Review the rules. Backtest with real Indian costs.</p></div>
+              <span class="badge badge--plain" id="x-engine-note">Rule-based parser · demo</span>
+            </div>
+            <ol class="flow" id="x-flow" aria-label="Progress">
+              <li data-step="1"><b>1</b><span>Describe</span><small>&nbsp;· plain English</small></li>
+              <li data-step="2"><b>2</b><span>Backtest</span><small>&nbsp;· real costs</small></li>
+              <li data-step="3"><b>3</b><span>Paper trade</span><small>&nbsp;· free account</small></li>
+              <li data-step="4"><b>4</b><span>Go live</span><small>&nbsp;· your broker</small></li>
+            </ol>
+            <div class="studio">
+              <div class="studio__left">
+                <div class="panel">
+                  <div class="panel__body">
+                    <label class="label" for="x-input">Describe your strategy</label>
+                    <div class="prompt-wrap" style="margin-top:8px">
+                      <textarea id="x-input" class="textarea" maxlength="600" spellcheck="false" aria-describedby="x-input-hint" placeholder="e.g. Buy Nifty ATM call when 9 EMA crosses above 21 EMA on 15-min candles after 9:30 AM. Exit on opposite cross or 3:15 PM. Max 2 trades a day.">Buy Nifty ATM call when 9 EMA crosses above 21 EMA on 15-min candles after 9:30 AM. Exit on opposite cross or 3:15 PM. Max 2 trades a day.</textarea>
+                    </div>
+                    <div class="prompt-meta"><span class="hint" id="x-input-hint" aria-live="polite">Include instrument, entry, exit and a risk limit.</span><span class="hint num" id="x-count">0/600</span></div>
+                    <div class="chips" role="group" aria-label="Example prompts">
+                      <span class="chips__label">Try an example</span>
+                      <button class="chip" type="button" data-ex="Buy Nifty ATM call when 9 EMA crosses above 21 EMA on 15-min candles after 9:30 AM. Exit on opposite cross or 3:15 PM. Max 2 trades a day.">9/21 EMA on Nifty</button>
+                      <button class="chip" type="button" data-ex="Sell BankNifty ATM straddle at 9:20 AM. Stop loss 25% on each leg. Exit everything at 3:10 PM. Max 1 trade a day.">BankNifty straddle 9:20</button>
+                      <button class="chip" type="button" data-ex="Buy Nifty ATM put when price breaks below the 9:15 to 9:30 opening range on 5-min candles. Stop loss 1%, target 2%. Exit by 3:15 PM. Max 1 trade a day.">Opening range breakdown</button>
+                      <button class="chip" type="button" data-ex="Buy Reliance when RSI 14 drops below 30 on 30-min candles and sell when RSI crosses above 60. Max 3 trades a day, daily loss limit 5000.">RSI mean reversion</button>
+                      <button class="chip" type="button" data-ex="Buy Nifty futures when Supertrend 10,3 turns green on 30-min candles. Exit when Supertrend turns red. Max 1 trade a day.">Supertrend futures</button>
+                      <button class="chip" type="button" data-ex="Buy HDFC Bank when price pulls back to VWAP on 5-min candles after 10:00 AM while above 21 EMA. Stop loss 0.5%, exit at 3:15 PM. Max 2 trades a day.">VWAP pullback</button>
+                    </div>
+                    <div class="studio__actions">
+                      <button class="btn btn--primary" type="button" id="x-gen">Generate rules <kbd class="kbd-mod">Ctrl ↵</kbd></button>
+                      <button class="btn btn--ghost btn--sm" type="button" id="x-clear">Clear</button>
+                    </div>
+                    <div class="progress" id="x-gen-prog"><i></i></div>
+                    <p class="steplog" id="x-gen-log" aria-live="polite"></p>
+                  </div>
                 </div>
-                <div>
-                  <p class="x-cap" id="x-cost-cap">Where the costs went<small>Total charges, ₹</small></p>
-                  <div class="x-chartbox x-chartbox--sm"><canvas id="x-cost-chart" role="img" aria-label="Cost breakdown by brokerage, STT, exchange, GST and slippage"></canvas></div>
+
+                <div class="panel" id="x-rules-panel" hidden>
+                  <div class="panel__head"><h3>Parsed rules</h3><span class="note">Click a value to edit</span></div>
+                  <div class="panel__body">
+                    <p class="explain" id="x-explain" hidden></p>
+                    <div class="rules" id="x-edit"></div>
+                    <div class="studio__actions">
+                      <button class="btn btn--primary" type="button" id="x-run">Run backtest <kbd class="kbd-mod">Ctrl ↵</kbd></button>
+                      <span class="note">NSE data, Jan 2020 to today</span>
+                    </div>
+                    <div class="progress" id="x-run-prog"><i></i></div>
+                    <p class="steplog" id="x-run-log" aria-live="polite"></p>
+                  </div>
                 </div>
               </div>
-              <div class="x-scroll" style="border-top:1px solid var(--x-line)">
-                <table class="x-tbl">
-                  <thead><tr><th scope="col">Date</th><th scope="col">Side</th><th scope="col">Instrument</th><th scope="col" class="r">Entry</th><th scope="col" class="r">Exit</th><th scope="col" class="r">Net P&amp;L</th></tr></thead>
-                  <tbody id="x-trades"></tbody>
+
+              <div class="studio__right" style="min-width:0">
+                <div class="panel" id="x-results" hidden tabindex="-1" aria-labelledby="x-res-title">
+                  <div class="panel__head">
+                    <h3 id="x-res-title">Backtest results <span class="badge badge--warn" id="x-res-badge">Illustrative</span></h3>
+                    <span class="res-scope" id="x-res-scope"></span>
+                  </div>
+                  <div class="metrics" id="x-mgrid"></div>
+                  <div class="res-grid">
+                    <div>
+                      <p class="cap" id="x-eq-cap">Equity curve</p>
+                      <div class="chartbox"><canvas id="x-bt-chart" role="img" aria-label="Equity curve of the backtest: cumulative net profit and loss after costs"></canvas></div>
+                    </div>
+                    <div>
+                      <p class="cap" id="x-cost-cap">Where the costs went</p>
+                      <div class="costbars" id="x-costbars"></div>
+                      <div class="costsum" id="x-costsum"></div>
+                    </div>
+                  </div>
+                  <div class="panel__head" style="border-top:1px solid var(--border)"><h3>Recent trades</h3><span class="note" id="x-trades-note">Latest 8</span></div>
+                  <div class="scroll-x">
+                    <table class="tbl tbl--min">
+                      <thead><tr><th scope="col">Date · IST</th><th scope="col">Side</th><th scope="col">Instrument</th><th scope="col" class="r">Entry</th><th scope="col" class="r">Exit</th><th scope="col" class="r">Net P&amp;L</th></tr></thead>
+                      <tbody id="x-trades"></tbody>
+                    </table>
+                  </div>
+                  <div class="res-actions">
+                    <p class="note">Simulated after costs and slippage. Past performance is not indicative of future results.</p>
+                    <div class="btns">
+                      <button class="btn btn--secondary" type="button" id="x-golive">Go live</button>
+                      <button class="btn btn--primary" type="button" id="x-paper">Start paper trading</button>
+                    </div>
+                  </div>
+                  <div class="res-banner" id="x-res-banner" hidden></div>
+                </div>
+                <div class="results-empty" id="x-results-empty">
+                  <svg viewBox="0 0 180 90" fill="none" aria-hidden="true"><path d="M0 80h180M0 55h180M0 30h180" stroke="currentColor" stroke-dasharray="2 4" /><path d="M6 74l28-10 22 6 30-22 24 8 30-26 34-14" stroke="var(--brand)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" opacity=".8" /></svg>
+                  <h3>Your backtest will appear here</h3>
+                  <p>Generate rules from your description, review them, then run a backtest. You'll see net P&amp;L after every Indian charge, the equity curve and each trade.</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Backtests -->
+          <section class="view" data-v="backtests" hidden>
+            <div class="vhead"><div><h1>Backtests</h1><p>Runs from this session. Open one to see its full results.</p></div></div>
+            <div class="panel" id="x-bt-panel" hidden>
+              <div class="scroll-x">
+                <table class="tbl tbl--min">
+                  <thead><tr><th scope="col">Strategy</th><th scope="col">Instrument</th><th scope="col" class="r">Trades</th><th scope="col" class="r">Win rate</th><th scope="col" class="r">Net P&amp;L</th><th scope="col" class="r">Run at · IST</th><th scope="col"><span class="sr-only">Open</span></th></tr></thead>
+                  <tbody id="x-bt-body"></tbody>
                 </table>
               </div>
-              <div class="x-panel__head" style="border-top:1px solid var(--x-line);border-bottom:0">
-                <span class="x-note">Simulated on illustrative data. Past performance is not indicative of future results.</span>
-                <div class="x-btns">
-                  <button class="x-btn x-btn--ghost" type="button" id="x-paper">Start paper trading</button>
-                  <button class="x-btn x-btn--gold" type="button" id="x-golive">Go live</button>
-                </div>
-              </div>
+            </div>
+            <div class="panel empty" id="x-bt-empty">
+              <span class="empty__icon"><svg class="i" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round"><use href="#n-bt" /></svg></span>
+              <h3>No backtests yet</h3>
+              <p>Describe a strategy in the Studio and run your first backtest. It's free and needs no account.</p>
+              <div class="btns"><button class="btn btn--primary" type="button" data-view="studio">Open Strategy Studio</button></div>
             </div>
           </section>
 
-          <!-- brokers -->
-          <section class="x-view" data-v="brokers" hidden>
-            <div class="x-vhead"><h2>Brokers</h2><p>Connect the account TradeCognix places orders through. Your funds never leave it.</p></div>
-            <div class="x-bgrid" id="x-bgrid"></div>
+          <!-- Paper / live -->
+          <section class="view" data-v="paper" hidden>
+            <div class="vhead"><div><h1>Paper &amp; live</h1><p>Sessions run on candle close during market hours, Mon–Fri 09:15–15:30 IST.</p></div></div>
+            <div class="callout callout--danger">
+              <svg aria-hidden="true"><use href="#i-power" /></svg>
+              <div style="flex:1"><strong>Kill switch</strong><br />Stops every running strategy and squares off open positions at once. Daily loss caps and hard exit times stay active regardless.</div>
+              <button class="btn btn--danger btn--sm" type="button" data-kill-open>Kill all</button>
+            </div>
+            <div class="panel" id="x-sess-panel" hidden>
+              <div class="panel__head"><h3>Sessions</h3><span class="note" id="x-sess-note"></span></div>
+              <div class="scroll-x">
+                <table class="tbl tbl--min">
+                  <thead><tr><th scope="col">Session</th><th scope="col">Strategy</th><th scope="col">Mode</th><th scope="col">Broker</th><th scope="col">Started · IST</th><th scope="col">State</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
+                  <tbody id="x-sess-body"></tbody>
+                </table>
+              </div>
+            </div>
+            <div class="panel empty" id="x-sess-empty">
+              <span class="empty__icon"><svg aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round"><use href="#n-live" /></svg></span>
+              <h3>Nothing running</h3>
+              <p>Backtest a strategy, then start paper trading from its results. Live trading needs a connected broker and a typed confirmation.</p>
+              <div class="btns"><button class="btn btn--primary" type="button" data-view="studio">Open Strategy Studio</button></div>
+            </div>
           </section>
 
-          <!-- phase 2 -->
-          <section class="x-view" data-v="soon" hidden>
-            <div class="x-panel x-empty">
-              <svg viewBox="0 0 220 120" fill="none" aria-hidden="true">
-                <path d="M0 100H220M0 70H220M0 40H220" stroke="#232C46" />
-                <path d="M30 20v80M80 20v80M130 20v80M180 20v80" stroke="#232C46" stroke-dasharray="2 4" />
-                <path d="M10 92 L50 80 L80 86 L120 58 L150 64 L200 26" stroke="#C9A86A" stroke-width="1.5" stroke-linejoin="round" />
-                <circle cx="200" cy="26" r="4" fill="#E9D3A3" />
-                <circle class="x-pulse" cx="200" cy="26" r="8" fill="#E9D3A3" fill-opacity=".35" />
-              </svg>
-              <h3 id="x-soon-title">Journal</h3>
-              <p>Coming in phase 2. The engine is ready; this screen is being drawn.</p>
-              <button class="x-btn x-btn--ghost x-btn--sm" type="button" data-go="studio" style="margin-top:12px">Open Strategy Studio</button>
+          <!-- Brokers -->
+          <section class="view" data-v="brokers" hidden>
+            <div class="vhead"><div><h1>Brokers</h1><p>Connect the account TradeCognix places orders through. Your funds never leave it.</p></div></div>
+            <div class="callout"><svg aria-hidden="true"><use href="#i-lock" /></svg><span>API credentials are encrypted at rest and used only to place your orders. Live orders are routed only in ways your broker and NSE's retail-algo rules allow.</span></div>
+            <div class="bgrid" id="x-bgrid"></div>
+          </section>
+
+          <!-- Settings -->
+          <section class="view" data-v="settings" hidden>
+            <div class="vhead"><div><h1>Settings</h1><p>Appearance, account and connection.</p></div></div>
+            <div class="panel">
+              <div class="set-row"><div><h3>Appearance</h3><p>Dark is the default. Your choice is remembered on this device.</p></div>
+                <div class="seg" role="group" aria-label="Theme"><button type="button" data-theme-set="dark" aria-pressed="true">Dark</button><button type="button" data-theme-set="light" aria-pressed="false">Light</button></div></div>
+              <div class="set-row"><div><h3>Account</h3><p id="x-acct-text">Not signed in. Backtests work without an account.</p></div><button class="btn btn--secondary btn--sm" type="button" id="x-acct-btn" data-auth-open>Create free account</button></div>
+              <div class="set-row"><div><h3>Backend</h3><p id="x-api-text">Demo mode: everything runs in your browser.</p></div><span class="badge" id="x-api-badge">Demo</span></div>
+              <div class="set-row"><div><h3>More</h3><p>Every screen in the workspace.</p></div><div class="btns"><button class="btn btn--secondary btn--sm" type="button" data-view="backtests">Backtests</button><button class="btn btn--secondary btn--sm" type="button" data-view="journal">Journal</button><a class="btn btn--ghost btn--sm" href="#top" data-back>Back to site</a></div></div>
+              <div class="set-row"><div><h3>Reset demo</h3><p>Clear demo sign-in, broker connections, sessions and backtests on this device.</p></div><button class="btn btn--danger-outline btn--sm" type="button" id="x-reset">Reset demo data</button></div>
+            </div>
+          </section>
+
+          <!-- Coming soon -->
+          <section class="view" data-v="soon" hidden>
+            <div class="vhead"><div><h1 id="x-soon-title">Journal</h1><p>Every fill, auto-tagged by strategy.</p></div></div>
+            <div class="panel empty">
+              <span class="empty__icon"><svg aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round"><use href="#n-journal" /></svg></span>
+              <h3>Coming in phase 2</h3>
+              <p>The engine already logs every order and trade; this screen is being built. Paper sessions you start now will appear here.</p>
+              <div class="btns"><button class="btn btn--secondary" type="button" data-view="studio">Open Strategy Studio</button></div>
             </div>
           </section>
         </main>
       </div>
+    </div>
 
-      <div class="x-modal" id="x-live-modal" hidden role="dialog" aria-modal="true" aria-labelledby="x-live-title">
-        <div class="x-modal__box">
-          <h3 id="x-live-title">Switch to live trading?</h3>
-          <p>Real orders will be placed through <strong style="color:var(--x-ivory)">Angel One</strong> with real money. This is step two of two.</p>
-          <div class="x-warn">The kill switch in the top bar stops every strategy and squares off open positions at once. Daily loss cap and hard exit time stay active.</div>
-          <label class="x-field x-livebox"><span>Type LIVE to confirm</span><input id="x-live-input" autocomplete="off" spellcheck="false" /></label>
-          <div class="x-modal__actions">
-            <button class="x-btn x-btn--ghost" type="button" data-close>Cancel</button>
-            <button class="x-btn x-btn--gold" type="button" id="x-live-confirm" disabled>Go live</button>
-          </div>
+    <!-- =========================== MODALS =========================== -->
+    <div class="modal" id="tc-auth-modal" hidden role="dialog" aria-modal="true" aria-labelledby="tc-auth-title">
+      <form class="modal__box" id="tc-auth-form" novalidate>
+        <h3 id="tc-auth-title">Create your free account</h3>
+        <p id="tc-auth-sub">Backtests stay free without one. An account saves your strategies, paper sessions and journal.</p>
+        <label class="field"><span>Email</span><input name="email" type="email" autocomplete="email" required /><small class="field__msg"></small></label>
+        <label class="field"><span>Password</span><input name="password" type="password" autocomplete="new-password" minlength="8" required /><small class="field__msg"></small></label>
+        <p class="hint is-error" id="tc-auth-err" aria-live="polite"></p>
+        <div class="modal__actions">
+          <button class="btn btn--ghost" type="button" data-close>Cancel</button>
+          <button class="btn btn--secondary" type="submit" value="login">Sign in</button>
+          <button class="btn btn--primary" type="submit" value="register">Create account</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="modal" id="x-live-modal" hidden role="dialog" aria-modal="true" aria-labelledby="x-live-title">
+      <div class="modal__box">
+        <span class="modal__icon"><svg aria-hidden="true"><use href="#i-warn" /></svg></span>
+        <h3 id="x-live-title">Switch to live trading?</h3>
+        <p>Real orders will be placed through <strong id="x-live-broker">your broker</strong> with real money. This is step two of two.</p>
+        <div class="callout callout--danger"><svg aria-hidden="true"><use href="#i-power" /></svg><span>The kill switch in the top bar stops every strategy and squares off open positions at once. Daily loss cap and hard exit time stay active.</span></div>
+        <label class="field mono-input"><span>Type LIVE to confirm</span><input id="x-live-input" autocomplete="off" spellcheck="false" autocapitalize="characters" /><small class="hint" id="x-live-hint">Case-sensitive.</small></label>
+        <div class="modal__actions">
+          <button class="btn btn--ghost" type="button" data-close>Cancel</button>
+          <button class="btn btn--danger" type="button" id="x-live-confirm" disabled>Go live</button>
         </div>
       </div>
-
-      <div class="x-modal" id="x-conn-modal" hidden role="dialog" aria-modal="true" aria-labelledby="x-conn-title">
-        <form class="x-modal__box" id="x-conn-form">
-          <h3 id="x-conn-title">Connect broker</h3>
-          <p>Fields only in this prototype. Nothing is submitted.</p>
-          <label class="x-field"><span>API key</span><input autocomplete="off" /></label>
-          <label class="x-field"><span>Client code</span><input autocomplete="off" /></label>
-          <label class="x-field"><span>PIN</span><input type="password" inputmode="numeric" autocomplete="off" /></label>
-          <label class="x-field"><span>TOTP secret</span><input type="password" autocomplete="off" /></label>
-          <p class="x-note">Encrypted at rest. Orders only from your whitelisted static IP.</p>
-          <div class="x-modal__actions">
-            <button class="x-btn x-btn--ghost" type="button" data-close>Cancel</button>
-            <button class="x-btn x-btn--gold" type="submit">Connect</button>
-          </div>
-        </form>
-      </div>
-
-      <div class="x-toast" id="x-toast" role="status"></div>
-
-      <script type="application/json" id="x-equity-data">
-        [500000,501200,499800,503400,505100,504200,507900,506300,510800,512400,511000,514700,513200,517900,520300,518600,522100,524800,523000,527400,526100,529800,531500,529900,533200,535700,534100,536900,535200,538600]
-      </script>
     </div>
-    <!-- TradeCognix backend wiring: set window.TC_API_BASE in js/config.js (or ?api=https://your-api) to use the real API; empty = demo mode -->
-    <script src="js/config.js"></script>
-    <script src="js/api.js"></script>
-    <script src="hark.js"></script>
-    <script src="chart.js"></script>
-    <script src="datalabels.js"></script>
-    <script src="hark-charts.js"></script>
-    <script>
-      (function () {
-        var doc = document, root = doc.documentElement;
-        root.setAttribute("data-theme", "dark");
-        var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-        var $ = function (s, c) { return (c || doc).querySelector(s); };
-        var $$ = function (s, c) { return [].slice.call((c || doc).querySelectorAll(s)); };
-        var inr = function (v) { return Math.round(v).toLocaleString("en-IN"); };
-        var rupee = function (v) { return (v < 0 ? "−₹" : "₹") + inr(Math.abs(v)); };
-        function rng(seed) { var s = seed >>> 0 || 1; return function () { s = (s + 0x6D2B79F5) >>> 0; var t = s; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
-        function hash(str) { var h = 2166136261; for (var i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
 
-        /* ---------- word reveal ---------- */
-        function wrapWord(content, i) {
-          var w = doc.createElement("span"); w.className = "x-w";
-          var inner = doc.createElement("span"); inner.style.setProperty("--i", i);
-          inner.appendChild(content); w.appendChild(inner); return w;
-        }
-        $$(".x-split").forEach(function (el) {
-          var i = 0, frag = doc.createDocumentFragment();
-          [].slice.call(el.childNodes).forEach(function (n) {
-            if (n.nodeType === 3) {
-              n.textContent.split(/(\s+)/).forEach(function (part) {
-                if (!part) return;
-                if (/^\s+$/.test(part)) frag.appendChild(doc.createTextNode(" "));
-                else frag.appendChild(wrapWord(doc.createTextNode(part), i++));
-              });
-            } else frag.appendChild(wrapWord(n.cloneNode(true), i++));
-          });
-          el.textContent = ""; el.appendChild(frag);
-        });
-        $$(".x-split-groups").forEach(function (el) {
-          var parts = el.textContent.trim().split(/\s+/); el.textContent = "";
-          parts.forEach(function (p, i) { if (i) el.appendChild(doc.createTextNode(" ")); var w = wrapWord(doc.createTextNode(p), i); w.setAttribute("aria-hidden", "true"); el.appendChild(w); });
-        });
+    <div class="modal" id="x-kill-modal" hidden role="dialog" aria-modal="true" aria-labelledby="x-kill-title">
+      <div class="modal__box">
+        <span class="modal__icon"><svg aria-hidden="true"><use href="#i-power" /></svg></span>
+        <h3 id="x-kill-title">Stop everything now?</h3>
+        <p id="x-kill-text">This halts every running paper and live session and squares off open positions.</p>
+        <div class="modal__actions">
+          <button class="btn btn--ghost" type="button" data-close>Cancel</button>
+          <button class="btn btn--danger" type="button" id="x-kill-confirm">Kill all sessions</button>
+        </div>
+      </div>
+    </div>
 
-        /* ---------- count up ---------- */
-        function fmtCount(el, v) {
-          var dec = +(el.dataset.dec || 0), target = parseFloat(el.dataset.count);
-          var s = dec ? v.toFixed(dec) : (target >= 1900 && target <= 2100 ? String(Math.round(v)) : inr(v));
-          return (el.dataset.prefix || "") + s + (el.dataset.suffix || "");
-        }
-        function countUp(el) {
-          var to = parseFloat(el.dataset.count), from = parseFloat(el.dataset.from || 0), t0 = null, dur = 1600;
-          if (reduce) { el.textContent = fmtCount(el, to); return; }
-          function step(t) { if (!t0) t0 = t; var p = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - p, 4); el.textContent = fmtCount(el, from + (to - from) * e); if (p < 1) requestAnimationFrame(step); }
-          requestAnimationFrame(step);
-        }
-        $$("[data-count]").forEach(function (el) { if (!reduce) el.textContent = fmtCount(el, parseFloat(el.dataset.from || 0)); });
+    <div class="modal" id="x-conn-modal" hidden role="dialog" aria-modal="true" aria-labelledby="x-conn-title">
+      <form class="modal__box" id="x-conn-form" novalidate>
+        <h3 id="x-conn-title">Connect broker</h3>
+        <p id="x-conn-intro">Demo only: nothing you type here leaves your browser.</p>
+        <div id="x-conn-fields" style="display:grid;gap:12px"></div>
+        <p class="note">Encrypted at rest. Live orders only through routes your broker allows.</p>
+        <div class="modal__actions">
+          <button class="btn btn--ghost" type="button" data-close>Cancel</button>
+          <button class="btn btn--primary" type="submit">Connect</button>
+        </div>
+      </form>
+    </div>
 
-        /* ---------- observers ---------- */
-        var io = "IntersectionObserver" in window ? new IntersectionObserver(function (es) {
-          es.forEach(function (e) {
-            if (!e.isIntersecting) return;
-            var el = e.target; io.unobserve(el);
-            if (el.hasAttribute("data-count")) countUp(el); else el.classList.add("is-in");
-          });
-        }, { threshold: 0.2, rootMargin: "0px 0px -6% 0px" }) : null;
-        $$(".x-split:not([data-on-load]), .x-fade, .x-phone, [data-count]").forEach(function (el) {
-          if (el.closest(".x-hero")) return;
-          if (io) io.observe(el); else { el.classList.add("is-in"); if (el.hasAttribute("data-count")) countUp(el); }
-        });
-        requestAnimationFrame(function () { setTimeout(function () { $$(".x-hero .x-split, .x-hero .x-fade").forEach(function (el) { el.classList.add("is-in"); }); }, 80); });
+    <div class="toast" id="x-toast" role="status" aria-live="polite"></div>
 
-        /* ---------- ticker ---------- */
-        var tape = [["NIFTY 50", "24,612.35", "+0.48%", 1], ["BANK NIFTY", "52,184.90", "−0.21%", 0], ["FINNIFTY", "23,940.15", "+0.33%", 1], ["SENSEX", "80,947.60", "+0.41%", 1], ["MIDCPNIFTY", "12,786.40", "+0.92%", 1], ["INDIA VIX", "13.42", "−2.15%", 0]];
-        var html = tape.map(function (t) { return '<span class="x-tape__item"><b>' + t[0] + "</b>" + t[1] + ' <span class="' + (t[3] ? "x-up" : "x-down") + '">' + (t[3] ? "▲ " : "▼ ") + t[2] + "</span></span>"; }).join("");
-        $("#x-tape").innerHTML = html + '<span aria-hidden="true" style="display:contents">' + html + "</span>";
-
-        /* ---------- hero mock ---------- */
-        var prompt = "Buy Nifty ATM call when 9 EMA crosses above 21 EMA on 15-min candles after 9:30 AM. Exit on opposite cross or 3:15 PM. Max 2 trades a day.";
-        var typeEl = $("#x-type"), parsed = $("#x-parsed"), state = $("#x-parse-state"), mini = $("#x-mini");
-        function resolveMock() {
-          parsed.classList.add("is-on"); state.textContent = "Parsing…";
-          $$(".x-mock .x-rule").forEach(function (r, i) { setTimeout(function () { r.classList.add("is-on"); if (i === 5) { state.textContent = "Parsed · ready to backtest"; mini.classList.add("is-on"); } }, reduce ? 0 : 300 + i * 220); });
-        }
-        if (reduce) { typeEl.textContent = prompt; resolveMock(); }
-        else {
-          var ci = 0;
-          setTimeout(function tick() { ci++; typeEl.textContent = prompt.slice(0, ci); if (ci < prompt.length) setTimeout(tick, prompt[ci - 1] === "." ? 260 : 22 + Math.random() * 30); else setTimeout(resolveMock, 400); }, 1100);
-        }
-
-        /* ---------- templates ---------- */
-        var templates = [
-          ["9/21 EMA Crossover", "Intraday", "Options", "Ride the trend when the fast EMA crosses the slow one on 15-min candles.", "Buy Nifty ATM call when 9 EMA crosses above 21 EMA on 15-min candles after 9:30 AM. Exit on opposite cross or 3:15 PM. Max 2 trades a day."],
-          ["Opening Range Breakout", "Intraday", "Options", "Trade the break of the first 15 minutes' high or low.", "Buy Nifty ATM call when price breaks above the 9:15 to 9:30 opening range on 5-min candles. Stop loss 1%, target 2%. Exit by 3:15 PM. Max 1 trade a day."],
-          ["Short Straddle 9:20", "Intraday", "Options", "Sell ATM straddle at 9:20 with per-leg stops and a hard exit.", "Sell BankNifty ATM straddle at 9:20 AM. Stop loss 25% on each leg. Exit everything at 3:10 PM. Max 1 trade a day."],
-          ["Supertrend Trend-Follow", "Positional", "Equity", "Hold while Supertrend stays green, exit on the flip.", "Buy Nifty futures when Supertrend 10,3 turns green on 30-min candles. Exit when Supertrend turns red. Max 1 trade a day."],
-          ["RSI Mean Reversion", "Positional", "Equity", "Buy oversold dips, sell into strength.", "Buy Reliance when RSI 14 drops below 30 on 30-min candles and sell when RSI crosses above 60. Max 3 trades a day, daily loss limit 5000."],
-          ["VWAP Pullback", "Intraday", "Equity", "Enter on a pullback to VWAP in the direction of the day's trend.", "Buy HDFC Bank when price pulls back to VWAP on 5-min candles after 10:00 AM while above 21 EMA. Stop loss 0.5%, exit at 3:15 PM. Max 2 trades a day."]
-        ];
-        function spark(seed) {
-          var r = rng(seed), y = 44, pts = [];
-          for (var i = 0; i <= 30; i++) { y += (r() - 0.62) * 7; y = Math.max(6, Math.min(52, y)); pts.push((i * 10) + " " + y.toFixed(1)); }
-          return "M" + pts.join(" L");
-        }
-        $("#x-rail").innerHTML = templates.map(function (t, i) {
-          return '<article class="x-tpl"><div class="x-tpl__tags"><span class="x-tag x-tag--gold">' + t[1] + '</span><span class="x-tag">' + t[2] + "</span></div><h3>" + t[0] + "</h3><p>" + t[3] + '</p><svg viewBox="0 0 300 58" preserveAspectRatio="none" aria-hidden="true"><path d="' + spark(i * 97 + 13) + '"/></svg><div class="x-tpl__foot"><span>Illustrative</span><button type="button" data-template="' + i + '">Use template →</button></div></article>';
-        }).join("");
-
-        /* ---------- magnetic buttons ---------- */
-        if (!reduce && window.matchMedia("(hover: hover)").matches) {
-          $$(".x-mag").forEach(function (b) {
-            b.addEventListener("mousemove", function (e) { var r = b.getBoundingClientRect(); b.style.transform = "translate(" + ((e.clientX - r.left - r.width / 2) * 0.18).toFixed(1) + "px," + ((e.clientY - r.top - r.height / 2) * 0.3).toFixed(1) + "px)"; });
-            b.addEventListener("mouseleave", function () { b.style.transform = ""; });
-          });
-        }
-
-        /* ---------- pricing ---------- */
-        $$("[data-bill]").forEach(function (b) {
-          b.addEventListener("click", function () {
-            $$("[data-bill]").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
-            $("#x-pro-price").innerHTML = b.dataset.bill === "y" ? "₹9,990<small>/year</small>" : "₹999<small>/month</small>";
-          });
-        });
-
-        /* ---------- app shell ---------- */
-        var site = $("#x-site"), app = $("#x-app"), charts = {};
-        var names = { dashboard: "Dashboard", studio: "Strategy Studio", backtests: "Backtests", paper: "Paper/Live", journal: "Journal", brokers: "Brokers", settings: "Settings" };
-        function go(v) {
-          var real = v === "dashboard" || v === "studio" || v === "brokers" ? v : "soon";
-          $$(".x-view").forEach(function (s) { s.hidden = s.dataset.v !== real; });
-          $$(".x-tab").forEach(function (t) { if (t.dataset.view === v) t.setAttribute("aria-current", "page"); else t.removeAttribute("aria-current"); });
-          $("#x-top-title").textContent = names[v];
-          if (real === "soon") $("#x-soon-title").textContent = names[v];
-          if (v === "dashboard") drawDash();
-          $("#x-main").scrollTop = 0;
-        }
-        function openApp(v) { site.hidden = true; app.hidden = false; doc.body.style.overflow = "hidden"; go(v || "dashboard"); window.scrollTo(0, 0); }
-        function closeApp() { app.hidden = true; site.hidden = false; doc.body.style.overflow = ""; }
-        doc.addEventListener("click", function (e) {
-          var t = e.target.closest("[data-open-app],[data-back],[data-view],[data-go],[data-template],[data-ex],[data-close]");
-          if (!t) return;
-          if (t.hasAttribute("data-open-app")) openApp(t.dataset.openApp);
-          else if (t.hasAttribute("data-back")) { e.preventDefault(); closeApp(); }
-          else if (t.dataset.view) go(t.dataset.view);
-          else if (t.dataset.go) go(t.dataset.go);
-          else if (t.dataset.template) { openApp("studio"); $("#x-input").value = templates[+t.dataset.template][4]; }
-          else if (t.dataset.ex) { $("#x-input").value = t.dataset.ex; $("#x-input").focus(); }
-          else if (t.hasAttribute("data-close")) closeModal(t.closest(".x-modal"));
-        });
-
-        function lineChart(id, data, labels, fmtX) {
-          if (charts[id]) charts[id].destroy();
-          charts[id] = new Chart(doc.getElementById(id), {
-            type: "line",
-            data: { labels: labels, datasets: [{ label: "Equity", data: data, fill: true, borderColor: "var(--x-gold)", backgroundColor: Hark.wash("var(--x-gold)", 0.28), borderWidth: 2 }] },
-            options: {
-              animation: reduce ? false : { duration: 1400, easing: "easeOutQuart" },
-              interaction: { mode: "index", intersect: false },
-              scales: { x: { ticks: { maxTicksLimit: 6, callback: function (v, i) { return fmtX(labels[i]); } } }, y: { ticks: { callback: function (v) { return Math.abs(v) >= 100000 ? "₹" + (v / 100000).toFixed(2) + "L" : "₹" + (v / 1000).toFixed(0) + "k"; } } } },
-              plugins: { legend: { display: false }, tooltip: { callbacks: { title: function (c) { return fmtX(c[0].label); }, label: function (c) { return rupee(c.raw); } } } }
-            }
-          });
-        }
-        function drawDash() {
-          if (charts["x-dash-chart"]) return;
-          var eq = Hark.data("x-equity-data"), labels = eq.map(function (_, i) { return i + 1; });
-          lineChart("x-dash-chart", eq, labels, function (l) { return "Day " + l; });
-        }
-
-        /* ---------- parser ---------- */
-        function toTime(h, m, ap) {
-          h = +h; m = +(m || 0);
-          if (ap === "pm" && h < 12) h += 12;
-          if (!ap && h >= 1 && h <= 3) h += 12; // market hours: 3:15 means 15:15
-          return (h < 10 ? "0" : "") + h + ":" + (m < 10 ? "0" : "") + m;
-        }
-        function parse(text) {
-          var t = text.toLowerCase(), r = {};
-          var idx = /bank\s?nifty/.test(t) ? "BANKNIFTY" : /finnifty|fin nifty/.test(t) ? "FINNIFTY" : /midcp|midcap nifty/.test(t) ? "MIDCPNIFTY" : /sensex/.test(t) ? "SENSEX" : /nifty/.test(t) ? "NIFTY" : null;
-          if (!idx) { var m = text.match(/\b(?:[Bb]uy|[Ss]ell|[Ss]hort)\s+([A-Z][A-Za-z&]+(?:\s[A-Z][a-z]+)?)/); idx = m ? m[1].toUpperCase() : "Instrument?"; }
-          var fs = t.match(/\b(buy|sell|short)\b/), side = fs && fs[1] !== "buy" ? "Sell" : "Buy";
-          var opt = /straddle/.test(t) ? "ATM straddle" : /strangle/.test(t) ? "OTM strangle" : /\b(call|ce)\b/.test(t) ? "ATM call" : /\b(put|pe)\b/.test(t) ? "ATM put" : null;
-          var fut = /futures?/.test(t);
-          r.Instrument = idx + (opt ? " options · " + side + " " + opt : fut ? " futures · " + side : " · " + side);
-          var tf = t.match(/(\d+)\s*-?\s*(?:min|minute|m\b)/);
-          r.Timeframe = tf ? tf[1] + "m" : /hour/.test(t) ? "1h" : /daily|day candle/.test(t) ? "1D" : "5m (default)";
-          var emas = [], re = /(\d+)\s*-?\s*(?:period\s*)?ema|ema\s*\(?\s*(\d+)/g, mm;
-          while ((mm = re.exec(t))) emas.push(mm[1] || mm[2]);
-          var dir = /below|under|crosses down/.test(t) && !/above/.test(t) ? "▼" : "▲";
-          var rsi = t.match(/rsi\s*\(?(\d+)?\)?[^.]*?(below|under|above|over)\s*(\d+)/);
-          if (/opening range|\borb\b/.test(t)) r.Entry = "Break " + (/below|breakdown|low/.test(t) ? "below" : "above") + " 09:15–09:30 range";
-          else if (/straddle|strangle/.test(t)) r.Entry = side + " " + (opt || "straddle") + " at fixed time";
-          else if (rsi) r.Entry = "RSI " + (rsi[1] || 14) + (/below|under/.test(rsi[2]) ? " < " : " > ") + rsi[3];
-          else if (emas.length >= 2) r.Entry = "EMA " + emas[0] + " " + dir + " EMA " + emas[1];
-          else if (/supertrend/.test(t)) { var st = t.match(/supertrend\s*(\d+)\s*,\s*(\d+)/); r.Entry = "Supertrend " + (st ? st[1] + "," + st[2] : "10,3") + " turns green"; }
-          else if (/vwap/.test(t)) r.Entry = "Pullback to VWAP" + (emas.length ? ", above EMA " + emas[0] : "");
-          else r.Entry = "Custom condition · review";
-          var times = [], tre = /(\d{1,2})(?:[:.](\d{2}))?\s*(am|pm)\b|(\d{1,2})[:.](\d{2})/g, tm;
-          while ((tm = tre.exec(t))) times.push({ v: tm[4] ? toTime(tm[4], tm[5]) : toTime(tm[1], tm[2], tm[3]), at: tm.index });
-          var exitT = null, winT = [];
-          times.forEach(function (x) { var before = t.slice(Math.max(0, x.at - 30), x.at); if (/exit|close|square|by\s*$|or\s*$/.test(before) || x.v >= "14:00") exitT = x.v; else winT.push({ v: x.v, before: before }); });
-          if (/opening range|\borb\b/.test(t)) r.Window = "after 09:30";
-          else if (winT.length) r.Window = (/after\s*$/.test(winT[0].before.trim() + " ") || /after/.test(winT[0].before) ? "after " : /at\s*$/.test(winT[0].before.trim() + " ") || /\bat\b/.test(winT[0].before) ? "at " : "from ") + winT[0].v;
-          else r.Window = "09:15–15:30 (market hours)";
-          var ex = [];
-          if (/opposite cross/.test(t)) ex.push("opposite cross");
-          else if (/supertrend turns red|turns red/.test(t)) ex.push("Supertrend flips red");
-          else if (rsi && /(above|crosses above)\s*(\d+)/.test(t.slice(t.indexOf(rsi[0]) + rsi[0].length))) ex.push("RSI > " + t.slice(t.indexOf(rsi[0]) + rsi[0].length).match(/above\s*(\d+)/)[1]);
-          var sl = t.match(/stop\s*loss\s*(\d+(?:\.\d+)?)\s*%/), tg = t.match(/target\s*(\d+(?:\.\d+)?)\s*%/);
-          if (sl) ex.push("SL " + sl[1] + "%" + (/each leg|per leg/.test(t) ? " per leg" : ""));
-          if (tg) ex.push("target " + tg[1] + "%");
-          ex.push((exitT || "15:15") + " hard exit");
-          r.Exit = ex.join(" / ");
-          var risk = [], mt = t.match(/max(?:imum)?\s*(\d+)\s*trades?/), dl = t.match(/(?:daily\s*)?loss\s*(?:limit|cap)\s*(?:of\s*)?₹?\s*(\d[\d,]*)/);
-          risk.push(mt ? mt[1] + (mt[1] === "1" ? " trade/day" : " trades/day") : "3 trades/day (default)");
-          if (dl) risk.push("₹" + inr(+dl[1].replace(/,/g, "")) + " daily loss cap");
-          r.Risk = risk.join(" · ");
-          return r;
-        }
-
-        function runProgress(prog, log, lines, done) {
-          var btns = $$("#x-gen, #x-run"); btns.forEach(function (b) { b.disabled = true; });
-          prog.classList.remove("is-run"); void prog.offsetWidth; prog.classList.add("is-run");
-          var total = reduce ? 300 : 1500;
-          lines.forEach(function (l, i) { setTimeout(function () { log.textContent = l; }, (total / lines.length) * i); });
-          setTimeout(function () { btns.forEach(function (b) { b.disabled = false; }); done(); }, total);
-        }
-
-        var current = null;
-        $("#x-gen").addEventListener("click", function () {
-          var text = $("#x-input").value.trim();
-          if (!text) { $("#x-input").focus(); toast("Describe a strategy first"); return; }
-          $("#x-results").hidden = true;
-          runProgress($("#x-gen-prog"), $("#x-gen-log"), ["Reading instrument and side…", "Finding indicators and timeframe…", "Extracting entry, exit and time window…", "Applying risk guardrails…"], function () {
-            current = parse(text);
-            $("#x-gen-log").textContent = "Parsed 6 rules. Review them below.";
-            $("#x-edit").innerHTML = Object.keys(current).map(function (k) { return '<div class="x-rule"><b>' + k + '</b><span contenteditable="true" spellcheck="false" role="textbox" aria-label="' + k + '" data-k="' + k + '"></span></div>'; }).join("");
-            $$("#x-edit [data-k]").forEach(function (s) { s.textContent = current[s.dataset.k]; });
-            $("#x-rules-panel").hidden = false;
-            $("#x-rules-panel").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
-          });
-        });
-
-        $("#x-run").addEventListener("click", function () {
-          var rules = {}; $$("#x-edit [data-k]").forEach(function (s) { rules[s.dataset.k] = s.textContent.trim(); });
-          runProgress($("#x-run-prog"), $("#x-run-log"), ["Loading NSE candles, Jan 2020 to today…", "Simulating fills with slippage…", "Applying brokerage, STT, exchange, GST, stamp duty…", "Computing metrics…"], function () {
-            $("#x-run-log").textContent = "Backtest complete.";
-            backtest(rules);
-          });
-        });
-
-        function backtest(rules) {
-          var key = JSON.stringify(rules), r = rng(hash(key));
-          var n = 180 + Math.floor(r() * 220), wr = 0.46 + r() * 0.1, lot = /BANKNIFTY/.test(rules.Instrument) ? 30 : 75;
-          var nets = [], grossT = [], cum = 0, peak = 0, dd = 0, eq = [0], wins = 0, gw = 0, gl = 0;
-          var c = { Brokerage: 0, STT: 0, Exchange: 0, GST: 0, Slippage: 0 };
-          for (var i = 0; i < n; i++) {
-            var win = r() < wr, g = win ? 900 + r() * 2600 : -(700 + r() * 1900);
-            g += 220; // slight upward drift
-            var brok = 40, stt = 20 + r() * 40, exch = 25 + r() * 20, gst = (brok + exch) * 0.18, slip = 60 + r() * 90;
-            c.Brokerage += brok; c.STT += stt; c.Exchange += exch; c.GST += gst; c.Slippage += slip;
-            var net = g - brok - stt - exch - gst - slip;
-            nets.push(net); grossT.push(g); cum += net; eq.push(cum);
-            if (net > 0) { wins++; gw += net; } else gl -= net;
-            peak = Math.max(peak, cum); dd = Math.max(dd, peak - cum);
-          }
-          var gross = grossT.reduce(function (a, b) { return a + b; }, 0), costs = c.Brokerage + c.STT + c.Exchange + c.GST + c.Slippage;
-          var m = [["Trades", String(n)], ["Win rate", (wins / n * 100).toFixed(2) + "%"], ["Gross P&L", rupee(gross), gross >= 0], ["Net P&L", rupee(cum), cum >= 0], ["Max drawdown", rupee(dd), false], ["Profit factor", (gw / Math.max(1, gl)).toFixed(2)], ["Expectancy", rupee(cum / n) + "/trade", cum >= 0]];
-          $("#x-mgrid").innerHTML = m.map(function (x) { return '<div class="x-metric"><span>' + x[0] + "</span><strong" + (x.length > 2 ? ' class="' + (x[2] ? "x-up" : "x-down") + '"' : "") + ">" + x[1] + "</strong></div>"; }).join("");
-          $("#x-res-scope").textContent = rules.Instrument.split(" ·")[0] + " · " + rules.Timeframe + " · Jan 2020 to today · illustrative";
-          $("#x-eq-cap").innerHTML = "Net P&amp;L " + (cum >= 0 ? "ended at " : "fell to ") + rupee(cum) + " over " + n + " trades<small>Cumulative net P&amp;L, ₹ · simulated</small>";
-          $("#x-cost-cap").innerHTML = "Costs took " + rupee(costs) + " of " + rupee(gross) + " gross<small>Total charges by type, ₹</small>";
-          $("#x-results").hidden = false;
-          var step = Math.max(1, Math.floor(eq.length / 120)), ds = [], lb = [];
-          for (var j = 0; j < eq.length; j += step) { ds.push(Math.round(eq[j])); lb.push(j); }
-          if (lb[lb.length - 1] !== eq.length - 1) { ds.push(Math.round(eq[eq.length - 1])); lb.push(eq.length - 1); }
-          lineChart("x-bt-chart", ds, lb, function (l) { return "Trade " + l; });
-          if (charts.cost) charts.cost.destroy();
-          charts.cost = new Chart(doc.getElementById("x-cost-chart"), {
-            type: "bar",
-            data: { labels: ["Costs"], datasets: Object.keys(c).map(function (k, i) { return { label: k, data: [Math.round(c[k])], backgroundColor: "var(--chart-" + (i + 1) + ")", barThickness: 28 }; }) },
-            options: { indexAxis: "y", animation: reduce ? false : undefined, scales: { x: { stacked: true, ticks: { callback: function (v) { return "₹" + (v / 1000).toFixed(0) + "k"; } } }, y: { stacked: true, display: false } }, plugins: { tooltip: { callbacks: { label: function (x) { return x.dataset.label + " " + rupee(x.raw); } } } } }
-          });
-          var instr = rules.Instrument.split(" ·")[0], d = new Date(), rows = [], base = /BANKNIFTY/.test(instr) ? 52200 : 24600;
-          for (var k = n - 1; k >= n - 8; k--) {
-            do { d.setDate(d.getDate() - 1); } while (d.getDay() === 0 || d.getDay() === 6);
-            var sideBuy = !/Sell/.test(rules.Instrument), strike = Math.round((base + (r() - 0.5) * 600) / 50) * 50;
-            var name = /options/.test(rules.Instrument) ? instr + " " + strike + (/put/.test(rules.Instrument) ? " PE" : /straddle|strangle/.test(rules.Instrument) ? " CE+PE" : " CE") : instr;
-            var entry = /options/.test(rules.Instrument) ? 90 + r() * 140 : base * (0.98 + r() * 0.04) / (/NIFTY/.test(instr) ? 1 : 20);
-            var exit = entry + (sideBuy ? 1 : -1) * grossT[k] / lot;
-            rows.push("<tr><td>" + d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) + "</td><td>" + (sideBuy ? "Buy" : "Sell") + "</td><td>" + name + '</td><td class="r">' + entry.toFixed(2) + '</td><td class="r">' + Math.max(0.05, exit).toFixed(2) + '</td><td class="r ' + (nets[k] >= 0 ? "x-up" : "x-down") + '">' + (nets[k] >= 0 ? "+" : "") + rupee(nets[k]) + "</td></tr>");
-          }
-          $("#x-trades").innerHTML = rows.join("");
-          $("#x-results").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
-        }
-
-        /* ---------- modals ---------- */
-        var lastFocus = null;
-        function openModal(m) { lastFocus = doc.activeElement; m.hidden = false; var f = $("input", m); if (f) f.focus(); }
-        function closeModal(m) { if (!m) return; m.hidden = true; if (lastFocus) lastFocus.focus(); }
-        doc.addEventListener("keydown", function (e) { if (e.key === "Escape") $$(".x-modal").forEach(function (m) { if (!m.hidden) closeModal(m); }); });
-        $$(".x-modal").forEach(function (m) { m.addEventListener("click", function (e) { if (e.target === m) closeModal(m); }); });
-        $("#x-golive").addEventListener("click", function () { $("#x-live-input").value = ""; $("#x-live-confirm").disabled = true; openModal($("#x-live-modal")); });
-        $("#x-live-input").addEventListener("input", function (e) { $("#x-live-confirm").disabled = e.target.value.trim() !== "LIVE"; });
-        $("#x-live-confirm").addEventListener("click", function () { closeModal($("#x-live-modal")); toast("Demo only: live mode is not enabled in this prototype"); });
-        $("#x-paper").addEventListener("click", function () { toast("Paper trading starts at the next market open (demo)"); });
-        var tt;
-        function toast(msg) { var t = $("#x-toast"); t.textContent = msg; t.classList.add("is-on"); clearTimeout(tt); tt = setTimeout(function () { t.classList.remove("is-on"); }, 2800); }
-
-        /* ---------- brokers ---------- */
-        var brokers = [["Angel One", "SmartAPI", 1], ["Zerodha", "Kite Connect"], ["Upstox", "Upstox API"], ["Groww", "Trade API"], ["Dhan", "DhanHQ"], ["Fyers", "Fyers API"], ["ICICI Direct", "Breeze"], ["Kotak Neo", "Neo API"], ["5paisa", "Xstream"], ["Alice Blue", "ANT API"], ["Shoonya (Finvasia)", "Shoonya API"], ["Motilal Oswal", "MO API"]];
-        $("#x-bgrid").innerHTML = brokers.map(function (b) {
-          var ini = b[0].replace(/\(.*\)/, "").trim().split(/\s+/).map(function (w) { return w[0]; }).join("").slice(0, 2).toUpperCase();
-          return '<article class="x-bcard"><div class="x-bcard__row"><span class="x-bcard__mono" aria-hidden="true">' + ini + "</span><div><h3>" + b[0] + "</h3><p>" + b[1] + (b[2] ? " · live" : " · rolling out") + "</p></div></div>" +
-            (b[2] ? '<span class="x-connected"><span class="x-dotlive" aria-hidden="true"></span>Connected (demo)</span>' : '<button class="x-btn x-btn--ghost x-btn--sm" type="button" data-connect="' + b[0] + '">Connect</button>') + "</article>";
-        }).join("");
-        $("#x-bgrid").addEventListener("click", function (e) { var b = e.target.closest("[data-connect]"); if (!b) return; $("#x-conn-title").textContent = "Connect " + b.dataset.connect; $("#x-conn-form").reset(); openModal($("#x-conn-modal")); });
-        $("#x-conn-form").addEventListener("submit", function (e) { e.preventDefault(); closeModal($("#x-conn-modal")); toast("Nothing was submitted. This is a prototype."); });
-      })();
+    <script type="application/json" id="x-equity-data">
+      [500000,501200,499800,503400,505100,504200,507900,506300,510800,512400,511000,514700,513200,517900,520300,518600,522100,524800,523000,527400,526100,529800,531500,529900,533200,535700,534100,536900,535200,538600]
     </script>
+
+    <!-- Backend wiring: set window.TC_API_BASE in js/config.js (or open with ?api=https://your-api). Empty = demo mode. -->
+    <script src="js/config.js"></script>
+    <script src="chart.js"></script>
+    <script src="app.js"></script>
+    <script src="js/api.js"></script>
   </body>
 </html>

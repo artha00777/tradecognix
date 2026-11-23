@@ -30,7 +30,9 @@ def main() -> None:
     print("Parsed:", explain(s))
     for w in res.warnings:
         print("  note:", w)
-    base = read_csv(a.csv) if a.csv else generate_candles(s.underlying, days=a.days)
+    from app.data.candles import synthetic_bar_minutes
+
+    base = read_csv(a.csv) if a.csv else generate_candles(s.underlying, days=a.days, bar_minutes=synthetic_bar_minutes(s.timeframe))
     source = "csv" if a.csv else "synthetic"
     cfg = CostConfig(slippage_pct=a.slippage)
     if a.sweep:

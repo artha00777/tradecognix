@@ -1,7 +1,8 @@
 """Indian transaction cost model (per order leg). Rates live in rates.py."""
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
+import math
+from dataclasses import asdict, dataclass
 from datetime import date
 from typing import Literal, Optional
 
@@ -50,8 +51,18 @@ def order_costs(
     trade_date: date | None = None,
     cfg: CostConfig | None = None,
 ) -> CostBreakdown:
+    """Statutory + brokerage charges for ONE order (one leg, one side). Rates: rates.py.
+
+    GST (18%) applies to brokerage + exchange transaction charges + SEBI fee; STT and stamp duty
+    are not GST-able. Stamp duty is buy-side only; STT is sell-side only except equity delivery.
+    """
     cfg = cfg or CostConfig()
-    trade_date = trade_date or date.today()
+    if trade_date is None:
+        from ..engine.clock import ist_today
+
+        trade_date = ist_today()
+    if quantity < 0:
+        raise ValueError("quantity must be >= 0")
     turnover = abs(price) * quantity
 
     if segment == "equity_delivery":
@@ -82,10 +93,13 @@ def order_costs(
 
 
 def apply_slippage(price: float, side: Literal["buy", "sell"], slippage_pct: float, tick: float = 0.05) -> float:
-    """Worsen a fill by slippage_pct and round to the exchange tick."""
+    """Worsen a fill by slippage_pct and round to the exchange tick *against* the trader
+    (buys round up, sells round down), never below one tick."""
+    tick = tick or 0.05
     adj = price * (1 + slippage_pct / 100) if side == "buy" else price * (1 - slippage_pct / 100)
-    adj = max(tick, adj)
-    return round(round(adj / tick) * tick, 2)
+    steps = adj / tick
+    steps = math.ceil(steps - 1e-9) if side == "buy" else math.floor(steps + 1e-9)
+    return round(max(tick, steps * tick), 2)
 
 
 def segment_for(instrument_type: str, intraday: bool = True) -> Segment:

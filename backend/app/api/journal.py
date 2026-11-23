@@ -3,17 +3,17 @@ from __future__ import annotations
 import csv
 import io
 from collections import defaultdict
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timezone
 from zoneinfo import ZoneInfo
 from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlmodel import Session, select
 
 from ..db import get_session
-from ..models import JournalEntry, User
+from ..models import JournalEntry, User, as_utc
 from .deps import current_user
 
 IST = ZoneInfo("Asia/Kolkata")
@@ -26,18 +26,26 @@ def _query(user: User, strategy_tag: Optional[str], mode: Optional[str], date_fr
         q = q.where(JournalEntry.strategy_tag == strategy_tag)
     if mode:
         q = q.where(JournalEntry.mode == mode)
+    # Dates are IST calendar days; stored times are UTC, so convert the bounds to UTC.
     if date_from:
-        q = q.where(JournalEntry.exit_time >= datetime.combine(date_from, time.min, IST))
+        q = q.where(JournalEntry.exit_time >= datetime.combine(date_from, time.min, IST).astimezone(timezone.utc))
     if date_to:
-        q = q.where(JournalEntry.exit_time <= datetime.combine(date_to, time.max, IST))
+        q = q.where(JournalEntry.exit_time <= datetime.combine(date_to, time.max, IST).astimezone(timezone.utc))
     return q.order_by(JournalEntry.exit_time.desc())
+
+
+def entry_out(e: JournalEntry) -> dict:
+    d = e.model_dump()
+    for k in ("entry_time", "exit_time", "created_at"):
+        d[k] = as_utc(d[k])
+    return d
 
 
 @router.get("")
 def list_entries(strategy_tag: Optional[str] = None, mode: Optional[str] = None, date_from: Optional[date] = None, date_to: Optional[date] = None,
                  user: User = Depends(current_user), db: Session = Depends(get_session)):
     rows = db.exec(_query(user, strategy_tag, mode, date_from, date_to).limit(1000)).all()
-    return {"entries": [r.model_dump() for r in rows]}
+    return {"entries": [entry_out(r) for r in rows]}
 
 
 @router.get("/summary")
@@ -57,8 +65,8 @@ def summary(mode: Optional[str] = None, user: User = Depends(current_user), db: 
 
 
 class EntryPatch(BaseModel):
-    tags: Optional[list[str]] = None
-    notes: Optional[str] = None
+    tags: Optional[list[str]] = Field(None, max_length=20)
+    notes: Optional[str] = Field(None, max_length=5000)
 
 
 @router.patch("/{eid}")
@@ -67,12 +75,20 @@ def patch(eid: int, body: EntryPatch, user: User = Depends(current_user), db: Se
     if not e or e.user_id != user.id:
         raise HTTPException(404, "Entry not found")
     if body.tags is not None:
-        e.tags = body.tags
+        e.tags = [t.strip()[:40] for t in body.tags if t.strip()]
     if body.notes is not None:
         e.notes = body.notes
     db.add(e)
     db.commit()
-    return e.model_dump()
+    db.refresh(e)
+    return entry_out(e)
+
+
+def _csv_safe(v):
+    """Neutralise spreadsheet formula injection (=, +, -, @ at the start of a text cell)."""
+    if isinstance(v, str) and v[:1] in ("=", "+", "-", "@", "\t", "\r"):
+        return "'" + v
+    return v
 
 
 @router.get("/export.csv")
@@ -83,7 +99,7 @@ def export(strategy_tag: Optional[str] = None, mode: Optional[str] = None, user:
     w = csv.writer(buf)
     w.writerow(cols)
     for r in rows:
-        d = r.model_dump()
-        w.writerow([d[c] for c in cols])
+        d = entry_out(r)
+        w.writerow([_csv_safe(d[c]) for c in cols])
     buf.seek(0)
     return StreamingResponse(iter([buf.getvalue()]), media_type="text/csv", headers={"Content-Disposition": "attachment; filename=tradecognix-journal.csv"})
