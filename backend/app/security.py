@@ -86,7 +86,15 @@ class CredentialVault:
                 "FERNET_KEY is not set. Generate one with: python -c \"from cryptography.fernet import Fernet;"
                 "print(Fernet.generate_key().decode())\""
             )
-        self._f = Fernet(key.encode() if isinstance(key, str) else key)
+        raw = key.encode() if isinstance(key, str) else key
+        try:
+            self._f = Fernet(raw)
+        except (ValueError, TypeError):
+            # Accept any long random secret (e.g. a host-generated value) by deriving a valid Fernet key from it.
+            if len(raw) < 32:
+                raise RuntimeError("FERNET_KEY must be a Fernet key or a random secret of at least 32 characters")
+            import base64, hashlib
+            self._f = Fernet(base64.urlsafe_b64encode(hashlib.sha256(raw).digest()))
 
     def encrypt(self, data: dict[str, Any]) -> str:
         return self._f.encrypt(json.dumps(data).encode()).decode()
