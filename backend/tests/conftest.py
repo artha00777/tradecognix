@@ -8,6 +8,7 @@ os.environ.setdefault("FERNET_KEY", Fernet.generate_key().decode())
 os.environ["DATABASE_URL"] = "sqlite://"
 os.environ["SCHEDULER_ENABLED"] = "false"
 os.environ["LIVE_TRADING_ENABLED"] = "false"
+os.environ["BETA_PLAN"] = "free"
 os.environ["ADMIN_EMAILS"] = "admin@devcognix.com"
 os.environ["JWT_SECRET"] = "test-secret"
 os.environ["GEMINI_API_KEY"] = ""

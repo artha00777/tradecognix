@@ -39,6 +39,8 @@ class Settings(BaseSettings):
 
     # Live trading master switch. Live orders need this AND a per-strategy confirmation.
     live_trading_enabled: bool = False
+    # While payments are disabled, every account gets this plan's limits (free | pro | elite).
+    beta_plan: str = "pro"
     # Public static IP whitelisted with your broker (informational, shown in UI / checked at startup)
     static_ip: str = ""
 

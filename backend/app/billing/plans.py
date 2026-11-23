@@ -60,6 +60,11 @@ def price_paise(plan_key: str, interval: str) -> Optional[int]:
 
 def effective_plan_key(user: User, now: datetime | None = None) -> str:
     key = user.plan if user.plan in PLANS else "free"
+    from ..config import get_settings
+    beta = getattr(get_settings(), "beta_plan", "free")
+    order = list(PLANS)
+    if beta in PLANS and order.index(beta) > order.index(key):
+        return beta
     exp = as_utc(user.plan_expires_at)
     if key != "free" and exp is not None and exp <= (now or datetime.now(timezone.utc)):
         return "free"

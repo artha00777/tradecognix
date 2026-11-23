@@ -2,6 +2,8 @@
 
 **Plain-English algorithmic trading for Indian brokers.** Describe a strategy the way you would say it out loud ("Buy Nifty ATM call when 9 EMA crosses above 21 EMA on 15-min candles after 9:30 AM, exit on opposite cross or 3:15 PM, max 2 trades a day"). TradeCognix turns it into structured rules, backtests it with real Indian costs, paper-trades it, and only then, with explicit server-side and in-app confirmation, places orders through **your own** broker account.
 
+**Live site:** https://artha00777.github.io/tradecognix/ (demo mode, runs in the browser) · admin console at [/admin/](https://artha00777.github.io/tradecognix/admin/)
+
 > © 2026 DevCognix. Proprietary, see [LICENSE](LICENSE). Contact: contact@devcognix.com · +91 901 908 8160
 
 ---
@@ -22,6 +24,8 @@
 | `mobile/` | Phase-3 plan for the Expo React Native app |
 | `brand/` | Logo and mark |
 | `docs/ROADMAP.md` | Phases 2-3, feature and revenue ideas |
+| [`docs/AUDIT.md`](docs/AUDIT.md) | Nov 2026 audit: bugs fixed by area and known gaps |
+| [`docs/GROWTH.md`](docs/GROWTH.md) | Growth plan, pricing rationale and NSE static-IP circular notes |
 
 ## Architecture
 
@@ -142,7 +146,23 @@ Interactive docs at `/docs`. Main routes:
 | Paper / live | `POST /api/engine/start`, `POST /api/engine/{sid}/stop`, `POST /api/engine/kill`, `GET /api/engine/status`, `GET /api/engine/sessions`, `GET /api/engine/orders`, `POST /api/engine/tick` (admin: force a tick, optionally at a simulated time) |
 | Journal | `GET /api/journal`, `GET /api/journal/summary`, `PATCH /api/journal/{id}`, `GET /api/journal/export.csv` |
 | Admin | `GET /api/admin/users`, `PATCH /api/admin/users/{id}`, `GET /api/admin/strategies`, `GET /api/admin/sessions`, `POST /api/admin/sessions/{id}/kill`, `POST /api/admin/kill-all`, `GET /api/admin/stats` |
+| Waitlist | `POST /api/waitlist` (public, rate-limited): `{email, plan: pro|elite}`; payments are disabled during beta |
+| Billing (dormant) | `GET /api/billing/plans` (public price list), `GET /api/billing/usage`, `POST /api/billing/checkout` (Razorpay order; 503 until keys are set), `POST /api/billing/verify` (signature check, activates the plan), `POST /api/billing/webhook` (`order.paid` / `payment.captured`) |
 | Realtime | `WS /ws/live?token=<jwt>`: session status, orders, trades, events |
+
+## Plans and billing
+
+Limits are enforced server-side in `backend/app/billing/plans.py` (the single source of truth); admins are never limited, and an expired paid plan behaves as Free.
+
+| Plan | Price (INR) | Backtests/day | Strategies | Sweeps | Live trading |
+|---|---|---|---|---|---|
+| Free | ₹0 | 5 | 1 | No | No (paper only) |
+| Pro | ₹999/month or ₹9,990/year | 100 | 5 | Yes | Yes |
+| Elite | ₹2,499/month (monthly only) | Unlimited | Unlimited | Yes | Yes |
+
+**Payments disabled during beta.** The site does not take payments and never loads Razorpay. Get Pro / Get Elite open an inline "Free during beta — join the waitlist" form: with a backend configured it posts to `POST /api/waitlist` (public, rate-limited, one row per email in `WaitlistEntry`); in demo mode (including the GitHub Pages site) the email is only kept in the visitor's `localStorage` and nothing is sent. Plan limits are still enforced server-side; during beta an admin can grant Pro/Elite with `PATCH /api/admin/users/{id}`.
+
+The Razorpay billing code is kept but dormant: `POST /api/billing/checkout` returns an order, Razorpay Checkout runs on the client, then `POST /api/billing/verify` checks the signature and activates the plan (the webhook activates it too). It answers 503 until `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` are set, and nothing in `web/` calls it. To turn payments on later, set the keys and wire the Pro/Elite buttons back to checkout.
 
 ## Deploying for free
 
@@ -188,7 +208,7 @@ Trading in equities, futures and options involves substantial risk of loss and i
 ## Development
 
 ```bash
-cd backend && python -m pytest          # 50+ tests: parser, indicators, costs, backtest, engine, API
+cd backend && python -m pytest          # 111 tests: parser, indicators, costs, backtest, engine, brokers, security, billing, waitlist, API
 ```
 
-CI (`.github/workflows/ci.yml`) runs the tests and a CLI smoke backtest on every push.
+CI (`.github/workflows/ci.yml`) runs the tests and a CLI smoke backtest on every push. `.github/workflows/pages.yml` deploys `web/` to the GitHub Pages root and `admin/` to `/admin/`. See [`docs/AUDIT.md`](docs/AUDIT.md) for what the Nov 2026 audit fixed and what is still open.

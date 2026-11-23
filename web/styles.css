@@ -437,6 +437,19 @@ kbd, .kbd { font: 500 11px/1 var(--font-mono); color: var(--text-3); border: 1px
 .plan li { display: grid; grid-template-columns: 18px 1fr; gap: 8px; color: var(--text-2); }
 .plan li svg { width: 16px; height: 16px; color: var(--brand-text); margin-top: 2px; }
 .plan li strong { color: var(--text); font-weight: 550; }
+.plan__wait { display: grid; gap: 10px; margin: -6px 0 0; padding: 12px; border: 1px solid var(--brand-line); background: var(--brand-soft); border-radius: 10px; font-size: 13px; line-height: 1.45; color: var(--text-2); animation: pop 0.18s var(--ease); }
+.plan__wait[hidden] { display: none; }
+.plan__wait-msg { display: flex; gap: 10px; align-items: flex-start; margin: 0; }
+.plan__wait strong { color: var(--text); font-weight: 600; }
+.plan__wait-dot { flex: none; width: 7px; height: 7px; margin-top: 6px; border-radius: 50%; background: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft); }
+.plan__wait-form { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; }
+.plan__wait-form input { flex: 1 1 160px; min-width: 0; min-height: 36px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--border-strong); background: var(--surface); color: var(--text); font: inherit; font-size: 14px; }
+.plan__wait-form input::placeholder { color: var(--text-3); }
+.plan__wait-form input:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft); }
+.plan__wait-form input[aria-invalid="true"] { border-color: var(--down); box-shadow: 0 0 0 3px var(--down-soft); }
+.plan__wait-form .btn { min-height: 36px; }
+.plan__wait-err { flex-basis: 100%; margin: 0; font-size: 12.5px; color: var(--down); }
+.plan__wait-err:empty { display: none; }
 .pricing__foot { margin-top: 18px; font-size: 13px; color: var(--text-3); }
 @media (max-width: 900px) { .plans { grid-template-columns: 1fr; } }
 

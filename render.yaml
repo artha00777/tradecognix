@@ -16,6 +16,8 @@ services:
         value: "true"   # Render terminates TLS in front of the app
       - key: LIVE_TRADING_ENABLED
         value: "false"
+      - key: BETA_PLAN
+        value: "pro"
       - key: DATABASE_URL
         sync: false   # Supabase Postgres connection string
       - key: FERNET_KEY

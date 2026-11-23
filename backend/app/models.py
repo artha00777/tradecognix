@@ -156,3 +156,13 @@ class Payment(SQLModel, table=True):
     status: str = Field(default="created", index=True)  # created | paid | failed
     created_at: datetime = Field(default_factory=utcnow)
     paid_at: Optional[datetime] = None
+
+
+class WaitlistEntry(SQLModel, table=True):
+    """Paid-plan waitlist while payments are disabled during beta. One row per email."""
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    email: str = Field(index=True, unique=True)
+    plan: str = "pro"  # pro | elite (latest interest)
+    source: str = "web"
+    created_at: datetime = Field(default_factory=utcnow)

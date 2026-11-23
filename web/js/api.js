@@ -316,3 +316,91 @@
 
   window.TradeCognixAPI = { api: api, state: state, signOut: function () { localStorage.removeItem("tc_token"); toast("Signed out"); } };
 })();
+
+/*
+ * Pricing CTAs: payments are disabled during beta (runs in demo and API mode).
+ * Get Pro / Get Elite open an inline "Free during beta — join the waitlist" form in the card.
+ * Demo mode: the email is kept in localStorage ("tc_waitlist"). API mode: POST /api/waitlist,
+ * and the entry is also remembered locally so a return visit shows the joined state.
+ * Razorpay checkout (backend /api/billing/checkout, /verify) stays in the backend but is not
+ * called from the site. The Free CTA keeps data-open-app and is handled by app.js.
+ */
+(function () {
+  "use strict";
+  var doc = document;
+  var BASE = (window.TC_API_BASE || "").replace(/\/+$/, "");
+  var KEY = "tc_waitlist";
+  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  var NAMES = { pro: "Pro", elite: "Elite" };
+
+  function saved() { try { return JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) { return null; } }
+  function save(entry) { try { localStorage.setItem(KEY, JSON.stringify(entry)); } catch (e) { /* private mode */ } }
+  function esc(v) { return String(v).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+
+  function panel(btn) {
+    var card = btn.closest(".plan"), n = card && card.querySelector(".plan__wait");
+    if (!n && card) {
+      n = doc.createElement("div"); n.className = "plan__wait"; n.hidden = true;
+      btn.insertAdjacentElement("afterend", n);
+    }
+    return n;
+  }
+  function joined(n, entry) {
+    // Only promise an email when the server actually stored it; demo mode keeps it on this device.
+    var body = entry.synced
+      ? "<strong>You&rsquo;re on the list.</strong> We&rsquo;ll write to " + esc(entry.email) + " before paid plans open. Until then it&rsquo;s free during beta."
+      : "<strong>Saved on this device</strong> (" + esc(entry.email) + "). This is the demo, so nothing was sent. Paid plans aren&rsquo;t open yet: it&rsquo;s free during beta.";
+    n.innerHTML = '<p class="plan__wait-msg" role="status"><span class="plan__wait-dot" aria-hidden="true"></span><span>' + body + "</span></p>";
+  }
+  function form(n, plan) {
+    var id = "tc-wl-" + plan;
+    n.innerHTML = '<p class="plan__wait-msg"><span class="plan__wait-dot" aria-hidden="true"></span><span><strong>Free during beta &mdash; join the waitlist.</strong> Payments are switched off while we&rsquo;re in beta. Leave your email and we&rsquo;ll tell you when ' + NAMES[plan] + " opens.</span></p>" +
+      '<form class="plan__wait-form" novalidate data-plan-form="' + plan + '">' +
+      '<label class="sr-only" for="' + id + '">Email</label>' +
+      '<input id="' + id + '" name="email" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" required maxlength="254" />' +
+      '<button class="btn btn--primary btn--sm" type="submit">Join</button>' +
+      '<p class="plan__wait-err" aria-live="polite"></p></form>';
+  }
+
+  function open(btn) {
+    var plan = btn.dataset.plan, n = panel(btn); if (!n) return;
+    var entry = saved();
+    if (entry && entry.email) joined(n, entry); else form(n, plan);
+    n.hidden = false;
+    var input = n.querySelector("input"); if (input) input.focus({ preventScroll: true });
+  }
+
+  function submit(f) {
+    var plan = f.dataset.planForm, input = f.email, err = f.querySelector(".plan__wait-err"), btn = f.querySelector("button");
+    var email = input.value.trim().toLowerCase();
+    err.textContent = "";
+    if (!EMAIL_RE.test(email)) { err.textContent = "Enter a valid email address."; input.setAttribute("aria-invalid", "true"); input.focus(); return; }
+    input.removeAttribute("aria-invalid");
+    var entry = { email: email, plan: plan, at: new Date().toISOString(), synced: false };
+    var done = function () { save(entry); [].forEach.call(doc.querySelectorAll(".plan__wait:not([hidden])"), function (n) { joined(n, entry); }); };
+    if (!BASE) { done(); return; } // demo: kept on this device only
+    btn.classList.add("is-loading"); btn.disabled = true;
+    fetch(BASE + "/api/waitlist", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: email, plan: plan, source: "web" }) })
+      .then(function (r) {
+        if (r.ok) { entry.synced = true; done(); return; }
+        return r.json().catch(function () { return {}; }).then(function (d) {
+          var msg = r.status === 422 ? "Enter a valid email address." : r.status === 429 ? "Too many tries. Please wait a minute." : (d && typeof d.detail === "string" && d.detail) || "Something went wrong. Please try again.";
+          err.textContent = msg;
+        });
+      })
+      .catch(function () { err.textContent = "Can't reach the server. Check your connection and try again."; })
+      .then(function () { btn.classList.remove("is-loading"); btn.disabled = false; });
+  }
+
+  doc.addEventListener("click", function (e) {
+    var b = e.target.closest && e.target.closest("button[data-plan]");
+    if (!b) return;
+    e.preventDefault();
+    open(b);
+  });
+  doc.addEventListener("submit", function (e) {
+    if (!e.target || !e.target.matches("form[data-plan-form]")) return;
+    e.preventDefault();
+    submit(e.target);
+  });
+})();

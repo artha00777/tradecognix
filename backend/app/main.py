@@ -8,7 +8,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from . import __version__
-from .api import admin, auth, backtests, billing, brokers, engine as engine_api, journal, strategies, ws
+from .api import admin, auth, backtests, billing, brokers, engine as engine_api, journal, strategies, waitlist, ws
 from .config import get_settings, production_problems
 from .db import init_db
 from .engine.live import engine
@@ -74,7 +74,7 @@ async def security_headers(request: Request, call_next):
     return response
 
 
-for r in (auth.router, brokers.router, strategies.router, backtests.router, engine_api.router, journal.router, admin.router, billing.router, ws.router):
+for r in (auth.router, brokers.router, strategies.router, backtests.router, engine_api.router, journal.router, admin.router, billing.router, waitlist.router, ws.router):
     app.include_router(r)
 
 

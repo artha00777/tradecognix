@@ -1,6 +1,6 @@
 """Regression tests for the correctness fixes made in the Nov 2026 audit (indicators, data,
 backtester, metrics, parser, DSL, costs)."""
-from datetime import date, datetime
+from datetime import date
 
 import numpy as np
 import pandas as pd
