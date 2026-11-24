@@ -511,6 +511,13 @@
     { key: "Kotak Neo", name: "Kotak Neo", api: "Neo API" }, { key: "5paisa", name: "5paisa", api: "Xstream" }, { key: "Alice Blue", name: "Alice Blue", api: "ANT API" },
     { key: "Shoonya (Finvasia)", name: "Shoonya (Finvasia)", api: "Shoonya API" }, { key: "Motilal Oswal", name: "Motilal Oswal", api: "MO API" }
   ];
+  var BROKER_LOGOS = { "Angel One": "angel-one.png", "Zerodha": "zerodha.svg", "Upstox": "upstox.svg", "Dhan": "dhan.svg", "Fyers": "fyers.svg", "Groww": "groww.png", "ICICI Direct": "icici-direct.svg", "Kotak Neo": "kotak-neo.svg", "5paisa": "5paisa.svg", "Alice Blue": "alice-blue.svg", "Shoonya (Finvasia)": "shoonya.svg", "Shoonya": "shoonya.svg", "Motilal Oswal": "motilal-oswal.png" };
+  function brokerLogo(b) {
+    var norm = function (x) { return String(x || "").replace(/\(.*\)/, "").toLowerCase().replace(/[^a-z0-9]/g, ""); };
+    var f = null, want = [norm(b.key), norm(b.name)];
+    Object.keys(BROKER_LOGOS).forEach(function (k) { if (!f && want.indexOf(norm(k)) >= 0) f = BROKER_LOGOS[k]; });
+    return f ? '<span class="bcard__logo"><img src="brokers/' + f + '" alt="" loading="lazy" decoding="async" /></span>' : '<span class="bcard__mono" aria-hidden="true">' + esc(initials(b.name)) + "</span>";
+  }
   function initials(name) { return name.replace(/\(.*\)/, "").trim().split(/\s+/).map(function (w) { return w[0]; }).join("").slice(0, 2).toUpperCase(); }
   /* list items: { key, name, api, status: live|beta|rolling, connected, saved } */
   function renderBrokers(list) {
@@ -520,7 +527,7 @@
       var right = b.connected
         ? '<span class="connected x-connected"><span class="dot-live" aria-hidden="true"></span>Connected</span>'
         : '<button class="btn btn--' + (b.status === "live" ? "primary" : "secondary") + ' btn--sm" type="button" data-connect="' + esc(b.key) + '">' + (b.saved ? "Reconnect" : "Connect") + "</button>";
-      return '<article class="bcard x-bcard"><div class="bcard__row"><span class="bcard__mono" aria-hidden="true">' + esc(initials(b.name)) + "</span><div><h3>" + esc(b.name) + "</h3><p>" + esc(b.api) + " · " + label + "</p></div></div>" + right + "</article>";
+      return '<article class="bcard x-bcard"><div class="bcard__row">' + brokerLogo(b) + "<div><h3>" + esc(b.name) + "</h3><p>" + esc(b.api) + " · " + label + "</p></div></div>" + right + "</article>";
     }).join("");
   }
   function fieldHTML(name, label, secret, required, placeholder) {
@@ -564,10 +571,10 @@
   }
   function parse(text) {
     var t = text.toLowerCase(), r = {};
-    var idx = /bank\s?nifty/.test(t) ? "BANKNIFTY" : /finnifty|fin nifty/.test(t) ? "FINNIFTY" : /midcp|midcap nifty/.test(t) ? "MIDCPNIFTY" : /sensex/.test(t) ? "SENSEX" : /nifty/.test(t) ? "NIFTY" : null;
+    var idx = /nifty\s*50\s*stocks?/.test(t) ? "NIFTY 50 stocks" : /bank\s?nifty/.test(t) ? "BANKNIFTY" : /finnifty|fin nifty/.test(t) ? "FINNIFTY" : /midcp|midcap nifty/.test(t) ? "MIDCPNIFTY" : /sensex/.test(t) ? "SENSEX" : /nifty/.test(t) ? "NIFTY" : null;
     if (!idx) { var m = text.match(/\b(?:[Bb]uy|[Ss]ell|[Ss]hort)\s+([A-Z][A-Za-z&]+(?:\s[A-Z][a-z]+)?)/); idx = m ? m[1].toUpperCase() : "Instrument?"; }
     var fs = t.match(/\b(buy|sell|short)\b/), side = fs && fs[1] !== "buy" ? "Sell" : "Buy";
-    var opt = /straddle/.test(t) ? "ATM straddle" : /strangle/.test(t) ? "OTM strangle" : /\b(call|ce)\b/.test(t) ? "ATM call" : /\b(put|pe)\b/.test(t) ? "ATM put" : null;
+    var opt = /iron\s*condor/.test(t) ? "iron condor" : /straddle/.test(t) ? "ATM straddle" : /strangle/.test(t) ? "OTM strangle" : /\b(call|ce)\b/.test(t) ? "ATM call" : /\b(put|pe)\b/.test(t) ? "ATM put" : null;
     var fut = /futures?/.test(t);
     r.Instrument = idx + (opt ? " options · " + side + " " + opt : fut ? " futures · " + side : " · " + side);
     var tf = t.match(/(\d+)\s*-?\s*(?:min|minute|m\b)/);
@@ -575,9 +582,11 @@
     var emas = [], re = /(\d+)\s*-?\s*(?:period\s*)?ema|ema\s*\(?\s*(\d+)/g, mm;
     while ((mm = re.exec(t))) emas.push(mm[1] || mm[2]);
     var dir = /below|under|crosses down/.test(t) && !/above/.test(t) ? "▼" : "▲";
+    var gap = t.match(/gaps?\s*(up|down)\s*(?:by\s*)?(?:more than\s*|over\s*)?(\d+(?:\.\d+)?)\s*%/);
     var rsi = t.match(/rsi\s*\(?(\d+)?\)?[^.]*?(below|under|above|over)\s*(\d+)/);
     if (/opening range|\borb\b/.test(t)) r.Entry = "Break " + (/below|breakdown|low/.test(t) ? "below" : "above") + " 09:15–09:30 range";
-    else if (/straddle|strangle/.test(t)) r.Entry = side + " " + (opt || "straddle") + " at fixed time";
+    else if (/straddle|strangle|iron\s*condor/.test(t)) r.Entry = side + " " + (opt || "straddle") + " at fixed time";
+    else if (gap) r.Entry = "Gap " + gap[1] + " > " + gap[2] + "% at open, fade it";
     else if (rsi) r.Entry = "RSI " + (rsi[1] || 14) + (/below|under/.test(rsi[2]) ? " < " : " > ") + rsi[3];
     else if (emas.length >= 2) r.Entry = "EMA " + emas[0] + " " + dir + " EMA " + emas[1];
     else if (/supertrend/.test(t)) { var st = t.match(/supertrend\s*(\d+)\s*,\s*(\d+)/); r.Entry = "Supertrend " + (st ? st[1] + "," + st[2] : "10,3") + " turns green"; }
@@ -590,14 +599,16 @@
     if (/opening range|\borb\b/.test(t)) r.Window = "after 09:30";
     else if (winT.length) r.Window = (/after/.test(winT[0].before) ? "after " : /\bat\b/.test(winT[0].before) ? "at " : "from ") + winT[0].v;
     else r.Window = "09:15–15:30 (market hours)";
+    if (/expiry\s*day/.test(t)) r.Window += " · expiry day only";
     var ex = [];
     if (/opposite cross/.test(t)) ex.push("opposite cross");
     else if (/turns red/.test(t)) ex.push("Supertrend flips red");
     else if (rsi) { var after = t.slice(t.indexOf(rsi[0]) + rsi[0].length).match(/above\s*(\d+)/); if (after) ex.push("RSI > " + after[1]); }
     var sl = t.match(/stop\s*loss\s*(\d+(?:\.\d+)?)\s*%/), tg = t.match(/target\s*(\d+(?:\.\d+)?)\s*%/);
-    if (sl) ex.push("SL " + sl[1] + "%" + (/each leg|per leg/.test(t) ? " per leg" : ""));
+    if (sl) ex.push("SL " + sl[1] + "%" + (/each leg|per leg/.test(t) ? " per leg" : /stop\s*loss\s*[\d.]+\s*%\s*of\s*(?:the\s*)?(?:combined\s*)?premium/.test(t) ? " of premium" : ""));
     if (tg) ex.push("target " + tg[1] + "%");
-    ex.push((exitT || "15:15") + " hard exit");
+    else if (/target[^.]*previous (?:day'?s )?close|fill(?:s|ed)? the gap/.test(t)) ex.push("target prev close");
+    if (r.Timeframe !== "1D" || exitT) ex.push((exitT || "15:15") + " hard exit");
     r.Exit = ex.join(" / ");
     var risk = [], mt = t.match(/max(?:imum)?\s*(\d+)\s*trades?/), dl = t.match(/(?:daily\s*)?loss\s*(?:limit|cap)\s*(?:of\s*)?₹?\s*(\d[\d,]*)/);
     risk.push(mt ? mt[1] + (mt[1] === "1" ? " trade/day" : " trades/day") : "3 trades/day (default)");

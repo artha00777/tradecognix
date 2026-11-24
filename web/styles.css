@@ -359,6 +359,12 @@ kbd, .kbd { font: 500 11px/1 var(--font-mono); color: var(--text-3); border: 1px
 .brokers__row { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); border: 1px solid var(--border); border-radius: var(--r-lg); overflow: hidden; }
 .wordmark { display: grid; gap: 4px; place-items: center; padding: 18px 8px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); text-align: center; min-height: 76px; align-content: center; }
 .wordmark b { font-weight: 650; font-size: 16px; letter-spacing: -0.03em; color: var(--text); }
+.wordmark__logo { display: grid; place-items: center; width: min(100%, 168px); height: 52px; padding: 9px 14px; border-radius: 10px; background: #fff; box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.06); transition: transform .25s ease, box-shadow .25s ease; }
+.wordmark__logo img { display: block; max-width: 100%; max-height: 32px; width: auto; height: auto; object-fit: contain; }
+.wordmark:hover .wordmark__logo { transform: translateY(-2px); box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.06), 0 6px 18px rgba(0, 0, 0, 0.18); }
+.bcard__logo { display: grid; place-items: center; width: 76px; height: 36px; padding: 6px 8px; border-radius: 8px; background: #fff; box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08); flex: none; }
+.bcard__logo img { max-width: 100%; max-height: 22px; width: auto; height: auto; object-fit: contain; display: block; }
+@media (prefers-reduced-motion: reduce) { .wordmark__logo { transition: none; } .wordmark:hover .wordmark__logo { transform: none; } }
 .wordmark small { font-size: 11.5px; color: var(--text-3); display: inline-flex; align-items: center; gap: 6px; }
 .wordmark small.is-live { color: var(--brand-text); }
 .brokers__row .wordmark:nth-child(6n) { border-right: 0; }
