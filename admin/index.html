@@ -477,7 +477,7 @@
         $$("[data-theme-toggle]").forEach(function (b) { b.addEventListener("click", function () { setTheme(root.getAttribute("data-theme") === "light" ? "dark" : "light"); }); });
 
         /* ---------- state ---------- */
-        var BASE = localStorage.getItem("tc_admin_api") || window.TC_API_BASE || "";
+        var BASE = localStorage.getItem("tc_admin_api") || window.TC_API_BASE || "https://tradecognix-api.onrender.com";
         var TOKEN = localStorage.getItem("tc_admin_token") || "";
         var DEMO = false, current = "stats", timer = null, loaded = {}, reqSeq = 0;
 

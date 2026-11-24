@@ -14,5 +14,5 @@
   } else if (fromQuery) {
     localStorage.setItem("tc_api_base", fromQuery.replace(/\/+$/, ""));
   }
-  window.TC_API_BASE = window.TC_API_BASE || localStorage.getItem("tc_api_base") || "";
+  window.TC_API_BASE = window.TC_API_BASE || localStorage.getItem("tc_api_base") || "https://tradecognix-api.onrender.com";
 })();
