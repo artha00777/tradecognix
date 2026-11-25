@@ -37,12 +37,22 @@
           if (r.status === 401 && token()) { localStorage.removeItem("tc_token"); UI().renderAccount(""); }
           if (!r.ok) {
             var d = data && data.detail;
-            var msg = typeof d === "string" ? d : (d && d.message) || ("HTTP " + r.status);
+            var msg = typeof d === "string" ? d : Array.isArray(d) ? validationMessage(d) : (d && d.message) || (r.status >= 500 ? "The server hit a problem. Please try again in a minute." : "Request failed (" + r.status + ").");
             var err = new Error(msg); err.status = r.status; throw err;
           }
           return data;
         });
       });
+  }
+
+  // FastAPI 422 bodies are [{loc:[...], msg:"..."}]; turn the first few into a readable sentence.
+  function validationMessage(list) {
+    return list.slice(0, 3).map(function (e) {
+      var loc = (e.loc || []).filter(function (p) { return p !== "body" && p !== "query" && typeof p === "string"; });
+      var field = loc.length ? loc[loc.length - 1].replace(/_/g, " ") : "";
+      var m = String(e.msg || "is invalid").replace(/^Value error, /, "");
+      return field ? field.charAt(0).toUpperCase() + field.slice(1) + ": " + m : m;
+    }).join(". ") || "Please check what you entered.";
   }
 
   /* ---------------- helpers ---------------- */

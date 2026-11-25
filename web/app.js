@@ -154,6 +154,9 @@
   window.addEventListener("hashchange", route);
 
   doc.addEventListener("click", function (e) {
+    var mb = e.target.closest("[data-menu]");
+    if (mb) { toggleMenu(); return; }
+    if (e.target.closest("#nav-menu a, #nav-menu button")) toggleMenu(false);
     var t = e.target.closest("[data-open-app],[data-back],[data-view],[data-ex],[data-close],[data-theme-toggle],[data-theme-set],[data-auth-open],[data-kill-open],[data-open-bt]");
     if (!t) return;
     if (t.hasAttribute("data-open-app")) { e.preventDefault(); nav(t.dataset.openApp || "dashboard"); }
@@ -316,6 +319,19 @@
     if (e.key === "Enter" && !(e.metaKey || e.ctrlKey)) { e.preventDefault(); e.target.blur(); }
   });
   function readRules() { var r = {}; $$("#x-edit [data-k]").forEach(function (s) { r[s.dataset.k] = s.textContent.trim(); }); return r; }
+
+  /* ================= Landing: mobile menu ================= */
+  function toggleMenu(force) {
+    var menu = document.getElementById("nav-menu"), btn = document.querySelector("[data-menu]");
+    if (!menu || !btn) return;
+    var open = typeof force === "boolean" ? force : menu.hidden;
+    menu.hidden = !open;
+    btn.setAttribute("aria-expanded", String(open));
+    btn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+    btn.closest(".nav").classList.toggle("is-open", open);
+  }
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") toggleMenu(false); });
+  window.addEventListener("resize", function () { if (window.innerWidth > 980) toggleMenu(false); });
 
   /* ================= Studio: results (shared with api.js) ================= */
   /* model = { scope, illustrative, badge, metrics:{trades,winRate,gross,net,costs,maxDD,pf,expectancy},
