@@ -123,7 +123,7 @@ class Backtester:
         pos = Position(direction, ts, i, spot, legs)
         for leg in legs:
             ref = self._leg_price(leg, spot, ts)
-            fill = apply_slippage(ref, leg.side, self.cfg.slippage_pct)
+            fill = apply_slippage(ref, leg.side, self.cfg.slippage_for(self.segment))
             leg.entry_ref, leg.entry_fill, leg.peak = ref, fill, ref
             pos.costs = pos.costs + order_costs(leg.side, fill, qty, self.segment, s.exchange, ts.date(), self.cfg)
             pos.slippage += abs(fill - ref) * qty
@@ -131,7 +131,7 @@ class Backtester:
 
     def _close_leg(self, pos: Position, leg: Leg, ref: float, ts: datetime, reason: str) -> None:
         exit_side = "sell" if leg.side == "buy" else "buy"
-        fill = apply_slippage(ref, exit_side, self.cfg.slippage_pct)
+        fill = apply_slippage(ref, exit_side, self.cfg.slippage_for(self.segment))
         leg.exit_ref, leg.exit_fill, leg.open, leg.exit_reason = ref, fill, False, reason
         pos.costs = pos.costs + order_costs(exit_side, fill, leg.qty, self.segment, self.s.exchange, ts.date(), self.cfg)
         pos.slippage += abs(fill - ref) * leg.qty

@@ -11,13 +11,29 @@ from . import rates as R
 Segment = Literal["options", "futures", "equity_intraday", "equity_delivery"]
 
 
+# Default slippage per fill, as % of the traded price, by segment. Option premiums are small and
+# spreads wide, so 0.5% of premium is realistic. Index futures trade at ~0.25-1 tick of spread on
+# a price near 25,000, so 0.5% (~125 points a side) wildly overstated costs; 0.01% is ~2.5 points.
+DEFAULT_SLIPPAGE_PCT: dict[str, float] = {
+    "options": 0.5,
+    "futures": 0.01,
+    "equity_intraday": 0.05,
+    "equity_delivery": 0.1,
+}
+
+
 @dataclass
 class CostConfig:
     brokerage_per_order: float = R.BROKERAGE_FLAT_PER_ORDER
-    slippage_pct: float = 0.5  # % of price per fill, applied against you
+    slippage_pct: Optional[float] = None  # % of price per fill against you; None = per-segment default
     stt_override: Optional[float] = None  # fraction; None = date-aware schedule
     exchange_override: Optional[float] = None
     include_gst: bool = True
+
+    def slippage_for(self, segment: str) -> float:
+        if self.slippage_pct is not None:
+            return self.slippage_pct
+        return DEFAULT_SLIPPAGE_PCT.get(segment, 0.05)
 
 
 @dataclass

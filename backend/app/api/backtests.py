@@ -33,7 +33,7 @@ class BacktestIn(BaseModel):
     text: Optional[str] = Field(None, max_length=4000)
     days: int = Field(60, ge=5, le=750)
     seed: int = 7
-    slippage_pct: float = Field(0.5, ge=0, le=10)
+    slippage_pct: Optional[float] = Field(None, ge=0, le=10, description="% of price per fill; omit for the per-segment default (options 0.5, futures 0.01, equity 0.05)")
     brokerage_per_order: float = Field(20.0, ge=0, le=100)
     iv: Optional[float] = Field(None, gt=0.01, lt=2.0, description="Annualised IV for the option premium proxy")
     broker_account_id: Optional[int] = Field(None, description="Use real candles from this connected broker")

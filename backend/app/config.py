@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from functools import lru_cache
+from typing import Optional
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -61,7 +62,7 @@ class Settings(BaseSettings):
     # Engine
     scheduler_enabled: bool = True
     paper_starting_capital: float = 500000.0
-    default_slippage_pct: float = Field(0.5, description="Slippage as % of premium per fill")
+    default_slippage_pct: Optional[float] = Field(None, description="Slippage as % of price per fill; None = per-segment default (options 0.5, futures 0.01, equity 0.05)")
 
     @property
     def is_production(self) -> bool:

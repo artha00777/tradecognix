@@ -80,7 +80,8 @@ def test_stop_loss_exits(candles_5m):
     for t in res.trades:
         leg = t["legs"][0]
         if leg["exit_reason"] == "stop_loss":
-            assert leg["exit_ref"] == pytest.approx(leg["entry_ref"] * 0.9, abs=0.02)
+            # fills at the stop, or at the open when the bar gaps through it (never better than the stop)
+            assert leg["exit_ref"] <= leg["entry_ref"] * 0.9 + 0.02
 
 
 def test_strike_selection_and_expiry():
@@ -129,3 +130,16 @@ def test_sweep_grid(candles_5m):
     assert all("error" not in r for r in rows)
     nets = [r["net_pnl"] for r in rows]
     assert nets == sorted(nets, reverse=True)
+
+
+def test_futures_backtest_slippage_is_sane(candles_5m):
+    """Regression: a NIFTY futures EMA cross showed slippage ~8x the gross loss because 0.5%
+    (meant for option premium) was applied to a ~25,000 futures price on every fill."""
+    s, res = _run("Buy NIFTY futures when EMA 9 crosses above EMA 21 on 15 minute candles, exit on opposite cross, max 2 trades a day", candles_5m)
+    assert s.instrument_type in ("future", "index")
+    assert res.trades
+    for t in res.trades:
+        notional = t["legs"][0]["entry_ref"] * t["qty"]
+        # two fills at the 0.01% futures default, plus up to a tick of rounding each side
+        assert t["slippage"] <= notional * 0.0003 + 0.05 * 2 * t["qty"] + 0.01
+        assert t["net_pnl"] == pytest.approx(t["gross_pnl"] - t["charges"]["total"] - t["slippage"], abs=0.05)

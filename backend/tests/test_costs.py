@@ -52,3 +52,12 @@ def test_slippage_direction_and_tick():
     assert apply_slippage(100.0, "sell", 0.5) == 99.5
     assert apply_slippage(0.04, "sell", 50) == 0.05  # floored at one tick
     assert round(apply_slippage(123.33, "buy", 0.1) / 0.05, 6).is_integer()
+
+
+def test_default_slippage_is_segment_aware():
+    from app.backtest.costs import DEFAULT_SLIPPAGE_PCT
+    cfg = CostConfig()
+    assert cfg.slippage_for("options") == DEFAULT_SLIPPAGE_PCT["options"] == 0.5
+    assert cfg.slippage_for("futures") == 0.01
+    assert CostConfig(slippage_pct=0.2).slippage_for("futures") == 0.2  # explicit value wins
+

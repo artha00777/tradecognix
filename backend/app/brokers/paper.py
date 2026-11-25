@@ -36,7 +36,7 @@ class PaperBroker(BrokerAdapter):
     status = "live"
     credential_fields = []
 
-    def __init__(self, credentials=None, price_source: PriceSource | None = None, slippage_pct: float = 0.5,
+    def __init__(self, credentials=None, price_source: PriceSource | None = None, slippage_pct: float | None = None,
                  starting_capital: float = 500000.0, data_broker: BrokerAdapter | None = None):
         super().__init__(credentials)
         self.data_broker = data_broker
@@ -103,8 +103,8 @@ class PaperBroker(BrokerAdapter):
             if not ref or ref <= 0:
                 return OrderResult(order_id="", status="rejected", message="no valid price")
             side = "buy" if req.side == "BUY" else "sell"
-            fill = apply_slippage(ref, side, self.cost_cfg.slippage_pct, req.instrument.tick_size or 0.05)
             segment = "options" if req.instrument.option_type else ("futures" if "FUT" in req.instrument.instrument_type else "equity_intraday")
+            fill = apply_slippage(ref, side, self.cost_cfg.slippage_for(segment), req.instrument.tick_size or 0.05)
             exch = "BSE" if req.instrument.exchange in ("BSE", "BFO") else "NSE"
             costs = order_costs(side, fill, req.quantity, segment, exch, ist_today(), self.cost_cfg).total
             key = req.instrument.symbol
