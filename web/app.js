@@ -162,7 +162,13 @@
     if (t.hasAttribute("data-open-app")) { e.preventDefault(); nav(t.dataset.openApp || "dashboard"); }
     else if (t.hasAttribute("data-back")) { e.preventDefault(); backToSite(); }
     else if (t.dataset.view) { closeModal(openModalEl()); nav(t.dataset.view); }
-    else if (t.dataset.ex) { var i = $("#x-input"); i.value = t.dataset.ex; i.dispatchEvent(new Event("input")); i.focus(); }
+    else if (t.dataset.ex) {
+      var i = $("#x-input"); i.value = t.dataset.ex; i.dispatchEvent(new Event("input"));
+      $$(".tpl").forEach(function (b) { b.setAttribute("aria-pressed", String(b === t)); });
+      // Only focus on devices with a fine pointer: on phones focusing pops the keyboard over the template.
+      if (window.matchMedia && window.matchMedia("(pointer: fine)").matches) i.focus();
+      else { var h = $("#x-input-hint"); if (h) h.textContent = "Template loaded. Edit it or tap Generate rules."; }
+    }
     else if (t.hasAttribute("data-close")) closeModal(t.closest(".modal"));
     else if (t.hasAttribute("data-theme-toggle")) setTheme(theme() === "dark" ? "light" : "dark");
     else if (t.dataset.themeSet) setTheme(t.dataset.themeSet);
@@ -608,7 +614,9 @@
     else if (rsi) r.Entry = "RSI " + (rsi[1] || 14) + (/below|under/.test(rsi[2]) ? " < " : " > ") + rsi[3];
     else if (emas.length >= 2) r.Entry = "EMA " + emas[0] + " " + dir + " EMA " + emas[1];
     else if (/supertrend/.test(t)) { var st = t.match(/supertrend\s*(\d+)\s*,\s*(\d+)/); r.Entry = "Supertrend " + (st ? st[1] + "," + st[2] : "10,3") + " turns green"; }
-    else if (/vwap/.test(t)) r.Entry = "Pullback to VWAP" + (emas.length ? ", above EMA " + emas[0] : "");
+    else if (/vwap/.test(t)) r.Entry = /(crosses|breaks|slips)\s+below\s+vwap/.test(t)
+      ? "Cross below VWAP" + (emas.length ? ", below EMA " + emas[0] : "")
+      : "Pullback to VWAP" + (emas.length ? ", above EMA " + emas[0] : "");
     else r.Entry = "Custom condition · review";
     var times = [], tre = /(\d{1,2})(?:[:.](\d{2}))?\s*(am|pm)\b|(\d{1,2})[:.](\d{2})/g, tm;
     while ((tm = tre.exec(t))) times.push({ v: tm[4] ? toTime(tm[4], tm[5]) : toTime(tm[1], tm[2], tm[3]), at: tm.index });

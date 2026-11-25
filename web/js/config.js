@@ -9,10 +9,11 @@
 (function () {
   var params = new URLSearchParams(window.location.search);
   var fromQuery = params.get("api");
-  if (fromQuery === "off") {
+  if (fromQuery === "off" || fromQuery === "default") {
+    // "off" forces browser-only demo mode for this visit; "default" forgets any saved override.
     localStorage.removeItem("tc_api_base");
   } else if (fromQuery) {
     localStorage.setItem("tc_api_base", fromQuery.replace(/\/+$/, ""));
   }
-  window.TC_API_BASE = window.TC_API_BASE || localStorage.getItem("tc_api_base") || "https://tradecognix-api.onrender.com";
+  window.TC_API_BASE = fromQuery === "off" ? "" : (window.TC_API_BASE || localStorage.getItem("tc_api_base") || "https://tradecognix-api.onrender.com");
 })();
