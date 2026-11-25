@@ -502,22 +502,23 @@
           <!-- Dashboard -->
           <section class="view" data-v="dashboard" hidden>
             <div class="vhead">
-              <div><h1 id="x-greet">Good evening</h1><p>Your demo portfolio at a glance. Illustrative numbers.</p></div>
+              <div><h1 id="x-greet">Good evening</h1><p id="x-dash-sub">Your demo portfolio at a glance. Illustrative numbers.</p></div>
               <button class="btn btn--primary" type="button" data-view="studio"><svg aria-hidden="true"><use href="#i-plus" /></svg>New strategy</button>
             </div>
             <div class="kpis">
-              <div class="card kpi"><span>Portfolio P&amp;L today</span><strong class="up">+₹4,280</strong><small class="up">+0.86%</small></div>
-              <div class="card kpi"><span>Active strategies</span><strong>3</strong><small>2 paper · 1 draft</small></div>
-              <div class="card kpi"><span>Open positions</span><strong>2</strong><small>NIFTY CE · BANKNIFTY PE</small></div>
-              <div class="card kpi"><span>Win rate, 30 days</span><strong>54.2%</strong><small class="up">+3.1 pts</small></div>
+              <div class="card kpi"><span id="x-k1l">Portfolio P&amp;L today</span><strong class="up" id="x-k1">+₹4,280</strong><small class="up" id="x-k1s">+0.86%</small></div>
+              <div class="card kpi"><span id="x-k2l">Active strategies</span><strong id="x-k2">3</strong><small id="x-k2s">2 paper · 1 draft</small></div>
+              <div class="card kpi"><span id="x-k3l">Open positions</span><strong id="x-k3">2</strong><small id="x-k3s">NIFTY CE · BANKNIFTY PE</small></div>
+              <div class="card kpi"><span id="x-k4l">Win rate, 30 days</span><strong id="x-k4">54.2%</strong><small class="up" id="x-k4s">+3.1 pts</small></div>
             </div>
             <div class="dash">
               <div style="display:grid;gap:16px;min-width:0">
                 <div class="panel">
-                  <div class="panel__head"><h3>Equity, last 30 sessions</h3><span class="note">Demo account · ₹5,00,000 start</span></div>
+                  <div class="panel__head"><h3 id="x-dash-h">Equity, last 30 sessions</h3><span class="note" id="x-dash-note">Demo account · ₹5,00,000 start</span></div>
                   <div class="panel__body">
-                    <p class="cap">Equity rose from ₹5.00 L to ₹5.39 L over 30 sessions<small>Closing equity · illustrative</small></p>
-                    <div class="chartbox"><canvas id="x-dash-chart" role="img" aria-label="Demo equity rose from 5 lakh to about 5.39 lakh rupees over 30 sessions"></canvas></div>
+                    <p class="cap" id="x-dash-cap">Equity rose from ₹5.00 L to ₹5.39 L over 30 sessions<small>Closing equity · illustrative</small></p>
+                    <p class="hint" id="x-dash-empty" hidden></p>
+                    <div class="chartbox" id="x-dash-box"><canvas id="x-dash-chart" role="img" aria-label="Demo equity rose from 5 lakh to about 5.39 lakh rupees over 30 sessions"></canvas></div>
                   </div>
                 </div>
                 <div class="panel">
@@ -525,7 +526,7 @@
                   <div class="scroll-x">
                     <table class="tbl tbl--min">
                       <thead><tr><th scope="col">Strategy</th><th scope="col">Status</th><th scope="col" class="r">Today P&amp;L</th><th scope="col" class="r">Trades</th></tr></thead>
-                      <tbody>
+                      <tbody id="x-dash-strats">
                         <tr><td>9/21 EMA Crossover<span class="sub">NIFTY · 15m</span></td><td><span class="badge badge--paper">Paper</span></td><td class="r up">+₹3,120</td><td class="r">2</td></tr>
                         <tr><td>ORB Nifty<span class="sub">09:15–09:30 range</span></td><td><span class="badge">Draft</span></td><td class="r faint">—</td><td class="r">0</td></tr>
                         <tr><td>Short Straddle 09:20<span class="sub">BANKNIFTY</span></td><td><span class="badge badge--paper">Paper</span></td><td class="r up">+₹1,160</td><td class="r">1</td></tr>

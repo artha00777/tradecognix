@@ -416,7 +416,59 @@
       .then(function () { btn.classList.remove("is-loading"); });
   }
 
+  /* Dashboard: real account numbers when signed in (journal, saved strategies, engine sessions). */
+  var istDay = function (iso) { return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date(iso)); };
+  function setKpi(n, label, value, sub, cls) {
+    $("#x-k" + n + "l").textContent = label; var v = $("#x-k" + n); v.textContent = value; v.className = cls || "";
+    var s = $("#x-k" + n + "s"); s.textContent = sub; s.className = "";
+  }
+  function loadDashboard() {
+    if (!token()) {
+      $("#x-dash-sub").textContent = "Sample numbers. Create a free account and these become your own.";
+      UI().state.dash = null;
+      return;
+    }
+    Promise.all([api("/api/journal"), api("/api/strategies"), api("/api/engine/sessions").catch(function () { return { sessions: [] }; })]).then(function (rs) {
+      var trades = rs[0].entries || [], strats = rs[1].strategies || [], sess = rs[2].sessions || [], F = UI().fmt;
+      var today = istDay(new Date().toISOString()), cutoff = Date.now() - 30 * 864e5;
+      var running = sess.filter(function (s) { return s.status === "running"; });
+      var tToday = trades.filter(function (t) { return istDay(t.exit_time) === today; });
+      var pnlToday = tToday.reduce(function (s, t) { return s + t.net_pnl; }, 0);
+      var t30 = trades.filter(function (t) { return new Date(t.exit_time).getTime() >= cutoff; });
+      var wins = t30.filter(function (t) { return t.net_pnl > 0; }).length;
+      $("#x-dash-sub").textContent = "Your account at a glance. Paper trading only during beta.";
+      setKpi(1, "Net P&L today", tToday.length ? F.signed(Math.round(pnlToday)) : "₹0", tToday.length + (tToday.length === 1 ? " closed trade" : " closed trades") + " · after charges", tToday.length ? (pnlToday >= 0 ? "up" : "down") : "");
+      setKpi(2, "Saved strategies", String(strats.length), strats.length ? "Open them from Backtests" : "Save one from the Studio");
+      var paperN = running.filter(function (s) { return s.mode === "paper"; }).length;
+      setKpi(3, "Running sessions", String(running.length), running.length ? paperN + " paper · " + (running.length - paperN) + " live" : "Start one from a backtest");
+      setKpi(4, "Win rate, 30 days", t30.length ? (wins / t30.length * 100).toFixed(1) + "%" : "—", t30.length + (t30.length === 1 ? " trade" : " trades"));
+      // cumulative net P&L by IST day, last 30 trading days that had a closed trade
+      var byDay = {};
+      trades.forEach(function (t) { var d = istDay(t.exit_time); byDay[d] = (byDay[d] || 0) + t.net_pnl; });
+      var days = Object.keys(byDay).sort().slice(-30), run = 0;
+      var labels = days.map(function (d) { var x = new Date(d + "T12:00:00+05:30"); return F.istDate(x).replace(/ \d{4}$/, ""); });
+      var values = days.map(function (d) { run += byDay[d]; return Math.round(run); });
+      $("#x-dash-h").textContent = "Cumulative net P&L";
+      $("#x-dash-note").textContent = "Paper and live trades · after charges";
+      var empty = !values.length;
+      $("#x-dash-box").hidden = empty; $("#x-dash-cap").hidden = empty; $("#x-dash-empty").hidden = !empty;
+      if (empty) $("#x-dash-empty").textContent = "This chart starts after your first closed paper trade. Backtest a strategy, then start paper trading from its results.";
+      else $("#x-dash-cap").innerHTML = "Net " + E(F.signed(values[values.length - 1])) + " over " + days.length + (days.length === 1 ? " trading day" : " trading days") + "<small>Closed trades only</small>";
+      UI().state.dash = { labels: labels, values: values };
+      UI().drawDash();
+      // strategies table
+      var sid = {}; running.forEach(function (s) { sid[s.strategy_id] = s.mode; });
+      var todayBy = {}; tToday.forEach(function (t) { var k = t.strategy_id; todayBy[k] = todayBy[k] || { n: 0, p: 0 }; todayBy[k].n++; todayBy[k].p += t.net_pnl; });
+      $("#x-dash-strats").innerHTML = strats.length ? strats.slice(0, 6).map(function (s) {
+        var sp = s.spec || {}, mode = sid[s.id], td = todayBy[s.id];
+        var badge = mode === "live" ? '<span class="badge badge--live">Live</span>' : mode === "paper" ? '<span class="badge badge--paper">Paper</span>' : '<span class="badge">Saved</span>';
+        return "<tr><td>" + E(s.name) + '<span class="sub">' + E((sp.underlying || "") + " · " + (sp.timeframe || "")) + "</span></td><td>" + badge + '</td><td class="r ' + (td ? (td.p >= 0 ? "up" : "down") : "faint") + '">' + (td ? F.signed(Math.round(td.p)) : "—") + '</td><td class="r">' + (td ? td.n : 0) + "</td></tr>";
+      }).join("") : '<tr><td colspan="4" class="faint">No saved strategies yet. Generate rules in the Studio and press Save strategy.</td></tr>';
+    }).catch(function (x) { console.warn("[TradeCognix] dashboard:", x.message); });
+  }
+
   doc.addEventListener("tc:view", function (e) {
+    if (e.detail === "dashboard") loadDashboard();
     if (e.detail === "backtests") loadBacktestsView();
     else if (e.detail === "journal") loadJournal();
   });
@@ -457,6 +509,9 @@
       document.documentElement.setAttribute("data-tc-api", "on");
       window.TC_META = m;
       loadBrokers();
+      // app.js may have opened a view before this script was listening; load its account data now.
+      var v = (location.hash.indexOf("#/") === 0 && !$(".view[data-v='" + location.hash.slice(2) + "']:not([hidden])")) ? "" : location.hash.slice(2);
+      if (v) doc.dispatchEvent(new CustomEvent("tc:view", { detail: v }));
       if (token()) api("/api/auth/me").then(function (u) { UI().renderAccount(u.email); }).catch(function () {});
     }).catch(function () { console.warn("[TradeCognix] API not reachable at " + BASE + "; demo handlers stay active on failure."); });
   }

@@ -249,6 +249,12 @@
     });
   }
   function drawDash() {
+    // js/api.js sets S.dash to the signed-in account's cumulative net P&L; otherwise draw the demo curve.
+    if (S.dash) {
+      if (!S.dash.values.length) { if (charts.dash) { charts.dash.destroy && charts.dash.destroy(); charts.dash = null; } return; }
+      charts.dash = equityChart("x-dash-chart", S.dash.labels, S.dash.values, function (l) { return l; }, true);
+      return;
+    }
     var raw = JSON.parse($("#x-equity-data").textContent);
     var labels = raw.map(function (_, i) { return i + 1; });
     charts.dash = equityChart("x-dash-chart", labels, raw, function (l) { return "Day " + l; }, false);
@@ -825,7 +831,7 @@
     toast: toast, openModal: openModal, closeModal: closeModal, progress: progress, setLog: setLog,
     renderRules: renderRules, readRules: readRules, renderResults: renderResults, recordBacktest: recordBacktest,
     renderBrokers: renderBrokers, fieldHTML: fieldHTML, validateFields: validateFields, validateAuth: validateAuth, validatePrompt: function () { triedOnce = true; return validatePrompt(true); },
-    addSession: addSession, stopSession: stopSession, renderJournalEmpty: renderJournalEmpty, esc: esc, killAll: killAll, running: running,
+    addSession: addSession, stopSession: stopSession, renderJournalEmpty: renderJournalEmpty, esc: esc, drawDash: drawDash, killAll: killAll, running: running,
     authDone: authDone, renderAccount: renderAccount, renderChecklist: renderChecklist, setStep: setStep,
     nav: nav, fmt: { inr: inr, rupee: rupee, signed: signed, compact: compact, istDate: istDate, istTime: istTime }, state: S
   };
