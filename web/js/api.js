@@ -135,12 +135,17 @@
     var flags = [];
     if (res.flags.indexOf("synthetic_underlying_data") >= 0) flags.push("synthetic data");
     if (res.flags.indexOf("premium_proxy_black_scholes") >= 0) flags.push("premiums estimated (Black-Scholes)");
+    var notes = [];
+    if (res.flags.indexOf("synthetic_underlying_data") >= 0) notes.push("These results use generated practice prices, not real NSE history, so they show how the rules and costs behave, not what the strategy would have earned. Connect a broker to backtest on real candles.");
+    if (res.flags.indexOf("premium_proxy_black_scholes") >= 0) notes.push("Option premiums are estimated with Black-Scholes, not taken from traded prices.");
+    if (res.flags.indexOf("futures_priced_at_spot") >= 0) notes.push("Futures are priced at the index level, so basis and rollover are ignored.");
     var labels = res.equity.map(function (p) { return p.t; });
     var fmt = function (l, long) { var d = new Date(String(l)); if (isNaN(d)) return String(l || ""); return long ? F.istDate(d) + " · " + String(l).slice(11, 16) : String(l).slice(8, 10) + " " + d.toLocaleString("en-IN", { month: "short" }); };
     return {
       instrument: res.strategy.underlying,
       illustrative: flags.length > 0,
-      badge: flags.length ? "Synthetic / estimated" : "Broker data",
+      badge: res.flags.indexOf("synthetic_underlying_data") >= 0 ? "Practice data" : flags.length ? "Estimated" : "Broker data",
+      note: notes.join(" "),
       scope: res.strategy.underlying + " · " + res.strategy.timeframe + " · " + (per.from || "").slice(0, 10) + " to " + (per.to || "").slice(0, 10) + (flags.length ? " · " + flags.join(", ") : " · broker data"),
       metrics: { trades: m.trades, winRate: m.win_rate, gross: m.gross_pnl, net: m.net_pnl, costs: m.total_costs, maxDD: Math.abs(m.max_drawdown), pf: m.profit_factor, expectancy: m.expectancy },
       equity: { labels: labels, values: res.equity.map(function (p) { return Math.round(p.equity); }), fmt: fmt },

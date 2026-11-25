@@ -344,6 +344,8 @@
     var badge = $("#x-res-badge");
     badge.textContent = model.badge || (model.illustrative ? "Illustrative" : "Broker data");
     badge.className = "badge " + (model.illustrative ? "badge--warn" : "badge--live");
+    var note = $("#x-res-note");
+    if (note) { note.hidden = !model.note; note.querySelector("p").textContent = model.note || ""; }
     $("#x-eq-cap").innerHTML = "Net P&amp;L " + (m.net >= 0 ? "ended at " : "fell to ") + esc(signed(m.net)) + " over " + m.trades + " trades<small>Cumulative net P&amp;L, ₹ · after costs and slippage</small>";
     $("#x-cost-cap").innerHTML = "Costs took " + esc(rupee(m.costs)) + (m.gross > 0 ? " of " + esc(rupee(m.gross)) + " gross" : "") + "<small>Charges by type, ₹</small>";
     var keys = Object.keys(model.costs), max = Math.max.apply(null, keys.map(function (k) { return model.costs[k] || 0; }).concat([1]));
@@ -658,7 +660,7 @@
       trades.push({ when: istDate(dates[k]) + " · " + istTime(dates[k]), side: sideBuy ? "Buy" : "Sell", instrument: name, entry: entry, exit: exit, net: nets[k] });
     }
     return {
-      instrument: instr, illustrative: true, badge: "Simulated",
+      instrument: instr, illustrative: true, badge: "Simulated", note: "Demo mode: these numbers are simulated in your browser to show how results look. They are not a real backtest of your strategy.",
       scope: instr + " · " + rules.Timeframe.replace(" (default)", "") + " · Jan 2020 – " + MON[new Date().getMonth()] + " " + new Date().getFullYear() + " · synthetic data",
       metrics: { trades: n, winRate: wins / n * 100, gross: gross, net: cum, costs: costs, maxDD: dd, pf: gl ? gw / gl : null, expectancy: cum / n },
       equity: { labels: labels, values: vals, fmt: function (l, long) { var d = new Date(+l); return long ? istDate(d) : MON[d.getMonth()] + " ’" + String(d.getFullYear()).slice(2); } },

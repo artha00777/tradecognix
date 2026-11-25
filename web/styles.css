@@ -255,6 +255,10 @@ kbd, .kbd { font: 500 11px/1 var(--font-mono); color: var(--text-3); border: 1px
 .callout--danger svg { color: var(--down); }
 .callout--ok { border-color: var(--brand-line); background: var(--brand-soft); color: var(--text); }
 .callout--ok svg { color: var(--brand-text); }
+.callout--warn { border-color: transparent; background: var(--warn-soft); color: var(--text); }
+.callout--warn svg { color: var(--warn); }
+.callout p { margin: 0; }
+.res-note { margin: 0 0 14px; }
 .toast, .x-toast {
   position: fixed; left: 50%; bottom: 24px; z-index: 400; transform: translate(-50%, 16px); opacity: 0; pointer-events: none;
   background: var(--text); color: var(--bg); font-size: 14px; font-weight: 550; padding: 11px 16px; border-radius: 10px;
