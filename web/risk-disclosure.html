@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en-IN" data-theme="dark">
+  <!-- DRAFT for beta. Must be reviewed by a qualified Indian lawyer before paid plans or live trading open to the public. -->
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Risk disclosure · TradeCognix</title>
+    <meta name="description" content="SEBI risk disclosures on derivatives and the risks of backtesting and automated trading on TradeCognix." />
+    <meta name="robots" content="index,follow" />
+    <meta name="color-scheme" content="dark light" />
+    <link rel="canonical" href="https://artha00777.github.io/tradecognix/risk-disclosure.html" />
+    <link rel="icon" type="image/svg+xml" href="mark.svg" />
+    <script>(function () { try { var t = localStorage.getItem("tc-theme"); document.documentElement.setAttribute("data-theme", t === "light" ? "light" : "dark"); } catch (e) {} })();</script>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="legal.css" />
+  </head>
+  <body>
+    <header class="nav">
+      <div class="wrap nav__in">
+        <a class="logo" href="./" aria-label="TradeCognix home"><img class="logo__mark" src="mark.svg" alt="" width="28" height="28" /><span class="logo__word">TradeCognix</span></a>
+        <div class="nav__right"><a class="btn btn--primary btn--sm" href="./#top">Back to TradeCognix</a></div>
+      </div>
+    </header>
+    <main class="legal wrap" id="main">
+      <p class="legal__meta">Last updated 25 November 2026 · Beta</p>
+      <h1>Risk disclosure</h1>
+      <p class="legal__lede">Trading futures and options is risky, and automating a strategy does not make it safer. Please read this before you backtest, paper trade or go live with any strategy on TradeCognix.</p>
+      <nav class="legal__toc" aria-label="On this page"><ol><li><a href="#sebi">SEBI risk disclosures on derivatives</a></li><li><a href="#backtests">Backtests are not predictions</a></li><li><a href="#automation">Risks of automated trading</a></li><li><a href="#rules">Regulatory position</a></li><li><a href="#advice">No advice</a></li></ol></nav>
+      <section id="sebi"><h2>SEBI risk disclosures on derivatives</h2><ul class="legal__sebi">
+<li>9 out of 10 individual traders in equity Futures and Options Segment, incurred net losses.</li>
+<li>On an average, loss makers registered net trading loss close to ₹50,000.</li>
+<li>Over and above the net trading losses incurred, loss makers expended an additional 28% of net trading losses as transaction costs.</li>
+<li>Those making net trading profits, incurred between 15% to 50% of such profits as transaction cost.</li>
+</ul>
+<p class="legal__src">Source: SEBI study dated January 25, 2023 on “Analysis of Profit and Loss of Individual Traders dealing in equity Futures and Options (F&amp;O) Segment”, wherein Aggregate Level findings are based on annual Profit/Loss incurred by individual traders in equity F&amp;O during FY 2021-22.</p></section>
+      <section id="backtests"><h2>Backtests are not predictions</h2><ul><li>A backtest shows how fixed rules would have behaved on past or practice prices. Markets change, and a strategy that looked good in a backtest can lose money live.</li><li>Until you connect a broker, the Studio uses generated practice prices, and option premiums are estimated with Black-Scholes rather than taken from traded prices. These results are labelled <em>Practice data</em> and show how rules and costs behave, not what you would have earned.</li><li>Real fills differ from simulated ones: slippage, partial fills, gaps, liquidity, freezes and circuit limits can all make results worse.</li></ul></section>
+      <section id="automation"><h2>Risks of automated trading</h2><ul><li>Software, internet, broker or exchange outages can stop an order from being placed, modified or exited. Always know how to square off from your broker's own app.</li><li>A misread rule can trade differently from what you meant. Check the rules TradeCognix shows you before every backtest and every live run.</li><li>Brokers may reject orders, change margins or block API access without notice. Broker sessions expire daily and need you to log in again.</li><li>Stop-losses are not guaranteed. A fast market can fill well past your stop.</li></ul></section>
+      <section id="rules"><h2>Regulatory position</h2><p>SEBI's framework for retail algorithmic trading requires API orders to come through registered brokers, and NSE circular NSE/INSP/77559 dated 20 November 2026 restricts live orders from vendor platforms through static IPs. TradeCognix therefore keeps live trading off for public users during the beta and will only offer it in a form that meets these rules.</p></section>
+      <section id="advice"><h2>No advice</h2><p>TradeCognix is a technology platform and DevCognix is not registered with SEBI as an investment adviser or research analyst. Nothing on the site is investment advice or a recommendation to buy or sell any security. Trade only with money you can afford to lose, and consider speaking to a SEBI-registered investment adviser.</p></section>
+    </main>
+    <footer class="legal-foot wrap">
+      <nav aria-label="Legal"><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="risk-disclosure.html">Risk disclosure</a><a href="refund.html">Refunds</a><a href="mailto:contact@devcognix.com">contact@devcognix.com</a></nav>
+      <span>© 2026 TradeCognix · DevCognix</span>
+    </footer>
+  </body>
+</html>
