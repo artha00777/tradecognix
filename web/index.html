@@ -552,6 +552,7 @@
           <section class="view" data-v="studio" hidden>
             <div class="vhead">
               <div><h1>Strategy Studio</h1><p>Describe it in plain English. Review the rules. Backtest with real Indian costs.</p></div>
+              <button class="linkbtn" type="button" id="x-guide-show" hidden>Show guide</button>
               <span class="badge badge--plain" id="x-engine-note">Rule-based parser · demo</span>
             </div>
             <ol class="flow" id="x-flow" aria-label="Progress">
@@ -560,6 +561,14 @@
               <li data-step="3"><b>3</b><span>Paper trade</span><small>&nbsp;· free account</small></li>
               <li data-step="4"><b>4</b><span>Go live</span><small>&nbsp;· your broker</small></li>
             </ol>
+            <div class="guide" id="x-guide" role="region" aria-label="First-time guide" hidden>
+              <span class="guide__step num" id="x-guide-step">1/3</span>
+              <p class="guide__text" id="x-guide-text"></p>
+              <div class="guide__actions">
+                <button class="btn btn--ghost btn--sm" type="button" id="x-guide-act" hidden></button>
+                <button class="guide__close" type="button" id="x-guide-close" aria-label="Hide the guide">Hide</button>
+              </div>
+            </div>
             <div class="studio">
               <div class="studio__left">
                 <div class="panel">

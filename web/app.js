@@ -298,7 +298,37 @@
       li.classList.toggle("is-current", n === cur);
       if (n === cur) li.setAttribute("aria-current", "step"); else li.removeAttribute("aria-current");
     });
+    renderGuide(cur);
   }
+
+  /* ================= Studio: first-run guide ================= */
+  // A one-line coach above the Studio that follows the user's progress. Hidden for good once dismissed
+  // or once they have started paper trading; "Show guide" brings it back.
+  function renderGuide(cur) {
+    var box = $("#x-guide"); if (!box) return;
+    var off = localStorage.getItem("tc_guide_off") === "1";
+    var finished = cur >= 4;
+    box.hidden = off || finished;
+    $("#x-guide-show").hidden = !off || finished;
+    if (box.hidden) return;
+    var act = $("#x-guide-act"), text, label = "", step = Math.min(cur, 3);
+    if (cur === 1) { text = "New here? Tap a template, or describe your own idea in plain English, then press Generate rules."; label = "See templates"; }
+    else if (cur === 2) text = "Check the rules. Click any value to change it, then press Run backtest. Brokerage, STT and slippage are included.";
+    else if (signedIn()) text = "Happy with the result? Start paper trading. It runs on live prices and no money moves.";
+    else { text = "Happy with the result? Create a free account to paper trade on live prices. No money moves."; label = "Create free account"; }
+    $("#x-guide-step").textContent = step + "/3";
+    $("#x-guide-text").textContent = text;
+    act.hidden = !label; act.textContent = label;
+    act.dataset.go = cur === 1 ? "tpl" : "auth";
+  }
+  $("#x-guide-act").addEventListener("click", function (e) {
+    if (e.currentTarget.dataset.go === "tpl") {
+      var g = $(".tpls"); g.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" });
+      var first = $(".tpl"); if (first) first.focus({ preventScroll: true });
+    } else requireAuth(null);
+  });
+  $("#x-guide-close").addEventListener("click", function () { localStorage.setItem("tc_guide_off", "1"); setStep(); });
+  $("#x-guide-show").addEventListener("click", function () { localStorage.removeItem("tc_guide_off"); setStep(); });
 
   /* ================= Studio: rules ================= */
   function renderRules(rules, explanation, warnings) {
