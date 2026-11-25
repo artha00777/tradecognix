@@ -293,6 +293,7 @@
       <symbol id="i-power" viewBox="0 0 24 24"><path d="M12 3v8"/><path d="M6.3 7.3a8 8 0 1 0 11.4 0"/></symbol>
       <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
       <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3 2 20h20L12 3Z"/><path d="M12 10v4M12 17h.01"/></symbol>
+      <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 6.5 8.5 6.5 8.5-6.5"/></symbol>
       <symbol id="i-inbox" viewBox="0 0 24 24"><path d="M3 13h5l1.5 3h5l1.5-3h5"/><path d="M5 5h14l2 8v6H3v-6l2-8Z"/></symbol>
       <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14.3-4.9L4 8M4 4v4h4M4 13a8 8 0 0 0 14.3 4.9L20 16M20 20v-4h-4"/></symbol>
       <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 5v14l11-7L7 5Z"/></symbol>
@@ -326,6 +327,8 @@
           <button type="button" data-tab="users"><svg class="i"><use href="#i-users"/></svg>Users<span class="count num" data-count="users"></span></button>
           <button type="button" data-tab="strategies"><svg class="i"><use href="#i-layers"/></svg>Strategies<span class="count num" data-count="strategies"></span></button>
           <button type="button" data-tab="sessions"><svg class="i"><use href="#i-pulse"/></svg>Live sessions<span class="count num" data-count="running"></span></button>
+
+          <button type="button" data-tab="waitlist"><svg class="i"><use href="#i-mail"/></svg>Waitlist<span class="count num" data-count="waitlist"></span></button>
         </nav>
         <div class="side-foot">
           <div class="who" data-who title=""></div>
@@ -348,6 +351,8 @@
             <button type="button" data-tab="users">Users <span class="count num" data-count="users"></span></button>
             <button type="button" data-tab="strategies">Strategies <span class="count num" data-count="strategies"></span></button>
             <button type="button" data-tab="sessions">Live <span class="count num" data-count="running"></span></button>
+
+            <button type="button" data-tab="waitlist">Waitlist <span class="count num" data-count="waitlist"></span></button>
           </nav>
         </header>
 
@@ -390,6 +395,17 @@
             <div class="panel"><div class="scroll"><table>
               <thead><tr><th>ID</th><th>Name</th><th>Owner</th><th>Underlying</th><th>TF</th><th>Order tag</th><th>Mode</th><th>Updated</th></tr></thead>
               <tbody id="strategies"></tbody>
+            </table></div></div>
+          </section>
+
+          <section class="view" data-view="waitlist" hidden>
+            <div class="page-head">
+              <div><h1>Waitlist</h1><p>People who asked for Pro or Elite while payments are off during beta.</p></div>
+              <div class="head-meta"><span class="muted" id="waitlist-meta"></span> <button class="btn btn--sm" type="button" id="waitlist-copy" disabled>Copy emails</button></div>
+            </div>
+            <div class="panel"><div class="scroll"><table>
+              <thead><tr><th>Email</th><th>Plan</th><th>Account</th><th>Source</th><th>Joined</th></tr></thead>
+              <tbody id="waitlist"></tbody>
             </table></div></div>
           </section>
 
@@ -561,6 +577,7 @@
           } },
           users: { path: "/api/admin/users", render: renderUsers, skel: function () { skelRows("#users", 8); }, error: function (m) { stateRow("#users", 8, "error", "Couldn't load users", m, true); } },
           strategies: { path: "/api/admin/strategies", render: renderStrategies, skel: function () { skelRows("#strategies", 8); }, error: function (m) { stateRow("#strategies", 8, "error", "Couldn't load strategies", m, true); } },
+          waitlist: { path: "/api/admin/waitlist", render: renderWaitlist, skel: function () { skelRows("#waitlist", 5); }, error: function (m) { stateRow("#waitlist", 5, "error", "Couldn't load the waitlist", m, true); } },
           sessions: { path: "/api/admin/sessions", render: renderSessions, skel: function () { skelRows("#running", 9, 3); skelRows("#history", 8, 5); }, error: function (m) { stateRow("#running", 9, "error", "Couldn't load sessions", m, true); stateRow("#history", 8, "error", "Couldn't load history", m, false); } }
         };
 
@@ -661,6 +678,25 @@
               '<td><span class="pill ' + (s.live_confirmed ? "ok" : "plain") + '">' + (s.live_confirmed ? "Live-confirmed" : "Paper") + "</span></td><td>" + rel(s.updated_at) + "</td></tr>";
           }).join("");
         }
+
+        /* ---------- waitlist ---------- */
+        var waitEmails = [];
+        function renderWaitlist(d) {
+          var list = d.entries || [], bp = d.by_plan || {};
+          setCount("waitlist", list.length);
+          waitEmails = list.map(function (w) { return w.email; });
+          $("#waitlist-copy").disabled = !list.length;
+          $("#waitlist-meta").textContent = list.length ? num(bp.pro || 0) + " Pro · " + num(bp.elite || 0) + " Elite" : "";
+          if (!list.length) return stateRow("#waitlist", 5, "empty", "No one on the waitlist yet", "Emails from the Pro and Elite buttons on the pricing section land here.");
+          $("#waitlist").innerHTML = list.map(function (w) {
+            return "<tr><td>" + esc(w.email) + '</td><td><span class="pill plain">' + esc(w.plan === "elite" ? "Elite" : "Pro") + "</span></td><td>" + (w.has_account ? '<span class="pill ok">Signed up</span>' : '<span class="muted">No account</span>') + '</td><td class="muted">' + esc(w.source || "web") + "</td><td>" + rel(w.created_at) + "</td></tr>";
+          }).join("");
+        }
+        $("#waitlist-copy").addEventListener("click", function () {
+          var b = this, txt = waitEmails.join(", ");
+          (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(function () { b.textContent = "Copied " + waitEmails.length; }, function () { window.prompt("Copy these emails", txt); })
+            .then(function () { setTimeout(function () { b.textContent = "Copy emails"; }, 1800); });
+        });
 
         /* ---------- sessions ---------- */
         function renderSessions(d) {
@@ -792,6 +828,11 @@
               if (path === "/api/admin/stats") return resolve(demoStats());
               if (path === "/api/admin/users" && m === "GET") return resolve({ users: copy(D.users) });
               if (path === "/api/admin/strategies") return resolve({ strategies: copy(D.strategies) });
+              if (path === "/api/admin/waitlist") { var ago = function (h) { return new Date(Date.now() - h * 36e5).toISOString(); };
+                return resolve({ total: 3, by_plan: { pro: 2, elite: 1 }, entries: [
+                  { id: 3, email: "ritika.s@example.com", plan: "pro", source: "web", has_account: true, created_at: ago(3) },
+                  { id: 2, email: "vk.trades@example.com", plan: "elite", source: "web", has_account: false, created_at: ago(26) },
+                  { id: 1, email: "anand.m@example.com", plan: "pro", source: "web", has_account: true, created_at: ago(71) }] }); }
               if (path === "/api/admin/sessions") {
                 D.running.forEach(function (s) { if (!s.halted && s.position) s.pnl_today += Math.round((Math.random() - 0.48) * 240); });
                 return resolve({ running: copy(D.running), history: copy(D.history) });

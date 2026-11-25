@@ -117,3 +117,16 @@ def test_broker_connect_encrypts_and_skeleton_reports(client):
     with Session(get_engine()) as db:
         raw = db.get(BrokerAccount, aid).credentials_enc
     assert "KEY12345" not in raw and "1234" not in raw
+
+
+def test_admin_waitlist_lists_entries_and_requires_admin(client):
+    user = register(client, "wl-plain-user@example.com")
+    admin = register(client, "admin@devcognix.com")
+    client.post("/api/waitlist", json={"email": "wl-admin-test@example.com", "plan": "elite"})
+    assert client.get("/api/admin/waitlist", headers=user).status_code == 403
+    r = client.get("/api/admin/waitlist", headers=admin)
+    assert r.status_code == 200
+    d = r.json()
+    row = next(e for e in d["entries"] if e["email"] == "wl-admin-test@example.com")
+    assert row["plan"] == "elite" and row["has_account"] is False
+    assert d["by_plan"]["elite"] >= 1 and d["total"] >= 1

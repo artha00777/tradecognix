@@ -12,7 +12,7 @@ from ..billing.plans import PLAN_KEYS, effective_plan_key
 from ..config import get_settings
 from ..db import get_session
 from ..engine.live import engine
-from ..models import BacktestRun, BrokerAccount, JournalEntry, LiveSession, OrderLog, Payment, StrategyRecord, User, as_utc
+from ..models import BacktestRun, BrokerAccount, JournalEntry, LiveSession, OrderLog, Payment, StrategyRecord, User, WaitlistEntry, as_utc
 from .deps import admin_user
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
@@ -71,6 +71,19 @@ def strategies(_: User = Depends(admin_user), db: Session = Depends(get_session)
     rows = db.exec(select(StrategyRecord, User.email).join(User, User.id == StrategyRecord.user_id).order_by(StrategyRecord.updated_at.desc())).all()
     return {"strategies": [{"id": s.id, "name": s.name, "owner": email, "tag": s.tag, "live_confirmed": s.live_confirmed,
                             "underlying": s.spec.get("underlying"), "timeframe": s.spec.get("timeframe"), "updated_at": s.updated_at} for s, email in rows]}
+
+
+@router.get("/waitlist")
+def waitlist(_: User = Depends(admin_user), db: Session = Depends(get_session)):
+    """Paid-plan waitlist (payments are off during beta). Newest first, flags emails that already have an account."""
+    rows = db.exec(select(WaitlistEntry).order_by(WaitlistEntry.created_at.desc())).all()
+    have = {e.lower() for e in db.exec(select(User.email)).all()}
+    by_plan: dict[str, int] = {}
+    for r in rows:
+        by_plan[r.plan] = by_plan.get(r.plan, 0) + 1
+    return {"total": len(rows), "by_plan": by_plan,
+            "entries": [{"id": r.id, "email": r.email, "plan": r.plan, "source": r.source, "has_account": r.email.lower() in have,
+                         "created_at": as_utc(r.created_at)} for r in rows]}
 
 
 @router.get("/sessions")
