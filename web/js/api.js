@@ -21,7 +21,7 @@
   var UI = function () { return window.TCUI; };
   var rupee = function (v) { return UI().fmt.rupee(v); };
 
-  var state = { spec: null, rules: null, prompt: "", strategyId: null, brokers: [], accounts: [], pendingAfterAuth: null, ws: null, bypass: false };
+  var state = { spec: null, rules: null, prompt: "", strategyId: null, saved: [], brokers: [], accounts: [], pendingAfterAuth: null, ws: null, bypass: false };
 
   /* ---------------- http ---------------- */
   function token() { return localStorage.getItem("tc_token") || ""; }
@@ -130,6 +130,7 @@
         done();
         state.spec = res.strategy; state.rules = res.rules; state.prompt = text; state.strategyId = null;
         UI().renderRules(res.rules, res.explanation, res.warnings || []);
+        var sb = $("#x-save"); if (sb) sb.textContent = "Save strategy";
         UI().setLog($("#x-gen-log"), "Parsed " + Object.keys(res.rules).length + " rules by the TradeCognix engine.", "ok");
       })
       .catch(function (x) {
@@ -298,6 +299,128 @@
     });
   }
 
+  /* ---------------- account data: saved strategies, backtest history, journal ---------------- */
+  var E = function (v) { return UI().esc(v); };
+  var TF = { "1m": "1 min", "3m": "3 min", "5m": "5 min", "10m": "10 min", "15m": "15 min", "30m": "30 min", "1h": "1 hour", "1d": "Daily" };
+  function istStamp(iso) { var d = new Date(iso); if (isNaN(d)) return ""; var F = UI().fmt; return F.istDate(d) + " · " + F.istTime(d); }
+  function signedClass(v) { return v >= 0 ? "up" : "down"; }
+
+  function onSave() {
+    if (!state.spec) return;
+    requireAuth(function () {
+      var spec = applyEdits(state.spec), btn = $("#x-save");
+      var name = (state.rules && state.rules.Entry ? state.rules.Entry : spec.underlying).slice(0, 80);
+      var req = state.strategyId
+        ? api("/api/strategies/" + state.strategyId, { method: "PUT", body: { spec: spec, prompt: state.prompt || undefined } })
+        : api("/api/strategies", { method: "POST", body: { spec: spec, prompt: state.prompt || undefined, name: name } });
+      btn.classList.add("is-loading");
+      req.then(function (r) { state.strategyId = r.id; state.spec = r.spec; btn.textContent = "Saved"; toast("Strategy saved to your account"); setTimeout(function () { btn.textContent = "Save changes"; }, 1800); })
+        .catch(function (x) { toast(x.message + limitHint(x)); })
+        .then(function () { btn.classList.remove("is-loading"); });
+    });
+  }
+
+  function loadBacktestsView() {
+    if (!token()) return;
+    $("#x-bt-sub").textContent = "Saved to your account. Open a run to see its full results.";
+    api("/api/strategies").then(function (r) {
+      var list = r.strategies || [];
+      $("#x-strat-panel").hidden = !list.length;
+      $("#x-strat-note").textContent = list.length ? list.length + (list.length === 1 ? " saved" : " saved") : "";
+      $("#x-strat-body").innerHTML = list.map(function (s) {
+        var sp = s.spec || {};
+        return "<tr><td class=\"wrap\">" + E(s.name) + (s.spec_error ? '<span class="sub">Needs re-parsing</span>' : "") + "</td><td>" + E(sp.underlying || "") + "</td><td>" + E(TF[sp.timeframe] || sp.timeframe || "") +
+          '</td><td class="r">' + istStamp(s.updated_at) + '</td><td><div class="acts"><button class="btn btn--ghost btn--sm" type="button" data-open-strat="' + s.id + '"' + (s.spec_error ? " disabled" : "") + '>Open</button>' +
+          '<button class="btn btn--ghost btn--sm" type="button" data-del-strat="' + s.id + '" aria-label="Delete ' + E(s.name) + '">Delete</button></div></td></tr>';
+      }).join("");
+      state.saved = list;
+    }).catch(function (x) { console.warn("[TradeCognix] strategies:", x.message); });
+    api("/api/backtests?limit=50").then(function (r) {
+      var runs = r.runs || [];
+      if (!runs.length) return; // keep the session list / empty state
+      $("#x-bt-panel").hidden = false; $("#x-bt-empty").hidden = true;
+      $("#x-bt-body").innerHTML = runs.map(function (b) {
+        var m = b.metrics || {};
+        return "<tr><td class=\"wrap\">" + E(b.name || "Backtest #" + b.id) + (b.data_source === "synthetic" ? '<span class="sub">Practice data</span>' : "") + "</td><td>" + E(b.instrument || "") +
+          '</td><td class="r">' + (m.trades || 0) + '</td><td class="r">' + (m.win_rate || 0).toFixed(1) + '%</td><td class="r ' + signedClass(m.net_pnl || 0) + '">' + UI().fmt.signed(m.net_pnl || 0) +
+          '</td><td class="r">' + istStamp(b.created_at) + '</td><td><button class="btn btn--ghost btn--sm" type="button" data-open-run="' + b.id + '">Open</button></td></tr>';
+      }).join("");
+    }).catch(function (x) { console.warn("[TradeCognix] backtests:", x.message); });
+  }
+
+  function openRun(id) {
+    Promise.all([api("/api/backtests/" + id), api("/api/backtests/" + id + "/trades?limit=2000")]).then(function (rs) {
+      var run = rs[0], res = { strategy: run.strategy, metrics: run.metrics, equity: run.equity, flags: run.flags || [], data_source: run.data_source, trades: rs[1].trades || [] };
+      var model = toModel(res);
+      UI().state.model = model; UI().nav("studio");
+      setTimeout(function () { UI().renderResults(model, true); }, 0);
+    }).catch(function (x) { toast(x.message); });
+  }
+
+  function openStrategy(id) {
+    var s = (state.saved || []).filter(function (x) { return x.id === +id; })[0];
+    if (!s) return;
+    state.spec = s.spec; state.rules = s.rules; state.prompt = s.prompt || ""; state.strategyId = s.id;
+    UI().nav("studio");
+    setTimeout(function () {
+      var i = $("#x-input"); if (i) { i.value = s.prompt || ""; i.dispatchEvent(new Event("input")); }
+      UI().renderRules(s.rules, s.explanation, []);
+      UI().setLog($("#x-gen-log"), "Loaded \u201c" + s.name + "\u201d from your account.", "ok");
+      var b = $("#x-save"); if (b) b.textContent = "Save changes";
+    }, 0);
+  }
+
+  function deleteStrategy(id) {
+    var s = (state.saved || []).filter(function (x) { return x.id === +id; })[0];
+    if (!s || !window.confirm("Delete \u201c" + s.name + "\u201d? Its past backtests and journal entries are kept.")) return;
+    api("/api/strategies/" + id, { method: "DELETE" }).then(function () {
+      if (state.strategyId === +id) state.strategyId = null;
+      toast("Strategy deleted"); loadBacktestsView();
+    }).catch(function (x) { toast(x.message); });
+  }
+
+  var jmode = "";
+  function loadJournal() {
+    if (!token()) return; // app.js shows the signed-out state
+    var q = jmode ? "?mode=" + jmode : "";
+    Promise.all([api("/api/journal" + q), api("/api/journal/summary" + q)]).then(function (rs) {
+      var rows = rs[0].entries || [], sum = rs[1].by_strategy || [], any = rows.length > 0, F = UI().fmt;
+      $("#x-j-bar").hidden = false;
+      $("#x-j-export").hidden = !any; $("#x-j-panel").hidden = !any; $("#x-j-sum-panel").hidden = !any; $("#x-j-empty").hidden = any;
+      if (!any) {
+        $("#x-j-empty-h").textContent = jmode ? "No " + jmode + " trades yet" : "No trades yet";
+        $("#x-j-empty-p").textContent = "Closed trades from your paper sessions land here, with charges and the reason each one exited.";
+        return;
+      }
+      $("#x-j-count").textContent = rows.length + (rows.length === 1 ? " trade" : " trades");
+      $("#x-j-sum-body").innerHTML = sum.sort(function (a, b) { return b.net_pnl - a.net_pnl; }).map(function (s) {
+        return "<tr><td>" + E(s.strategy_tag) + '</td><td class="r">' + s.trades + '</td><td class="r">' + Number(s.win_rate).toFixed(1) + '%</td><td class="r">' + F.rupee(s.costs) + '</td><td class="r ' + signedClass(s.net_pnl) + '">' + F.signed(s.net_pnl) + "</td></tr>";
+      }).join("");
+      $("#x-j-body").innerHTML = rows.slice(0, 300).map(function (t) {
+        return "<tr><td>" + istStamp(t.exit_time) + "</td><td>" + E(t.strategy_tag || "") + (t.mode === "live" ? ' <span class="badge badge--live">Live</span>' : "") + "</td><td>" + E(t.symbol) + "</td><td>" + (t.side === "sell" ? "Sell" : "Buy") +
+          '</td><td class="r">' + t.quantity + '</td><td class="r">' + F.inr(t.entry_price) + '</td><td class="r">' + F.inr(t.exit_price) + '</td><td class="r ' + signedClass(t.net_pnl) + '">' + F.signed(t.net_pnl) + "</td><td>" + E((t.exit_reason || "").replace(/_/g, " ")) + "</td></tr>";
+      }).join("");
+    }).catch(function (x) { toast("Couldn't load the journal: " + x.message); });
+  }
+
+  function exportJournal() {
+    var btn = $("#x-j-export"); btn.classList.add("is-loading");
+    fetch(BASE + "/api/journal/export.csv" + (jmode ? "?mode=" + jmode : ""), { headers: { Authorization: "Bearer " + token() } })
+      .then(function (r) { if (!r.ok) throw new Error("Export failed (" + r.status + ")"); return r.blob(); })
+      .then(function (b) {
+        var u = URL.createObjectURL(b), a = doc.createElement("a");
+        a.href = u; a.download = "tradecognix-journal-" + new Date().toISOString().slice(0, 10) + ".csv"; doc.body.appendChild(a); a.click(); a.remove();
+        setTimeout(function () { URL.revokeObjectURL(u); }, 1000);
+      })
+      .catch(function (x) { toast(x.message); })
+      .then(function () { btn.classList.remove("is-loading"); });
+  }
+
+  doc.addEventListener("tc:view", function (e) {
+    if (e.detail === "backtests") loadBacktestsView();
+    else if (e.detail === "journal") loadJournal();
+  });
+
   /* ---------------- capture-phase interception ---------------- */
   doc.addEventListener("click", function (e) {
     if (state.bypass) return;
@@ -310,6 +433,15 @@
     else if (t.closest("#x-kill-confirm")) { stop(); onKill(); }
     else if (t.closest("[data-stop]")) { stop(); onStop(t.closest("[data-stop]").dataset.stop); }
     else if (t.closest("[data-connect]") && state.brokers.length) { stop(); openConnect(t.closest("[data-connect]").dataset.connect); }
+    else if (t.closest("#x-save")) { stop(); onSave(); }
+    else if (t.closest("[data-open-run]")) { stop(); openRun(t.closest("[data-open-run]").dataset.openRun); }
+    else if (t.closest("[data-open-strat]")) { stop(); openStrategy(t.closest("[data-open-strat]").dataset.openStrat); }
+    else if (t.closest("[data-del-strat]")) { stop(); deleteStrategy(t.closest("[data-del-strat]").dataset.delStrat); }
+    else if (t.closest("[data-jmode]")) {
+      stop(); var jb = t.closest("[data-jmode]"); jmode = jb.dataset.jmode;
+      $$("[data-jmode]").forEach(function (b) { b.setAttribute("aria-pressed", String(b === jb)); }); loadJournal();
+    }
+    else if (t.closest("#x-j-export")) { stop(); exportJournal(); }
   }, true);
   doc.addEventListener("submit", function (e) {
     if (!e.target) return;
@@ -320,6 +452,7 @@
   function boot() {
     var note = $("#x-engine-note");
     if (note) note.textContent = "Parsed by the TradeCognix engine";
+    var sv = $("#x-save"); if (sv) sv.hidden = false;
     api("/api/meta").then(function (m) {
       document.documentElement.setAttribute("data-tc-api", "on");
       window.TC_META = m;

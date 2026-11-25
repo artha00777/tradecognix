@@ -109,7 +109,7 @@
   /* ================= app shell & routing ================= */
   var site = $("#x-site"), app = $("#x-app");
   var VIEWS = { dashboard: "Dashboard", studio: "Strategy Studio", backtests: "Backtests", paper: "Paper & live", journal: "Journal", brokers: "Brokers", settings: "Settings" };
-  var REAL = { dashboard: 1, studio: 1, backtests: 1, paper: 1, brokers: 1, settings: 1 };
+  var REAL = { dashboard: 1, studio: 1, backtests: 1, paper: 1, journal: 1, brokers: 1, settings: 1 };
   var current = null;
 
   function show(v) {
@@ -129,7 +129,10 @@
     if (v === "paper") renderSessions();
     if (v === "settings") renderSettings();
     if (v === "studio" && S.model && charts.bt == null) renderResults(S.model, true);
+    if (v === "journal") renderJournalEmpty();
     window.scrollTo(0, 0);
+    // js/api.js listens for this to load account data (saved runs, strategies, journal) from the server.
+    doc.dispatchEvent(new CustomEvent("tc:view", { detail: v }));
   }
   function openApp(v) {
     site.hidden = true; app.hidden = false;
@@ -431,6 +434,23 @@
       var m = b.model.metrics;
       return "<tr><td>" + esc(b.name) + "</td><td>" + esc(b.model.instrument || "") + '</td><td class="r">' + m.trades + '</td><td class="r">' + m.winRate.toFixed(1) + '%</td><td class="r ' + (m.net >= 0 ? "up" : "down") + '">' + signed(m.net) + '</td><td class="r">' + b.at + '</td><td><button class="btn btn--ghost btn--sm" type="button" data-open-bt="' + i + '">Open</button></td></tr>';
     }).join("");
+  }
+
+  /* ================= journal (demo / signed-out state) ================= */
+  function renderJournalEmpty() {
+    ["#x-j-panel", "#x-j-sum-panel", "#x-j-bar", "#x-j-export"].forEach(function (s) { $(s).hidden = true; });
+    $("#x-j-empty").hidden = false;
+    var api = !!window.TC_API_BASE, b = $("#x-j-empty-btn");
+    if (api && !signedIn()) {
+      $("#x-j-empty-h").textContent = "Sign in to see your journal";
+      $("#x-j-empty-p").textContent = "The journal records every trade your paper and live sessions close, so it needs a free account.";
+      b.textContent = "Create free account"; b.removeAttribute("data-view"); b.setAttribute("data-auth-open", "");
+    } else {
+      $("#x-j-empty-h").textContent = "No trades yet";
+      $("#x-j-empty-p").textContent = api ? "Closed trades from your paper sessions land here, with charges and the reason each one exited."
+        : "This is the demo, so no trades are recorded. With an account, every trade your paper sessions close lands here.";
+      b.textContent = "Open Strategy Studio"; b.removeAttribute("data-auth-open"); b.setAttribute("data-view", "studio");
+    }
   }
 
   /* ================= sessions & kill switch (shared) ================= */
@@ -805,7 +825,7 @@
     toast: toast, openModal: openModal, closeModal: closeModal, progress: progress, setLog: setLog,
     renderRules: renderRules, readRules: readRules, renderResults: renderResults, recordBacktest: recordBacktest,
     renderBrokers: renderBrokers, fieldHTML: fieldHTML, validateFields: validateFields, validateAuth: validateAuth, validatePrompt: function () { triedOnce = true; return validatePrompt(true); },
-    addSession: addSession, stopSession: stopSession, killAll: killAll, running: running,
+    addSession: addSession, stopSession: stopSession, renderJournalEmpty: renderJournalEmpty, esc: esc, killAll: killAll, running: running,
     authDone: authDone, renderAccount: renderAccount, renderChecklist: renderChecklist, setStep: setStep,
     nav: nav, fmt: { inr: inr, rupee: rupee, signed: signed, compact: compact, istDate: istDate, istTime: istTime }, state: S
   };

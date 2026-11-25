@@ -590,6 +590,9 @@ kbd, .kbd { font: 500 11px/1 var(--font-mono); color: var(--text-3); border: 1px
 .cap small { display: block; font-size: 12px; font-weight: 400; color: var(--text-3); margin-top: 2px; letter-spacing: 0; }
 
 /* studio */
+.jbar { margin: 14px 0 0; }
+.tbl .acts { display: flex; gap: 6px; justify-content: flex-end; }
+.tbl td.wrap { white-space: normal; min-width: 140px; }
 .guide { display: flex; align-items: center; gap: 12px; margin-top: 14px; padding: 12px 14px; border: 1px solid var(--brand-line); border-left: 3px solid var(--brand); border-radius: 10px; background: var(--brand-soft); animation: guide-in .25s var(--ease) both; }
 .guide[hidden] { display: none; }
 .guide__step { flex: none; font: 600 11.5px var(--font-mono); color: var(--brand); }

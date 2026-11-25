@@ -165,7 +165,7 @@ def run_sweep(body: SweepIn, user: User = Depends(current_user), db: Session = D
 @router.get("")
 def list_runs(user: User = Depends(current_user), db: Session = Depends(get_session), limit: int = Query(50, ge=1, le=200)):
     rows = db.exec(select(BacktestRun).where(BacktestRun.user_id == user.id).order_by(BacktestRun.created_at.desc()).limit(limit)).all()
-    return {"runs": [{"id": r.id, "strategy_id": r.strategy_id, "name": r.spec.get("name"), "metrics": {k: r.metrics.get(k) for k in ("trades", "win_rate", "net_pnl", "max_drawdown", "profit_factor")},
+    return {"runs": [{"id": r.id, "strategy_id": r.strategy_id, "name": r.spec.get("name"), "instrument": r.spec.get("underlying"), "timeframe": r.spec.get("timeframe"), "metrics": {k: r.metrics.get(k) for k in ("trades", "win_rate", "net_pnl", "max_drawdown", "profit_factor")},
                       "data_source": r.data_source, "flags": r.flags, "created_at": as_utc(r.created_at)} for r in rows]}
 
 

@@ -607,7 +607,8 @@
                     <div class="rules" id="x-edit"></div>
                     <div class="studio__actions">
                       <button class="btn btn--primary" type="button" id="x-run">Run backtest <kbd class="kbd-mod">Ctrl ↵</kbd></button>
-                      <span class="note">NSE data, Jan 2020 to today</span>
+                      <button class="btn btn--secondary btn--sm" type="button" id="x-save" hidden>Save strategy</button>
+                      <span class="note">Practice prices · last 120 days</span>
                     </div>
                     <div class="progress" id="x-run-prog"><i></i></div>
                     <p class="steplog" id="x-run-log" aria-live="polite"></p>
@@ -661,7 +662,16 @@
 
           <!-- Backtests -->
           <section class="view" data-v="backtests" hidden>
-            <div class="vhead"><div><h1>Backtests</h1><p>Runs from this session. Open one to see its full results.</p></div></div>
+            <div class="vhead"><div><h1>Backtests</h1><p id="x-bt-sub">Runs from this session. Open one to see its full results.</p></div></div>
+            <div class="panel" id="x-strat-panel" hidden>
+              <div class="panel__head"><h3>Your strategies</h3><span class="note" id="x-strat-note"></span></div>
+              <div class="scroll-x">
+                <table class="tbl tbl--min">
+                  <thead><tr><th scope="col">Strategy</th><th scope="col">Instrument</th><th scope="col">Timeframe</th><th scope="col" class="r">Updated · IST</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
+                  <tbody id="x-strat-body"></tbody>
+                </table>
+              </div>
+            </div>
             <div class="panel" id="x-bt-panel" hidden>
               <div class="scroll-x">
                 <table class="tbl tbl--min">
@@ -720,6 +730,41 @@
               <div class="set-row"><div><h3>Backend</h3><p id="x-api-text">Demo mode: everything runs in your browser.</p></div><span class="badge" id="x-api-badge">Demo</span></div>
               <div class="set-row"><div><h3>More</h3><p>Every screen in the workspace.</p></div><div class="btns"><button class="btn btn--secondary btn--sm" type="button" data-view="backtests">Backtests</button><button class="btn btn--secondary btn--sm" type="button" data-view="journal">Journal</button><a class="btn btn--ghost btn--sm" href="#top" data-back>Back to site</a></div></div>
               <div class="set-row"><div><h3>Reset demo</h3><p>Clear demo sign-in, broker connections, sessions and backtests on this device.</p></div><button class="btn btn--danger-outline btn--sm" type="button" id="x-reset">Reset demo data</button></div>
+            </div>
+          </section>
+
+          <!-- Journal -->
+          <section class="view" data-v="journal" hidden>
+            <div class="vhead">
+              <div><h1>Journal</h1><p>Every closed paper and live trade, tagged by strategy. Times in IST.</p></div>
+              <button class="btn btn--secondary btn--sm" type="button" id="x-j-export" hidden>Export CSV</button>
+            </div>
+            <div class="jbar" id="x-j-bar" hidden>
+              <div class="seg" role="group" aria-label="Filter by mode"><button type="button" data-jmode="" aria-pressed="true">All</button><button type="button" data-jmode="paper" aria-pressed="false">Paper</button><button type="button" data-jmode="live" aria-pressed="false">Live</button></div>
+            </div>
+            <div class="panel" id="x-j-sum-panel" hidden>
+              <div class="panel__head"><h3>By strategy</h3></div>
+              <div class="scroll-x">
+                <table class="tbl tbl--min">
+                  <thead><tr><th scope="col">Strategy</th><th scope="col" class="r">Trades</th><th scope="col" class="r">Win rate</th><th scope="col" class="r">Charges</th><th scope="col" class="r">Net P&amp;L</th></tr></thead>
+                  <tbody id="x-j-sum-body"></tbody>
+                </table>
+              </div>
+            </div>
+            <div class="panel" id="x-j-panel" hidden>
+              <div class="panel__head"><h3>Trades</h3><span class="note num" id="x-j-count"></span></div>
+              <div class="scroll-x">
+                <table class="tbl tbl--min">
+                  <thead><tr><th scope="col">Closed · IST</th><th scope="col">Strategy</th><th scope="col">Symbol</th><th scope="col">Side</th><th scope="col" class="r">Qty</th><th scope="col" class="r">Entry</th><th scope="col" class="r">Exit</th><th scope="col" class="r">Net P&amp;L</th><th scope="col">Why it closed</th></tr></thead>
+                  <tbody id="x-j-body"></tbody>
+                </table>
+              </div>
+            </div>
+            <div class="panel empty" id="x-j-empty">
+              <span class="empty__icon"><svg aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round"><use href="#n-journal" /></svg></span>
+              <h3 id="x-j-empty-h">No trades yet</h3>
+              <p id="x-j-empty-p">Closed trades from your paper sessions land here, with charges and the reason each one exited.</p>
+              <div class="btns"><button class="btn btn--primary" type="button" id="x-j-empty-btn" data-view="studio">Open Strategy Studio</button></div>
             </div>
           </section>
 
