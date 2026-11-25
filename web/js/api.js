@@ -182,12 +182,58 @@
         var model = toModel(res);
         UI().recordBacktest(model, (state.rules && state.rules.Entry) || res.strategy.underlying);
         UI().renderResults(model);
+        showSweep();
       })
       .catch(function (x) {
         done();
         if (userError(x)) { UI().setLog($("#x-run-log"), x.message + limitHint(x), "error"); toast(x.status === 422 ? "Check the edited rules" : "Limit reached"); return; }
         fallback(btn, x.message);
       });
+  }
+
+  /* Parameter sweep: same rules over timeframes x entry starts (x option modes), ranked by net P&L. */
+  var MODE_LABEL = { atm_buy: "Buy ATM", itm_buy: "Buy ITM", atm_sell: "Sell ATM" };
+  function showSweep() {
+    var box = $("#x-sweep"); if (!box) return;
+    box.hidden = !state.spec; $("#x-sweep-wrap").hidden = true; $("#x-sweep-rows").innerHTML = "";
+    var opt = state.spec && state.spec.instrument_type === "option";
+    $("#x-sweep-note").textContent = "Same rules on 5, 15 and 30-minute candles with 9:20, 9:30 and 9:45 starts" + (opt ? ", buying ATM, buying ITM or selling ATM" : "") + ", ranked by net P&L after charges.";
+  }
+  function onSweep(e) {
+    var btn = e.target.closest("#x-sweep-run");
+    if (!token()) { toast("Create a free account to compare settings"); var o = $("[data-auth-open]"); if (o) o.click(); return; }
+    var spec = applyEdits(state.spec), opt = spec.instrument_type === "option";
+    btn.disabled = true; btn.classList.add("is-loading");
+    $("#x-sweep-note").textContent = "Running " + (opt ? 27 : 9) + " backtests on practice prices…";
+    api("/api/backtests/sweep", { method: "POST", body: { strategy: spec, days: 120, timeframes: ["5m", "15m", "30m"], entry_starts: ["09:20", "09:30", "09:45"], modes: opt ? ["atm_buy", "itm_buy", "atm_sell"] : [] } })
+      .then(function (r) {
+        var F = UI().fmt, rows = r.rows.filter(function (x) { return !x.error; }), bad = r.rows.length - rows.length;
+        $("#x-sweep-modeh").hidden = !opt;
+        state.sweepRows = rows;
+        $("#x-sweep-rows").innerHTML = rows.map(function (x, i) {
+          return '<tr' + (i === 0 ? ' class="is-best"' : "") + "><td>" + E(x.timeframe) + "</td><td>" + E(x.entry_start) + "</td>" + (opt ? "<td>" + E(MODE_LABEL[x.mode] || x.mode || "") + "</td>" : "") +
+            '<td class="r">' + x.trades + '</td><td class="r">' + (x.win_rate == null ? "—" : (+x.win_rate).toFixed(1) + "%") + '</td><td class="r">' + F.rupee(Math.abs(x.max_drawdown)) + '</td><td class="r ' + (x.net_pnl >= 0 ? "up" : "down") + '">' + F.signed(Math.round(x.net_pnl)) + '</td><td class="r"><button class="btn btn--secondary btn--sm" type="button" data-sweep-use="' + i + '">Use</button></td></tr>';
+        }).join("");
+        $("#x-sweep-wrap").hidden = !rows.length;
+        var best = rows[0];
+        $("#x-sweep-note").textContent = rows.length ? "Best on net: " + best.timeframe + " candles from " + best.entry_start + (opt && best.mode ? ", " + (MODE_LABEL[best.mode] || best.mode) : "") + ". Practice prices, so treat the ranking as a guide, not a forecast." + (bad ? " " + bad + " combination" + (bad === 1 ? "" : "s") + " could not run." : "") : "None of the combinations could run with these rules.";
+      })
+      .catch(function (x) { $("#x-sweep-note").textContent = x.message + limitHint(x); })
+      .then(function () { btn.disabled = false; btn.classList.remove("is-loading"); });
+  }
+  function onSweepUse(e) {
+    var b = e.target.closest("[data-sweep-use]"); var x = state.sweepRows && state.sweepRows[+b.getAttribute("data-sweep-use")]; if (!x) return;
+    var sp = JSON.parse(JSON.stringify(state.spec));
+    sp.timeframe = x.timeframe; sp.entry_window = sp.entry_window || {}; sp.entry_window.start = x.entry_start;
+    if (x.mode && sp.option) sp.option.mode = x.mode;
+    state.spec = sp; state.strategyId = null;
+    // the editable rule cells win over the spec in applyEdits, so update them to match
+    var cell = function (k) { return $('#x-edit [data-k="' + k + '"]'); };
+    if (cell("Timeframe")) cell("Timeframe").textContent = x.timeframe;
+    if (cell("Window")) cell("Window").textContent = x.entry_start + "–" + (sp.entry_window.end || "");
+    var sb = $("#x-save"); if (sb) sb.textContent = "Save strategy";
+    toast("Using " + x.timeframe + " candles from " + x.entry_start + ". Running the backtest…");
+    var run = $("#x-run"); if (run) run.click();
   }
 
   function saveStrategy() {
@@ -353,7 +399,7 @@
       var run = rs[0], res = { strategy: run.strategy, metrics: run.metrics, equity: run.equity, flags: run.flags || [], data_source: run.data_source, trades: rs[1].trades || [] };
       var model = toModel(res);
       UI().state.model = model; UI().nav("studio");
-      setTimeout(function () { UI().renderResults(model, true); }, 0);
+      setTimeout(function () { UI().renderResults(model, true); var sw = $("#x-sweep"); if (sw) sw.hidden = true; }, 0);
     }).catch(function (x) { toast(x.message); });
   }
 
@@ -486,6 +532,8 @@
     else if (t.closest("[data-stop]")) { stop(); onStop(t.closest("[data-stop]").dataset.stop); }
     else if (t.closest("[data-connect]") && state.brokers.length) { stop(); openConnect(t.closest("[data-connect]").dataset.connect); }
     else if (t.closest("#x-save")) { stop(); onSave(); }
+    else if (t.closest("#x-sweep-run")) { stop(); onSweep(e); }
+    else if (t.closest("[data-sweep-use]")) { stop(); onSweepUse(e); }
     else if (t.closest("[data-open-run]")) { stop(); openRun(t.closest("[data-open-run]").dataset.openRun); }
     else if (t.closest("[data-open-strat]")) { stop(); openStrategy(t.closest("[data-open-strat]").dataset.openStrat); }
     else if (t.closest("[data-del-strat]")) { stop(); deleteStrategy(t.closest("[data-del-strat]").dataset.delStrat); }

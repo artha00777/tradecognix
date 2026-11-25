@@ -275,11 +275,11 @@
             <div class="feats">
               <article class="feat"><span class="feat__icon"><svg aria-hidden="true"><use href="#ic-rule" /></svg></span><h3>Strategy Studio</h3><p>Type the idea the way you&rsquo;d text it to someone. You get back rules you can read, change and save, and if we misread &ldquo;after 9:30&rdquo; you&rsquo;ll see it before a single backtest runs.</p></article>
               <article class="feat"><span class="feat__icon"><svg aria-hidden="true"><use href="#ic-rupee" /></svg></span><h3>Charges, all of them</h3><p>Brokerage, STT, exchange and SEBI fees, stamp duty, GST and slippage on every fill. On option-selling setups, STT is often the line that turns a green month red.</p></article>
-              <article class="feat"><span class="feat__icon"><svg aria-hidden="true"><use href="#ic-sweep" /></svg></span><h3>Parameter sweeps</h3><p>Can&rsquo;t decide between 9/21 and 12/26? Run the whole grid in one go and compare them on net, not gross.</p></article>
+              <article class="feat"><span class="feat__icon"><svg aria-hidden="true"><use href="#ic-sweep" /></svg></span><h3>Parameter sweeps</h3><p>Not sure whether 5 or 15-minute candles work better, or a 9:20 or 9:45 start? Run the whole grid in one go and compare on net, not gross.</p></article>
               <article class="feat"><span class="feat__icon"><svg aria-hidden="true"><use href="#ic-cross" /></svg></span><h3>One engine from paper to live</h3><p>The code that paper trades your strategy is the code that sends live orders. There&rsquo;s no second version quietly drifting out of sync.</p></article>
               <article class="feat"><span class="feat__icon"><svg aria-hidden="true"><use href="#ic-shield" /></svg></span><h3>A kill switch you can reach</h3><p>Daily loss cap, max trades per day and a hard exit time. Plus one button that squares off everything when Bank Nifty decides to chop you up.</p></article>
               <article class="feat"><span class="feat__icon"><svg aria-hidden="true"><use href="#ic-plug" /></svg></span><h3>Your broker, your money</h3><p>Orders go through your broker&rsquo;s API and your funds stay exactly where they are today. We never hold a rupee of it.</p></article>
-              <article class="feat"><span class="feat__icon"><svg aria-hidden="true"><use href="#ic-plane" /></svg></span><h3>Telegram alerts</h3><p>Entries, exits and halts land on your phone, so you aren&rsquo;t staring at a terminal at 3:14 on expiry Tuesday. Included in Pro and Elite.</p></article>
+              <article class="feat"><span class="feat__icon"><svg aria-hidden="true"><use href="#ic-plane" /></svg></span><h3>Telegram alerts <span class="badge">Coming soon</span></h3><p>Entries, exits and halts will land on your phone, so you aren&rsquo;t staring at a terminal at 3:14 on expiry Tuesday. Coming to Pro and Elite.</p></article>
               <article class="feat"><span class="feat__icon"><svg aria-hidden="true"><use href="#ic-tag" /></svg></span><h3>Order tagging for SEBI&rsquo;s algo rules</h3><p>Every order carries its strategy tag. Live trading needs an explicit confirmation, and orders are routed the way NSE&rsquo;s retail-algo rules require.</p></article>
             </div>
           </div>
@@ -351,7 +351,7 @@
                   <li><svg aria-hidden="true"><use href="#m-tick" /></svg><span>Everything in Free</span></li>
                   <li><svg aria-hidden="true"><use href="#m-tick" /></svg><span><strong>Live trading</strong> via your broker</span></li>
                   <li><svg aria-hidden="true"><use href="#m-tick" /></svg><span><strong>Parameter sweeps</strong></span></li>
-                  <li><svg aria-hidden="true"><use href="#m-tick" /></svg><span><strong>Telegram alerts</strong></span></li>
+                  <li><svg aria-hidden="true"><use href="#m-tick" /></svg><span><strong>Telegram alerts</strong> (coming soon)</span></li>
                   <li><svg aria-hidden="true"><use href="#m-tick" /></svg><span><strong>5 strategies</strong></span></li>
                 </ul>
               </article>
@@ -642,6 +642,16 @@
                       <thead><tr><th scope="col">Date · IST</th><th scope="col">Side</th><th scope="col">Instrument</th><th scope="col" class="r">Entry</th><th scope="col" class="r">Exit</th><th scope="col" class="r">Net P&amp;L</th></tr></thead>
                       <tbody id="x-trades"></tbody>
                     </table>
+                  </div>
+                  <div id="x-sweep" hidden>
+                    <div class="panel__head" style="border-top:1px solid var(--border)"><h3>Compare settings</h3><button class="btn btn--secondary btn--sm" type="button" id="x-sweep-run">Run comparison</button></div>
+                    <p class="note sweep-note" id="x-sweep-note">Same rules on 5, 15 and 30-minute candles with 9:20, 9:30 and 9:45 starts, ranked by net P&amp;L after charges.</p>
+                    <div class="scroll-x" id="x-sweep-wrap" hidden>
+                      <table class="tbl tbl--min">
+                        <thead><tr><th scope="col">Candles</th><th scope="col">Starts</th><th scope="col" id="x-sweep-modeh">Option</th><th scope="col" class="r">Trades</th><th scope="col" class="r">Win rate</th><th scope="col" class="r">Max DD</th><th scope="col" class="r">Net P&amp;L</th><th scope="col"><span class="sr-only">Use</span></th></tr></thead>
+                        <tbody id="x-sweep-rows"></tbody>
+                      </table>
+                    </div>
                   </div>
                   <div class="res-actions">
                     <p class="note">Simulated after costs and slippage. Past performance is not indicative of future results.</p>

@@ -902,3 +902,8 @@ kbd, .kbd { font: 500 11px/1 var(--font-mono); color: var(--text-3); border: 1px
   [data-magnetic] { transform: none !important; }
 }
 @media (max-width: 520px) { .hero__eyebrow .hide-sm { display: none; } }
+
+/* parameter sweep */
+.sweep-note { padding: 0 20px 12px; margin: 0; }
+#x-sweep-rows tr.is-best td { background: var(--brand-soft); }
+#x-sweep-rows .btn { white-space: nowrap; }
