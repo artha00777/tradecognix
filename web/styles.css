@@ -198,7 +198,7 @@ kbd, .kbd { font: 500 11px/1 var(--font-mono); color: var(--text-3); border: 1px
 .panel__head h2, .panel__head h3 { font-size: 14px; font-weight: 600; letter-spacing: -0.01em; display: flex; align-items: center; gap: 8px; }
 .panel__body { padding: 18px; }
 .panel__foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 14px 18px; border-top: 1px solid var(--border); background: var(--bg-elev); }
-.scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.scroll-x { position: relative; overflow-x: auto; -webkit-overflow-scrolling: touch; } /* relative keeps .sr-only headers inside the scroller */
 
 /* ---------- tables ---------- */
 .tbl { width: 100%; border-collapse: collapse; font-size: 13.5px; }

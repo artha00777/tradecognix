@@ -130,3 +130,31 @@ def test_admin_waitlist_lists_entries_and_requires_admin(client):
     row = next(e for e in d["entries"] if e["email"] == "wl-admin-test@example.com")
     assert row["plan"] == "elite" and row["has_account"] is False
     assert d["by_plan"]["elite"] >= 1 and d["total"] >= 1
+
+
+def test_paper_session_survives_restart_and_live_is_halted(client):
+    """After a restart, running paper sessions re-attach with their state; a live row is halted for re-confirmation."""
+    from app.api.engine import broker_factory
+    from app.db import get_engine
+    from app.engine.live import engine as live_engine
+    from app.models import LiveSession
+    from sqlmodel import Session as DBSession
+
+    h = register(client, "restart@example.com")
+    s = client.post("/api/strategies", json={"prompt": "Buy Nifty ATM call at 9:30 AM. Exit at 3:15 PM. Max 1 trade a day."}, headers=h).json()
+    sid = client.post("/api/engine/start", json={"strategy_id": s["id"], "mode": "paper"}, headers=h).json()["session_id"]
+    with DBSession(get_engine()) as db:
+        row = db.get(LiveSession, sid)
+        fake_live = LiveSession(user_id=row.user_id, strategy_id=row.strategy_id, mode="live", status="running")
+        db.add(fake_live)
+        db.commit()
+        live_id = fake_live.id
+    live_engine.sessions.clear()  # what a process restart looks like
+    assert client.get("/api/engine/status", headers=h).json()["sessions"] == []
+    assert live_engine.restore(broker_factory) == 1
+    running = client.get("/api/engine/status", headers=h).json()["sessions"]
+    assert [r["session_id"] for r in running] == [sid]
+    rows = {r["id"]: r for r in client.get("/api/engine/sessions", headers=h).json()["sessions"]}
+    assert rows[sid]["status"] == "running"
+    assert rows[live_id]["status"] == "halted" and "re-confirm" in rows[live_id]["halt_reason"]
+    live_engine.sessions.clear()

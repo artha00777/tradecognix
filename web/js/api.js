@@ -85,6 +85,7 @@
         var next = state.pendingAfterAuth; state.pendingAfterAuth = null;
         UI().state.afterAuth = null;
         UI().authDone(res.user.email);
+        loadSessions();
         if (next) next();
       })
       .catch(function (x) { if (btn) btn.classList.remove("is-loading"); err.textContent = x.message === "Failed to fetch" ? "Can't reach the server. Check your connection." : x.message; });
@@ -254,6 +255,20 @@
       };
       state.ws.onclose = function () { state.ws = null; };
     } catch (x) { state.ws = null; }
+  }
+
+  /* Sessions from the server, so a reload (or a server restart, which re-attaches paper sessions) shows what is really running. */
+  function loadSessions() {
+    if (!token()) return;
+    Promise.all([api("/api/engine/sessions"), api("/api/strategies").catch(function () { return { strategies: [] }; })]).then(function (rs) {
+      var names = {}; (rs[1].strategies || []).forEach(function (s) { names[s.id] = s.name; });
+      var F = UI().fmt;
+      UI().setSessions((rs[0].sessions || []).slice(0, 20).map(function (s) {
+        var d = new Date(s.started_at);
+        return { id: s.id, name: names[s.strategy_id] || ("Strategy #" + s.strategy_id), mode: s.mode, broker: s.broker_account_id ? ((state.accounts.filter(function (a) { return a.id === s.broker_account_id; })[0] || {}).broker || "broker") : "paper",
+          status: s.status, reason: s.halt_reason || "", started: F.istDate(d) + " · " + F.istTime(d) };
+      }));
+    }).catch(function (x) { console.warn("[TradeCognix] sessions:", x.message); });
   }
 
   function sessionName() { var r = state.rules || {}; return (r.Entry || "Strategy") + " · " + ((state.spec && state.spec.underlying) || ""); }
@@ -515,6 +530,7 @@
 
   doc.addEventListener("tc:view", function (e) {
     if (e.detail === "dashboard") loadDashboard();
+    if (e.detail === "paper") loadSessions();
     if (e.detail === "backtests") loadBacktestsView();
     else if (e.detail === "journal") loadJournal();
   });
@@ -560,7 +576,7 @@
       // app.js may have opened a view before this script was listening; load its account data now.
       var v = (location.hash.indexOf("#/") === 0 && !$(".view[data-v='" + location.hash.slice(2) + "']:not([hidden])")) ? "" : location.hash.slice(2);
       if (v) doc.dispatchEvent(new CustomEvent("tc:view", { detail: v }));
-      if (token()) api("/api/auth/me").then(function (u) { UI().renderAccount(u.email); }).catch(function () {});
+      if (token()) api("/api/auth/me").then(function (u) { UI().renderAccount(u.email); loadSessions(); }).catch(function () {});
     }).catch(function () { console.warn("[TradeCognix] API not reachable at " + BASE + "; demo handlers stay active on failure."); });
   }
   if (doc.readyState === "loading") doc.addEventListener("DOMContentLoaded", boot); else boot();

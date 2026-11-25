@@ -467,6 +467,8 @@
     b.innerHTML = '<div class="callout callout--ok"><svg aria-hidden="true"><use href="#i-check" /></svg><span style="flex:1">' + (s.mode === "live" ? "<strong>Live session #" + esc(s.id) + "</strong> started on " + esc(s.broker) + "." : "<strong>Paper session #" + esc(s.id) + "</strong> is running.") + " Runs on candle close, 09:15–15:30 IST.</span><button class=\"btn btn--ghost btn--sm\" type=\"button\" data-view=\"paper\">View</button></div>";
     b.hidden = false;
   }
+  // js/api.js replaces the list with the account's sessions from the server (survives reloads and restarts).
+  function setSessions(list) { S.sessions = list; syncKill(); renderSessions(); setStep(); renderChecklist(); }
   function running() { return S.sessions.filter(function (s) { return s.status === "running"; }); }
   function syncKill() {
     var n = running().length, k = $("#x-kill");
@@ -489,7 +491,7 @@
     $("#x-sess-panel").hidden = !has; $("#x-sess-empty").hidden = has;
     $("#x-sess-note").textContent = running().length + " running";
     $("#x-sess-body").innerHTML = S.sessions.map(function (s) {
-      var state = s.status === "running" ? '<span class="badge badge--live">Running</span>' : s.status === "killed" ? '<span class="badge badge--down">Killed</span>' : '<span class="badge">Stopped</span>';
+      var state = s.status === "running" ? '<span class="badge badge--live">Running</span>' : s.status === "killed" ? '<span class="badge badge--down">Killed</span>' : s.status === "halted" ? '<span class="badge badge--warn" title="' + esc(s.reason || "") + '">Halted</span>' + (s.reason ? '<span class="sub">' + esc(s.reason) + "</span>" : "") : '<span class="badge">Stopped</span>';
       return '<tr><td class="num">#' + esc(s.id) + "</td><td>" + esc(s.name) + "</td><td>" + (s.mode === "live" ? '<span class="badge badge--down">Live</span>' : '<span class="badge badge--paper">Paper</span>') + "</td><td>" + esc(s.broker) + '</td><td class="num">' + esc(s.started) + "</td><td>" + state + "</td><td>" +
         (s.status === "running" ? '<button class="btn btn--ghost btn--sm" type="button" data-stop="' + esc(s.id) + '">Stop</button>' : "") + "</td></tr>";
     }).join("");
@@ -831,7 +833,7 @@
     toast: toast, openModal: openModal, closeModal: closeModal, progress: progress, setLog: setLog,
     renderRules: renderRules, readRules: readRules, renderResults: renderResults, recordBacktest: recordBacktest,
     renderBrokers: renderBrokers, fieldHTML: fieldHTML, validateFields: validateFields, validateAuth: validateAuth, validatePrompt: function () { triedOnce = true; return validatePrompt(true); },
-    addSession: addSession, stopSession: stopSession, renderJournalEmpty: renderJournalEmpty, esc: esc, drawDash: drawDash, killAll: killAll, running: running,
+    addSession: addSession, stopSession: stopSession, renderJournalEmpty: renderJournalEmpty, esc: esc, drawDash: drawDash, setSessions: setSessions, killAll: killAll, running: running,
     authDone: authDone, renderAccount: renderAccount, renderChecklist: renderChecklist, setStep: setStep,
     nav: nav, fmt: { inr: inr, rupee: rupee, signed: signed, compact: compact, istDate: istDate, istTime: istTime }, state: S
   };
